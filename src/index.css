@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    @apply font-sans;
+    box-sizing: border-box;
+}
+
+:root {
+    /* --- Colors --- */
+
+    /* Main Background: A deep, dark blue-gray, avoiding true black for better eye comfort. */
+    --color-bg-primary: #0A0E13;
+    /* Deep Blue-Black */
+
+    /* Card/Elevated Surface Background: A slightly lighter shade to create visual separation and depth. */
+    --color-bg-card: #0f121a;
+    /* Dark Slate Gray */
+
+    /* Border/Divider Color: A subtle, low-contrast separator. */
+    --color-border-subtle: #2D3748;
+    /* Very dark gray */
+
+    /* Primary Text: High-contrast light text for headings and key information. */
+    --color-text-primary: #E5E7EB;
+    /* Off-White / Gray-200 */
+
+    /* Secondary/Muted Text: For labels, small text, and less emphasized data. */
+    --color-text-secondary: #9CA3AF;
+    /* Medium Gray / Gray-400 */
+
+    /* Accent Color (Blue): Used for active navigation items, buttons, and primary chart lines. */
+    --color-accent-blue: #3B82F6;
+    /* Vibrant Blue */
+
+    /* Success/Positive Color (Green): Used for upward trends and gains (e.g., +12.5%). */
+    --color-success: #10B981;
+    /* Emerald Green */
+
+    /* Error/Negative Color (Red): Used for downward trends and losses (e.g., -1.23%). */
+    --color-error: #EF4444;
+    /* Bright Red */
+
+    /* Tertiary Accent Color (Gold/Yellow): Used sparingly for special icons or badges. */
+    --color-accent-gold: #FCD34D;
+    /* Warm Gold/Yellow */
+
+
+    /* --- Typography --- */
+
+    /* Primary Font Stack: Clean, modern sans-serif fonts, prioritizing tabular/numeric clarity. */
+    --font-family-sans: Ubuntu;
+}
+
+/* Background Color Utilities */
+.bg-primary {
+    background-color: var(--color-bg-primary);
+}
+
+.bg-card {
+    background-color: var(--color-bg-card);
+}
+
+.bg-accent-blue {
+    background-color: var(--color-accent-blue);
+}
+
+/* Text Color Utilities */
+.text-primary {
+    color: var(--color-text-primary);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-accent-blue {
+    color: var(--color-accent-blue);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-error {
+    color: var(--color-error);
+}
+
+.text-accent-gold {
+    color: var(--color-accent-gold);
+}
+
+/* Border Utilities */
+.border-subtle {
+    border-color: var(--color-border-subtle);
+}
+
+/* Font Family Utilities */
+.font-sans {
+    font-family: var(--font-family-sans);
+}
+
+.font-mono {
+    font-family: var(--font-family-mono);
+}
+
+@keyframes animate-navbar {
+    0% {
+        top: -50px;
+        opacity: 0.3;
+    }
+
+    100% {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes animate-sidebar {
+    0% {
+        left: -30px;
+    }
+
+    100% {
+        left: 0;
+    }
+}
+
+.sidebar:hover a {
+    @apply justify-start rounded-lg transition-all duration-200
+}
+
+.sidebar:hover a span {
+    @apply block;
+}
+
+@media (min-width:300px) and (max-width:450px) {
+    .body {
+        @apply p-3;
+    }
+}
+
+::-webkit-scrollbar {
+    @apply hidden;
+}
