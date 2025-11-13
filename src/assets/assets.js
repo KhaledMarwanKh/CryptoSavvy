@@ -24,3 +24,18 @@ export const dashboardIcons = [
     // The data/chart icon used in the CryptoSavvy logo itself
     { name: 'BarChart2', usage: 'Stylized logo icon (as an alternative to the inline SVG).' }
 ];
+
+
+export const range = (start, end = 0, step = 1) => {
+    const result = [];
+
+    if (end < start) {
+        [end, start] = [start, end];
+    }
+
+    for (let i = start; i < end; i += step) {
+        result.push(i);
+    }
+
+    return result;
+}

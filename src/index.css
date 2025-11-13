@@ -144,3 +144,7 @@
 ::-webkit-scrollbar {
     @apply hidden;
 }
+
+.table {
+    overflow: scroll !important;
+}

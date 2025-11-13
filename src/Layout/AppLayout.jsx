@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar'
 
 const AppLayout = () => {
     return (
-        <div className='h-full relative'>
+        <div className='h-full relative text-white'>
             <Navbar />
             <SideBar />
             <main className='h-[90%] ml-[70px] p-5 overflow-y-scroll body'>
