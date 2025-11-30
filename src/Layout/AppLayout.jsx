@@ -1,18 +1,17 @@
-import React from 'react'
-import { Outlet } from 'react-router'
-import SideBar from '../components/SideBar'
-import Navbar from '../components/Navbar'
-
+import React from "react";
+import { Outlet } from "react-router";
+import SideBar from "../components/SideBar";
+import Navbar from "../components/Navbar";
 const AppLayout = () => {
-    return (
-        <div className='h-full relative text-white'>
-            <Navbar />
-            <SideBar />
-            <main className='h-[90%] ml-[70px] p-5 overflow-y-scroll body'>
-                <Outlet />
-            </main>
-        </div>
-    )
-}
+  return (
+    <div className="h-full relative text-white">
+      <Navbar />
+      <SideBar />
+      <main className="h-[90%] ml-[70px] p-5 overflow-y-scroll body">
+        <Outlet />
+      </main>
+    </div>
+  );
+};
 
-export default AppLayout
+export default AppLayout;
