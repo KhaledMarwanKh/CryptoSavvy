@@ -1,17 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowUp, ArrowDown, ArrowUpDown, TrendingUp, DollarSign, Repeat2, Zap, LayoutGrid, BarChart3 } from 'lucide-react';
-import { cryptoList as cryptoData, FIAT_RATES, formatCurrency, NEWS_HEADLINES, updateCryptoTable } from '../data/cryptoData';
+import { ArrowUp, ArrowDown, ArrowUpDown, DollarSign, LayoutGrid, BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
+import { cryptoList as cryptoData, FIAT_RATES, formatCurrency, NEWS_HEADLINES } from '../data/cryptoData';
 import { useNavigate } from 'react-router';
 import CurrencyConverter from '../components/CurrencyConventor';
 import SortableHeader from '../components/SortableHeader';
 import NewsTicker from '../components/NewsTricker';
 import StatCard from '../components/StatCard';
 import { formatLargeNumber } from '../data/cryptoData';
+import { FaSearch } from 'react-icons/fa';
 
 const ChangePill = ({ change }) => {
   const isPositive = change >= 0;
   const color = isPositive ? 'text-green-400 bg-green-900/30' : 'text-red-400 bg-red-900/30';
-  const Icon = isPositive ? ArrowUp : ArrowDown;
+  const Icon = isPositive ? TrendingUp : TrendingDown;
   const sign = isPositive ? '+' : '';
 
   return (
@@ -84,22 +85,9 @@ const Dashboard = () => {
     setCrypto(cryptoData);
   }, []);
 
-  useEffect(() => {
-
-    let interval = setInterval(() => {
-      setCrypto(updateCryptoTable(cryptoData));
-    }, 3000)
-
-    return () => clearInterval(interval)
-
-  }, [])
-
   return (
-    <div className="min-h-screen bg-[#0f121a] rounded p-4 sm:p-8 font-inter">
+    <div className="min-h-screen bg-[#0f121a] rounded p-4 sm:p-8 font-inter fade-in animate-in">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-white mb-6 border-b border-gray-700 pb-3">
-          Dashboard
-        </h1>
 
         {/* --- NEW: Stat Cards Grid (Responsive) --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -131,23 +119,24 @@ const Dashboard = () => {
         </div>
         {/* --- END Stat Cards Grid --- */}
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search by name or symbol..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-3 bg-[#0f1115] border border-gray-700 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
-          />
-        </div>
-
         {/* Main Content Layout: Table + Aside */}
         <div className="grid grid-cols-1 xl:grid-cols-[4fr_2fr] gap-8">
 
           {/* 1. Main Table Section */}
           <div className="w-full">
-            <div className="shadow-2xl rounded-xl overflow-scroll border border-gray-800 h-[70vh] md:h-[109vh]">
+            <div className="shadow-2xl rounded-xl overflow-scroll border border-gray-800 h-[70vh] md:h-[109vh] px-3 bg-[#0f1115]">
+              {/* Search Bar */}
+              <div className="my-4 relative">
+                <FaSearch className='absolute opacity-25 right-3 text-xl top-[50%] translate-y-[-50%]' />
+                <input
+                  type="text"
+                  placeholder="Search by name or symbol..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-5 py-3 bg-[#0f1115] border border-gray-700 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left outline-none text-[0.7rem] sm:text-[1rem]"
+                />
+              </div>
+
               <table className="w-full text-sm text-left text-gray-400">
 
                 {/* Table Header */}
@@ -237,7 +226,7 @@ const Dashboard = () => {
                       <tr
                         onClick={() => navigate('/coin/' + crypto.id)}
                         key={crypto.id}
-                        className="bg-[#0f1115]border-b border-gray-800 hover:bg-gray-800 hover:scale-105 transition duration-150 cursor-pointer"
+                        className="bg-[#0f1115]border-b border-gray-800 hover:bg-gray-800 transition duration-150 cursor-pointer"
                       >
                         {/* Rank */}
                         <td className="p-4 font-semibold text-center text-gray-300">
@@ -247,7 +236,7 @@ const Dashboard = () => {
                         {/* Asset Name and Symbol - Left-aligned text */}
                         <th scope="row" className="px-3 py-4 font-medium text-white whitespace-nowrap text-center">
                           <div className="flex items-center">
-                            <img className="w-6 h-6 rounded-full mr-3" src={crypto.icon} alt={`${crypto.name} logo`} onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/24x24/1F2937/FFFFFF?text=?" }} />
+                            <img className="w-6 h-6 rounded-full mr-3" src="" alt={`${crypto.name}`} onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/24x24/1F2937/FFFFFF?text=?" }} />
                             <div className='text-left'>
                               <p className="text-base text-white font-bold">{crypto.name}</p>
                               <p className="text-xs text-gray-400">{crypto.symbol}</p>

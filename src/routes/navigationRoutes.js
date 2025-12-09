@@ -1,7 +1,8 @@
 import { GoHomeFill } from "react-icons/go";
 import { IoNewspaper } from "react-icons/io5";
-import { FaBrain, FaUser } from "react-icons/fa6";
+import { FaBrain, FaDollarSign, FaUser } from "react-icons/fa6";
 import { FaRobot } from "react-icons/fa";
+import { DollarSignIcon } from "lucide-react";
 
 const navigationRoutes = [
     {
@@ -23,9 +24,15 @@ const navigationRoutes = [
         usage: 'AI-driven market predictions and reports.'
     },
     {
-        path: '/News',
+        path: '/news',
         name: 'Market News',
         iconName: IoNewspaper,
+        usage: 'Latest cryptocurrency and market news.'
+    },
+    {
+        path: '/currency-rates',
+        name: 'Currency Rates',
+        iconName: FaDollarSign,
         usage: 'Latest cryptocurrency and market news.'
     },
 ];

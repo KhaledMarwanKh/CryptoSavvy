@@ -202,7 +202,7 @@ const AIAnalysis = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f121a] text-white font-sans p-4 sm:p-8">
+    <div className="min-h-screen bg-[#0f121a] rounded text-white font-sans p-4 sm:p-8  fade-in animate-in">
       <div className="max-w-4xl mx-auto">
         {/* Header/Introduction Section */}
         <div className="text-center mb-12 py-8 bg-[#0f1115] rounded-2xl shadow-2xl shadow-gray-900/30 border border-gray-700">

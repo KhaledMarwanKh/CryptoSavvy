@@ -39,3 +39,37 @@ export const range = (start, end = 0, step = 1) => {
 
     return result;
 }
+
+export const colorPellets = [
+    { name: "Black", hex: "#000000" },
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Crimson", hex: "#DC143C" },
+    { name: "Deep SkyBlue", hex: "#00BFFF" },
+    { name: "Lime Green", hex: "#32CD32" },
+    { name: "Gold enrod", hex: "#DAA520" },
+    { name: "Medium Orchid", hex: "#BA55D3" },
+    { name: "Coral", hex: "#FF7F50" },
+    { name: "Teal", hex: "#008080" },
+    { name: "Tomato", hex: "#FF6347" },
+    { name: "Slate Blue", hex: "#6A5ACD" },
+    { name: "Forest Green", hex: "#228B22" },
+    { name: "Hot Pink", hex: "#FF69B4" },
+    { name: "Dodger Blue", hex: "#1E90FF" },
+    { name: "Dark Orange", hex: "#FF8C00" },
+    { name: "Sea Green", hex: "#2E8B57" },
+    { name: "Orchid", hex: "#DA70D6" },
+    { name: "Fire Brick", hex: "#B22222" },
+    { name: "Royal Blue", hex: "#4169E1" },
+    { name: "Sienna", hex: "#A0522D" },
+    { name: "Steel Blue", hex: "#4682B4" },
+    { name: "Medium Violet Red", hex: "#C71585" },
+    { name: "Dark Cyan", hex: "#008B8B" },
+    { name: "Peru", hex: "#CD853F" },
+    { name: "Turquoise", hex: "#40E0D0" },
+    { name: "Plum", hex: "#DDA0DD" },
+    { name: "Olive Drab", hex: "#6B8E23" },
+    { name: "Chocolate", hex: "#D2691E" },
+    { name: "Indian Red", hex: "#CD5C5C" },
+    { name: "Medium Sea Green", hex: "#3CB371" }
+];
+

@@ -18,6 +18,7 @@ import Notification from './pages/Notification'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Settings from './pages/Settings'
+import CurrencyConverterAndRates from './pages/CurrencyConverterAndRates'
 
 const browserRouter = createBrowserRouter(
   createRoutesFromElements(
@@ -30,11 +31,11 @@ const browserRouter = createBrowserRouter(
         <Route path='/News' element={<News />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/settings' element={<Settings />} />
+        <Route path='/notification' element={<Notification />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/contact' element={<Contact />} />
+        <Route path='/currency-rates' element={<CurrencyConverterAndRates />} />
       </Route>
-
-      <Route path='/notification' element={<Notification />} />
-      <Route path='/about' element={<About />} />
-      <Route path='/contact' element={<Contact />} />
 
       <Route path='/auth/login' element={<Login />} />
       <Route path='/auth/register' element={<Register />} />

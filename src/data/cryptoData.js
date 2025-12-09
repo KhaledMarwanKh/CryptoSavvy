@@ -321,6 +321,108 @@ export const technicalIndicators = {
   trend: "Bullish"
 };
 
+export const currencies = [
+  { code: 'USD', name: 'US Dollar', symbol: '$' },
+  { code: 'EUR', name: 'Euro', symbol: '€' },
+  { code: 'GBP', name: 'British Pound', symbol: '£' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+  { code: 'SAR', name: 'Saudi Riyal', symbol: 'ر.س' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
+  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'د.ك' },
+];
+
+// Exchange rates relative to USD
+export const exchangeRates = {
+  USD: 1,
+  EUR: 0.92,
+  GBP: 0.79,
+  JPY: 157.50,
+  CHF: 0.88,
+  CAD: 1.37,
+  AUD: 1.53,
+  CNY: 7.24,
+  INR: 83.50,
+  SAR: 3.75,
+  AED: 3.67,
+  KWD: 0.31,
+};
+
+// Generate historical data for chart
+export const generateHistoricalData = (baseCurrency, quoteCurrency, interval) => {
+  const now = Date.now();
+  const data = [];
+  let points = 100;
+  let timeStep;
+
+  switch (interval) {
+    case '12h':
+      timeStep = 12 * 60 * 60 * 1000 / points; // 12 hours in ms
+      break;
+    case '1d':
+      timeStep = 24 * 60 * 60 * 1000 / points; // 1 day in ms
+      break;
+    case '1M':
+      timeStep = 30 * 24 * 60 * 60 * 1000 / points; // 30 days in ms
+      break;
+    case '1Y':
+      timeStep = 365 * 24 * 60 * 60 * 1000 / points; // 1 year in ms
+      break;
+    case '10Y':
+      timeStep = 10 * 365 * 24 * 60 * 60 * 1000 / points; // 10 years in ms
+      break;
+    default:
+      timeStep = 24 * 60 * 60 * 1000 / points;
+  }
+
+  const baseRate = exchangeRates[quoteCurrency] / exchangeRates[baseCurrency];
+  let currentRate = baseRate;
+
+  for (let i = points - 1; i >= 0; i--) {
+    const time = Math.floor((now - i * timeStep) / 1000);
+    // Add some realistic fluctuation
+    const volatility = interval === '10Y' ? 0.15 : interval === '1Y' ? 0.08 : 0.02;
+    const change = (Math.random() - 0.5) * volatility * baseRate;
+    currentRate = Math.max(0.01, currentRate + change);
+
+    data.push({
+      time,
+      value: parseFloat(currentRate.toFixed(4)),
+    });
+  }
+
+  return data;
+};
+
+// Get all exchange rates for a base currency
+export const getAllRatesForCurrency = (baseCurrency) => {
+  const baseRate = exchangeRates[baseCurrency];
+  const rates = {};
+
+  Object.keys(exchangeRates).forEach((currency) => {
+    if (currency !== baseCurrency) {
+      rates[currency] = {
+        rate: parseFloat((exchangeRates[currency] / baseRate).toFixed(4)),
+        change24h: parseFloat(((Math.random() - 0.5) * 2).toFixed(2)),
+        change7d: parseFloat(((Math.random() - 0.5) * 5).toFixed(2)),
+      };
+    }
+  });
+
+  return rates;
+};
+
+// Convert amount between currencies
+export const convertCurrency = (amount, fromCurrency, toCurrency) => {
+  const fromRate = exchangeRates[fromCurrency];
+  const toRate = exchangeRates[toCurrency];
+  return parseFloat(((amount * toRate) / fromRate).toFixed(4));
+};
+
 export const formatCurrency = (amount) => {
   // Use 'compact' notation for large amounts for better fit in cards
   if (amount > 1e6) {

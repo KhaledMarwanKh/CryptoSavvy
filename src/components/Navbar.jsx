@@ -1,16 +1,26 @@
-import React from 'react'
 import { CryptoSavvyLogo } from './Logo'
 import { MdNotifications } from 'react-icons/md'
 import { FaUser } from 'react-icons/fa6'
 import { useNavigate } from 'react-router'
+import { FiMenu, FiX } from 'react-icons/fi'
 
-const Navbar = () => {
+const Navbar = ({ setOpenSideBar, openSideBar }) => {
     const navigate = useNavigate();
 
     return (
         <div style={{ animation: "animate-navbar ease-in 1 0.5s" }} className='w-full px-3 py-4 border-b border-subtle flex items-center justify-between relative'>
             {/** logo section */}
-            <CryptoSavvyLogo large={false} />
+
+            <div className='flex gap-3 items-center'>
+                <div
+                    onClick={() => setOpenSideBar(!openSideBar)}
+                    className='menu w-[30px] h-[30px] cursor-pointer bg-[#0f121a] rounded flex justify-center items-center text-xl border shadow-sm'>
+                    {
+                        openSideBar ? <FiX /> : <FiMenu />
+                    }
+                </div>
+                <CryptoSavvyLogo large={false} />
+            </div>
 
             {/** action buttons section */}
             <div className='flex gap-3 items-center'>

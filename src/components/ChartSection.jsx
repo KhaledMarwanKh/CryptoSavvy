@@ -3,7 +3,7 @@ import { createChart } from 'lightweight-charts';
 import { FiEdit3 } from 'react-icons/fi';
 import { generateAreaData, generateCandlestickData } from '../data/cryptoData';
 
-const ChartSection = ({ crypto }) => {
+const ChartSection = ({ crypto, setEditorState, editorState }) => {
   const [candleData, setCandleData] = useState([]);
   const [areaChartData, setAreaChartData] = useState([]);
 
@@ -11,9 +11,8 @@ const ChartSection = ({ crypto }) => {
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
 
-  const [selectedPeriod, setSelectedPeriod] = useState('1M');
+  const [selectedPeriod, setSelectedPeriod] = useState('1m');
   const [chartType, setChartType] = useState('Candles');
-  const [showDrawingEditor, setShowDrawingEditor] = useState(false);
 
   const periods = ['1m', '5m', '24h', '7d', '1M'];
   const chartTypes = ['Candles', 'Area'];
@@ -34,7 +33,7 @@ const ChartSection = ({ crypto }) => {
         horzLines: { color: '#1f2937' },
       },
       crosshair: {
-        mode: 1,
+        mode: 2,
       },
       rightPriceScale: {
         borderColor: '#374151',
@@ -102,7 +101,7 @@ const ChartSection = ({ crypto }) => {
       <div className="flex items-center justify-between mb-4 flex-col md:flex-row">
         <h2 className="text-lg font-semibold mb-3">{crypto?.name} - USD</h2>
 
-        <div className="flex items-center flex-col md:flex-row gap-4">
+        <div className="flex items-center flex-col sm:flex-row gap-4">
           {/* Period Selector */}
           <div className="flex items-center gap-1 bg-[#0a0b0d] rounded-lg p-1">
             {periods.map((period) => (
@@ -136,25 +135,23 @@ const ChartSection = ({ crypto }) => {
           </div>
 
           {/* Draw/Analysis Button - Only show when Candles is selected */}
-          {/* {chartType === 'Candles' && (
-            <button
-              onClick={() => setShowDrawingEditor(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg transition-all text-sm font-medium"
-            >
-              <FiEdit3 className="w-4 h-4" />
-              <span>Draw / Analysis</span>
-            </button>
-          )} */}
+          {
+            !editorState && (
+              <button
+                onClick={() => setEditorState(true)}
+                className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-all text-sm font-medium"
+              >
+                <FiEdit3 className="w-4 h-4" />
+                <span>Analysis</span>
+              </button>
+            )
+          }
+
         </div>
       </div>
 
       {/* Chart Container */}
-      <div ref={chartContainerRef} className="rounded-lg overflow-hidden" />
-
-      {/* Drawing Editor Modal */}
-      {/* {showDrawingEditor && (
-        <DrawingEditor onClose={() => setShowDrawingEditor(false)} />
-      )} */}
+      <div ref={chartContainerRef} className="rounded-lg overflow-hidden cursor-grab" />
     </div>
   );
 };

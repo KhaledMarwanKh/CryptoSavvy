@@ -37,13 +37,13 @@ const OrderBook = ({ basePrice = 0 }) => {
                 />
 
                 <div className="relative text-red-500 font-medium text-right">
-                  {ask.price}
+                  {ask.price || 0}
                 </div>
                 <div className="relative text-gray-300 text-right">
-                  {ask.quantity}
+                  {ask.quantity || 0}
                 </div>
                 <div className="relative text-gray-400 text-right">
-                  {parseFloat(ask.total).toFixed(2)}
+                  {parseFloat(ask.total || 0).toFixed(2)}
                 </div>
               </div>
             ))}
@@ -77,13 +77,13 @@ const OrderBook = ({ basePrice = 0 }) => {
                 />
 
                 <div className="relative text-green-500 font-medium text-right">
-                  {bid.price}
+                  {bid.price || 0}
                 </div>
                 <div className="relative text-gray-300 text-right">
-                  {bid.quantity}
+                  {bid.quantity || 0}
                 </div>
                 <div className="relative text-gray-400 text-right">
-                  {parseFloat(bid.total).toFixed(2)}
+                  {parseFloat(bid.total || 0).toFixed(2)}
                 </div>
               </div>
             ))}

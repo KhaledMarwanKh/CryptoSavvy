@@ -1,0 +1,25 @@
+@media (min-width:300px) {
+    .body {
+        @apply p-3;
+    }
+
+    .sidebar {
+        @apply justify-between
+    }
+}
+
+@media (min-width:450px) {
+    .body {
+        @apply p-2 ml-0;
+    }
+}
+
+@media (min-width:500px) {
+    .header-coin .h {
+        @apply flex-row
+    }
+
+    .statis {
+        @apply flex-row
+    }
+}
