@@ -1,0 +1,647 @@
+[
+  {
+    "name": "أحمد الحسين",
+    "email": "ahmed.hussain@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7234, 34.7244]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 2000,
+    "image": "ahmed.jpg",
+    "certificates": ["دبلومة تربوية", "ماجستير في الرياضيات"],
+    "Class": [1, 2, 3],
+    "subject": "الرياضيات",
+    "degree": "ماجستير",
+    "experience": 8,
+    "about": "معلم رياضيات بخبرة 8 سنوات في تدريس المناهج السورية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0931234567",
+    "birthDate": "1985-06-15T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع القوتلي",
+      "region": "الوعر"
+    },
+    "availableTimes": [
+      {
+        "day": "sunday",
+        "slots": ["10:00", "12:00", "14:00"]
+      },
+      {
+        "day": "tuesday",
+        "slots": ["09:00", "11:00", "15:00"]
+      }
+    ],
+    "price": 200,
+    "role": "teacher"
+  },
+  {
+    "name": "مريم العلي",
+    "email": "mariam.ali@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7001, 34.7333]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 500,
+    "amountMoneyAllTime": 3500,
+    "image": "mariam.jpg",
+    "certificates": ["بكالوريوس علوم", "دبلومة خاصة في الكيمياء"],
+    "Class": [4, 5, 6],
+    "subject": "العلوم",
+    "degree": "بكالوريوس",
+    "experience": 5,
+    "about": "معلمة علوم متخصصة في الكيمياء للمرحلة الابتدائية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0938765432",
+    "birthDate": "1990-09-22T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع شكري القوتلي",
+      "region": "بابا عمرو"
+    },
+    "availableTimes": [
+      {
+        "day": "monday",
+        "slots": ["08:00", "10:00", "13:00"]
+      },
+      {
+        "day": "wednesday",
+        "slots": ["09:00", "14:00", "16:00"]
+      }
+    ],
+    "price": 180,
+    "role": "teacher"
+  },
+  {
+    "name": "خالد المحمود",
+    "email": "khaled.mahmoud@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7409, 34.7695]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 2500,
+    "image": "khaled.jpg",
+    "certificates": ["دكتوراه في اللغة العربية", "إجازة في القراءات"],
+    "Class": [7, 8, 9],
+    "subject": "اللغة العربية",
+    "degree": "دكتوراه",
+    "experience": 12,
+    "about": "أستاذ اللغة العربية متخصص في النحو والصرف",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0931122334",
+    "birthDate": "1978-04-10T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الحميدية",
+      "region": "الكرامة"
+    },
+    "availableTimes": [
+      {
+        "day": "saturday",
+        "slots": ["08:00", "11:00", "15:00"]
+      },
+      {
+        "day": "thursday",
+        "slots": ["10:00", "13:00", "17:00"]
+      }
+    ],
+    "price": 250,
+    "role": "teacher"
+  },
+  {
+    "name": "سارة الحمصي",
+    "email": "sara.homsi@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7718, 34.7587]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 300,
+    "amountMoneyAllTime": 1900,
+    "image": "sara.jpg",
+    "certificates": ["بكالوريوس تربية خاصة", "دبلومة اضطرابات النطق"],
+    "Class": [1, 2, 3, 4],
+    "subject": "التربية الخاصة",
+    "degree": "بكالوريوس",
+    "experience": 6,
+    "about": "متخصصة في تعليم ذوي الاحتياجات الخاصة وصعوبات التعلم",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0935566778",
+    "birthDate": "1988-12-05T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الدبلان",
+      "region": "الإنشاءات"
+    },
+    "availableTimes": [
+      {
+        "day": "tuesday",
+        "slots": ["09:00", "12:00", "16:00"]
+      },
+      {
+        "day": "friday",
+        "slots": ["10:00", "14:00"]
+      }
+    ],
+    "price": 220,
+    "role": "teacher"
+  },
+  {
+    "name": "محمد الحسن",
+    "email": "mohamed.hassan@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7053, 34.7245]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 3800,
+    "image": "mohamed.jpg",
+    "certificates": ["ماجستير فيزياء", "دبلومة تدريس الفيزياء"],
+    "Class": [10, 11, 12],
+    "subject": "الفيزياء",
+    "degree": "ماجستير",
+    "experience": 10,
+    "about": "أستاذ فيزياء للمرحلة الثانوية وخبير في حل المشكلات العلمية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0939988776",
+    "birthDate": "1982-08-18T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الثورة",
+      "region": "الزهراء"
+    },
+    "availableTimes": [
+      {
+        "day": "sunday",
+        "slots": ["08:00", "11:00", "15:00"]
+      },
+      {
+        "day": "wednesday",
+        "slots": ["09:00", "13:00", "17:00"]
+      }
+    ],
+    "price": 300,
+    "role": "teacher"
+  },
+  {
+    "name": "نورا السعيد",
+    "email": "nora.said@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7614, 34.7876]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 400,
+    "amountMoneyAllTime": 1300,
+    "image": "nora.jpg",
+    "certificates": ["بكالوريوس لغة إنجليزية", "شهادة TEFL"],
+    "Class": [5, 6, 7, 8],
+    "subject": "اللغة الإنجليزية",
+    "degree": "بكالوريوس",
+    "experience": 4,
+    "about": "معلمة لغة إنجليزية متخصصة في تعليم الأطفال",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0933344556",
+    "birthDate": "1992-03-28T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع العروبة",
+      "region": "الضاحية"
+    },
+    "availableTimes": [
+      {
+        "day": "monday",
+        "slots": ["10:00", "14:00"]
+      },
+      {
+        "day": "thursday",
+        "slots": ["09:00", "12:00", "16:00"]
+      }
+    ],
+    "price": 170,
+    "role": "teacher"
+  },
+  {
+    "name": "عمرو الإبراهيم",
+    "email": "amr.ibrahim@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7458, 34.7619]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 2900,
+    "image": "amr.jpg",
+    "certificates": ["دكتوراه في التاريخ", "ماجستير في الآثار"],
+    "Class": [9, 10, 11, 12],
+    "subject": "التاريخ",
+    "degree": "دكتوراه",
+    "experience": 15,
+    "about": "أستاذ تاريخ متخصص في التاريخ الإسلامي والحديث",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0937788990",
+    "birthDate": "1975-05-12T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع أبي ذر الغفاري",
+      "region": "القدس"
+    },
+    "availableTimes": [
+      {
+        "day": "saturday",
+        "slots": ["08:00", "12:00", "16:00"]
+      },
+      {
+        "day": "tuesday",
+        "slots": ["10:00", "14:00"]
+      }
+    ],
+    "price": 270,
+    "role": "teacher"
+  },
+  {
+    "name": "هبة المحمد",
+    "email": "heba.mohamed@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7325, 34.7317]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 200,
+    "amountMoneyAllTime": 1000,
+    "image": "heba.jpg",
+    "certificates": ["بكالوريوس رياضيات", "دبلومة تربوية"],
+    "Class": [1, 2, 3, 4, 5],
+    "subject": "الرياضيات",
+    "degree": "بكالوريوس",
+    "experience": 3,
+    "about": "معلمة رياضيات للمرحلة الابتدائية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0934455667",
+    "birthDate": "1993-10-08T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع 8 آذار",
+      "region": "الاربعين"
+    },
+    "availableTimes": [
+      {
+        "day": "wednesday",
+        "slots": ["09:00", "13:00"]
+      },
+      {
+        "day": "friday",
+        "slots": ["10:00", "14:00", "16:00"]
+      }
+    ],
+    "price": 150,
+    "role": "teacher"
+  },
+  {
+    "name": "ياسر الرحمن",
+    "email": "yasser.rahman@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7436, 34.782]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 3300,
+    "image": "yasser.jpg",
+    "certificates": ["ماجستير كيمياء", "دبلومة كيمياء حيوية"],
+    "Class": [10, 11, 12],
+    "subject": "الكيمياء",
+    "degree": "ماجستير",
+    "experience": 9,
+    "about": "أستاذ كيمياء للمرحلة الثانوية وخبير في الكيمياء العضوية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0936677889",
+    "birthDate": "1983-07-25T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع القادسية",
+      "region": "الخالدية"
+    },
+    "availableTimes": [
+      {
+        "day": "sunday",
+        "slots": ["08:00", "11:00", "15:00"]
+      },
+      {
+        "day": "thursday",
+        "slots": ["09:00", "13:00", "17:00"]
+      }
+    ],
+    "price": 280,
+    "role": "teacher"
+  },
+  {
+    "name": "دعاء المصطفى",
+    "email": "doaa.mustafa@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7582, 34.7891]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 350,
+    "amountMoneyAllTime": 1500,
+    "image": "doaa.jpg",
+    "certificates": ["بكالوريوس لغة فرنسية", "دبلومة ترجمة"],
+    "Class": [6, 7, 8, 9],
+    "subject": "اللغة الفرنسية",
+    "degree": "بكالوريوس",
+    "experience": 5,
+    "about": "معلمة لغة فرنسية للمرحلة الإعدادية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0932233445",
+    "birthDate": "1989-02-14T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الحمراء",
+      "region": "الغوطة"
+    },
+    "availableTimes": [
+      {
+        "day": "monday",
+        "slots": ["10:00", "14:00"]
+      },
+      {
+        "day": "saturday",
+        "slots": ["09:00", "12:00", "16:00"]
+      }
+    ],
+    "price": 190,
+    "role": "teacher"
+  },
+  {
+    "name": "طارق الحسين",
+    "email": "tarek.hussain@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7118, 34.7397]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 2400,
+    "image": "tarek.jpg",
+    "certificates": ["بكالوريوس جغرافيا", "دبلومة نظم معلومات جغرافية"],
+    "Class": [8, 9, 10],
+    "subject": "الجغرافيا",
+    "degree": "بكالوريوس",
+    "experience": 7,
+    "about": "معلم جغرافيا متخصص في الخرائط والمناخ",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0935544332",
+    "birthDate": "1986-11-30T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع العزيزية",
+      "region": "التحلية"
+    },
+    "availableTimes": [
+      {
+        "day": "tuesday",
+        "slots": ["08:00", "12:00", "16:00"]
+      },
+      {
+        "day": "friday",
+        "slots": ["10:00", "14:00"]
+      }
+    ],
+    "price": 210,
+    "role": "teacher"
+  },
+  {
+    "name": "إيمان الرضا",
+    "email": "eman.reda@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7411, 34.7695]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 250,
+    "amountMoneyAllTime": 1200,
+    "image": "eman.jpg",
+    "certificates": ["بكالوريوس تربية طفولة", "دبلومة تأهيل تربوي"],
+    "Class": [1, 2, 3],
+    "subject": "التربية الرياضية",
+    "degree": "بكالوريوس",
+    "experience": 4,
+    "about": "معلمة تربية رياضية لرياض الأطفال",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0931122339",
+    "birthDate": "1991-08-19T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع السورية",
+      "region": "المزة"
+    },
+    "availableTimes": [
+      {
+        "day": "wednesday",
+        "slots": ["09:00", "13:00"]
+      },
+      {
+        "day": "sunday",
+        "slots": ["10:00", "14:00", "16:00"]
+      }
+    ],
+    "price": 160,
+    "role": "teacher"
+  },
+  {
+    "name": "بسام الشامي",
+    "email": "bassam.shami@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7234, 34.7544]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 2700,
+    "image": "bassam.jpg",
+    "certificates": ["ماجستير أحياء", "دبلومة تكنولوجيا حيوية"],
+    "Class": [10, 11, 12],
+    "subject": "الأحياء",
+    "degree": "ماجستير",
+    "experience": 8,
+    "about": "أستاذ أحياء متخصص في علم الوراثة",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0936655443",
+    "birthDate": "1984-03-17T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الوطن",
+      "region": "الرستن"
+    },
+    "availableTimes": [
+      {
+        "day": "monday",
+        "slots": ["08:00", "12:00", "16:00"]
+      },
+      {
+        "day": "thursday",
+        "slots": ["09:00", "13:00"]
+      }
+    ],
+    "price": 260,
+    "role": "teacher"
+  },
+  {
+    "name": "وفاء العمر",
+    "email": "wafaa.omar@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7334, 34.7444]
+    },
+    "checkMoney": true,
+    "amountMoneyRequired": 300,
+    "amountMoneyAllTime": 1700,
+    "image": "wafaa.jpg",
+    "certificates": ["بكالوريوس فلسفة", "دبلومة علم نفس تربوي"],
+    "Class": [9, 10, 11],
+    "subject": "الفلسفة",
+    "degree": "بكالوريوس",
+    "experience": 6,
+    "about": "معلمة فلسفة وعلم نفس للمرحلة الثانوية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "أنثى",
+    "phone": "0938877665",
+    "birthDate": "1987-05-23T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع الجزائر",
+      "region": "الغزلانية"
+    },
+    "availableTimes": [
+      {
+        "day": "tuesday",
+        "slots": ["09:00", "13:00"]
+      },
+      {
+        "day": "saturday",
+        "slots": ["10:00", "14:00", "16:00"]
+      }
+    ],
+    "price": 230,
+    "role": "teacher"
+  },
+  {
+    "name": "نضال الأسد",
+    "email": "nidal.assad@example.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "location": {
+      "type": "Point",
+      "coordinates": [36.7134, 34.7344]
+    },
+    "checkMoney": false,
+    "amountMoneyRequired": 0,
+    "amountMoneyAllTime": 3100,
+    "image": "nidal.jpg",
+    "certificates": ["دكتوراه فيزياء", "ماجستير فيزياء نووية"],
+    "Class": [11, 12],
+    "subject": "الفيزياء",
+    "degree": "دكتوراه",
+    "experience": 14,
+    "about": "أستاذ فيزياء متخصص في الفيزياء النووية والذرية",
+    "available": true,
+    "activate": true,
+    "checkAdmin": true,
+    "gender": "ذكر",
+    "phone": "0931122556",
+    "birthDate": "1976-09-11T00:00:00.000Z",
+    "address": {
+      "city": "حمص",
+      "street": "شارع القاهرة",
+      "region": "الميدان"
+    },
+    "availableTimes": [
+      {
+        "day": "wednesday",
+        "slots": ["08:00", "12:00", "16:00"]
+      },
+      {
+        "day": "friday",
+        "slots": ["09:00", "13:00"]
+      }
+    ],
+    "price": 320,
+    "role": "teacher"
+  }
+]
