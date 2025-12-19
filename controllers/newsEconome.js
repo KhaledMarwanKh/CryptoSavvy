@@ -8,29 +8,35 @@ const client = new ApifyClient({
 exports.getEconomicNews = async (req, res) => {
   try {
     const currencyFilter = req.query.currency || ""; // مثال: USD, EUR, GBP
+    const importanceFilter = req.query.importances || "high,medium"; 
+    // يمكن يمرر: "high", "medium", "low" أو مجموعة مفصولة بفاصلة
 
-    const input = {
-      timeFilter: "time_only",
-      importances: "high", // High impact only
-      categories: "",
-      country: "",
-    };
+    const importances = importanceFilter.split(",").map(s => s.trim().toLowerCase());
 
-    const run = await client
-      .actor("pintostudio/economic-calendar-data-investing-com")
-      .call(input);
+    let allItems = [];
 
-    if (!run.defaultDatasetId) {
-      return res.status(500).json({
-        status: "error",
-        message: "No dataset returned from Apify Actor",
-      });
+    for (const importance of importances) {
+      if (!["high", "medium", "low", ""].includes(importance)) continue;
+
+      const input = {
+        timeFilter: "time_only",
+        importances: importance,
+        categories: "",
+        country: "",
+      };
+
+      const run = await client
+        .actor("pintostudio/economic-calendar-data-investing-com")
+        .call(input);
+
+      if (run.defaultDatasetId) {
+        const { items } = await client.dataset(run.defaultDatasetId).listItems();
+        allItems = allItems.concat(items);
+      }
     }
 
-    const { items } = await client.dataset(run.defaultDatasetId).listItems();
-
     // فلترة وتحويل البيانات بناءً على currency إذا تم تمريره
-    const events = items
+    const events = allItems
       .filter((event) => !currencyFilter || event.currency === currencyFilter)
       .map((event) => ({
         date: event.date || "",

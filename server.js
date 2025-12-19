@@ -20,7 +20,7 @@ const { Server } = require("socket.io");
 // =====================
 // Local Imports
 // =====================
-const { startCryptoSocket } = require("./middlewares/cryptoSocket");
+const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoSocket");
 const appError = require("./utils/appError");
 const globalError = require("./controllers/errorController");
 const userRoute = require("./routes/userRoute");
@@ -125,10 +125,6 @@ const io = new Server(server, {
 // =====================
 // Socket Subscriptions Store
 // =====================
-// userSubscriptions[socket.id] = {
-//   mode: 'dashboard' | 'chart',
-//   symbols: ['BTCUSDT', 'ETHUSDT']
-// }
 const userSubscriptions = {};
 
 // =====================
@@ -137,83 +133,73 @@ const userSubscriptions = {};
 io.on("connection", (socket) => {
   console.log("🟢 New client connected:", socket.id);
 
-  // Ensure default entry
+  // Default subscription
   userSubscriptions[socket.id] = userSubscriptions[socket.id] || {
     mode: "dashboard",
+    page: 1,
+    pageSize: 5,
     symbols: [],
   };
 
   // -------- setMode --------
-  socket.on("setMode", (mode) => {
-    if (!userSubscriptions[socket.id]) {
-      userSubscriptions[socket.id] = {
-        mode: "dashboard",
-        symbols: [],
-      };
-    }
+  socket.on("setMode", ({ mode, page, pageSize }) => {
+    const user = userSubscriptions[socket.id];
+    if (!user) return;
 
-    userSubscriptions[socket.id].mode =
-      typeof mode === "string" && mode === "chart" ? "chart" : "dashboard";
+    if (typeof mode === "string") user.mode = mode === "chart" ? "chart" : "dashboard";
+    if (page) user.page = page;
+    if (pageSize) user.pageSize = pageSize;
 
-    console.log(
-      `⚙️ ${socket.id} mode set to: ${userSubscriptions[socket.id].mode}`
-    );
+    console.log(`⚙️ ${socket.id} mode: ${user.mode}, page: ${user.page}`);
   });
 
-  // -------- subscribe --------
-  // accepts string or array of strings
+  // -------- dashboard pagination --------
+  socket.on("dashboardNext", () => {
+    const user = userSubscriptions[socket.id];
+    if (!user) return;
+    const perPage = user.pageSize || 5;
+    const totalPages = Math.ceil(cryptoSymbols.length / perPage);
+    user.page = Math.min(user.page + 1, totalPages);
+    console.log(`➡️ ${socket.id} page: ${user.page}`);
+  });
+
+  socket.on("dashboardPrev", () => {
+    const user = userSubscriptions[socket.id];
+    if (!user) return;
+    user.page = Math.max(user.page - 1, 1);
+    console.log(`⬅️ ${socket.id} page: ${user.page}`);
+  });
+
+  // -------- subscribe / unsubscribe --------
   socket.on("subscribe", (payload) => {
-    if (!userSubscriptions[socket.id]) {
-      userSubscriptions[socket.id] = {
-        mode: "chart",
-        symbols: [],
-      };
-    }
-
+    const user = userSubscriptions[socket.id];
+    if (!user) return;
     const arr = Array.isArray(payload) ? payload : [payload];
 
     for (let s of arr) {
       if (typeof s !== "string") {
-        if (s && typeof s === "object" && s.symbol) {
-          s = String(s.symbol);
-        } else {
-          continue;
-        }
+        if (s && typeof s === "object" && s.symbol) s = String(s.symbol);
+        else continue;
       }
-
       const sym = s.trim().toUpperCase();
-
-      if (!userSubscriptions[socket.id].symbols.includes(sym)) {
-        userSubscriptions[socket.id].symbols.push(sym);
-        console.log(`📈 ${socket.id} subscribed to ${sym}`);
-      }
+      if (!user.symbols.includes(sym)) user.symbols.push(sym);
+      user.mode = "chart";
+      console.log(`📈 ${socket.id} subscribed to ${sym}`);
     }
-
-    // Enforce chart mode
-    userSubscriptions[socket.id].mode = "chart";
   });
 
-  // -------- unsubscribe --------
   socket.on("unsubscribe", (payload) => {
-    if (!userSubscriptions[socket.id]) return;
-
+    const user = userSubscriptions[socket.id];
+    if (!user) return;
     const arr = Array.isArray(payload) ? payload : [payload];
 
     for (let s of arr) {
       if (typeof s !== "string") {
-        if (s && typeof s === "object" && s.symbol) {
-          s = String(s.symbol);
-        } else {
-          continue;
-        }
+        if (s && typeof s === "object" && s.symbol) s = String(s.symbol);
+        else continue;
       }
-
       const sym = s.trim().toUpperCase();
-
-      userSubscriptions[socket.id].symbols = userSubscriptions[
-        socket.id
-      ].symbols.filter((x) => x !== sym);
-
+      user.symbols = user.symbols.filter((x) => x !== sym);
       console.log(`📉 ${socket.id} unsubscribed from ${sym}`);
     }
   });

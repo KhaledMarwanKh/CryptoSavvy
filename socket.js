@@ -4,68 +4,107 @@ const { io } = require("socket.io-client");
 // الاتصال بالسيرفر
 const socket = io("http://localhost:4000");
 
+// ==================
+// Pagination State
+// ==================
+let currentPage = 1;
+const pageSize = 5; // عدد العملات بكل صفحة
+const mode = "dashboard"; // dashboard | chart
+
+// ==================
+// Helpers
+// ==================
+function sendDashboardState() {
+  socket.emit("setMode", {
+    mode: "dashboard",
+    page: currentPage,
+    pageSize
+  });
+}
+
+// ==================
+// Socket Events
+// ==================
 socket.on("connect", () => {
   console.log("✅ Connected to server");
 
-  const mode = "chart";
-  socket.emit("setMode", mode);
+  if (mode === "dashboard") {
+    sendDashboardState();
+  }
 
   if (mode === "chart") {
-    // اشترك برمز واحد (سلسلة نصية)
-    socket.emit("subscribe", "EURUSD");
+    // اشترك برمز واحد (مثال: BTCUSDT)
+    socket.emit("setMode", { mode: "chart" });
+    socket.emit("subscribe", "BTCUSDT");
   }
 });
 
+// ==================
+// Pagination Controls
+// ==================
+function nextPage() {
+  currentPage++;
+  console.log(`➡️ Next page: ${currentPage}`);
+  sendDashboardState();
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    console.log(`⬅️ Prev page: ${currentPage}`);
+    sendDashboardState();
+  }
+}
+
+// ==================
+// Data Handlers
+// ==================
 function handleSingleSymbol(data) {
-  // data: { symbol, price, high24h, low24h, changePercent, volume, marketCap, circulatingSupply, orderBook }
-  console.log(`💰 ${data.symbol}: ${data.price} USD`);
-  console.log(`📈 High24h: ${data.high24h}, Low24h: ${data.low24h}`);
-  console.log(`🔄 Change: ${data.changePercent}%, Volume: ${data.volume}`);
-  console.log(`💹 Market Cap: ${data.marketCap}, Supply: ${data.circulatingSupply}`);
-  console.log('📝 Order Book Bids:', data.orderBook?.bids);
-  console.log('📝 Order Book Asks:', data.orderBook?.asks);
+  console.log(`💰 ${data.symbol}`);
+  console.log(`📈 High24h: ${data.high24h ?? 'N/A'}, Low24h: ${data.low24h ?? 'N/A'}`);
+  console.log(`🔄 Change: ${data.changePercent ?? 'N/A'}% , Volume: ${data.volume ?? 'N/A'}`);
+  console.log(`💹 Market Cap: ${data.marketCap ?? 'N/A'}, Circulating Supply: ${data.circulatingSupply ?? 'N/A'}`);
+  if (data.orderBook) {
+    console.log("📝 Order Book Bids:", data.orderBook.bids);
+    console.log("📝 Order Book Asks:", data.orderBook.asks);
+  }
+  console.log('-------------------------------');
 }
 
 function handleMapPayload(map) {
-  // map: { BTCUSDT: { meta: {...}, orderBook: {...} }, ... } or for dashboard { BTCUSDT: meta, ... }
-  for (const [sym, val] of Object.entries(map)) {
+  for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
-    // if val has meta field then structure is { meta, orderBook }
-    if (val.meta) {
-      const meta = val.meta;
-      console.log(`💰 ${meta.symbol}: ${meta.price} USD`);
-      console.log(`📈 High24h: ${meta.high24h}, Low24h: ${meta.low24h}`);
-      console.log(`🔄 Change: ${meta.changePercent}%, Volume: ${meta.volume}`);
-      console.log(`💹 Market Cap: ${meta.marketCap}, Supply: ${meta.circulatingSupply}`);
-      console.log('📝 Order Book Bids:', val.orderBook?.bids);
-      console.log('📝 Order Book Asks:', val.orderBook?.asks);
-    } else {
-      // dashboard fallback where val itself is meta
-      const meta = val;
-      console.log(`💰 ${sym}: ${meta.price} USD`);
-      console.log(`📈 High24h: ${meta.high24h}, Low24h: ${meta.low24h}`);
-      console.log(`🔄 Change: ${meta.changePercent}%, Volume: ${meta.volume}`);
+
+    const meta = val.meta || {};
+    console.log(`💰 ${symbol.toUpperCase()}`);
+    console.log(`📈 High24h: ${meta.high24h ?? 'N/A'}, Low24h: ${meta.low24h ?? 'N/A'}`);
+    console.log(`🔄 Change: ${meta.changePercent ?? 'N/A'}% , Volume: ${meta.volume ?? 'N/A'}`);
+    console.log(`💹 Market Cap: ${meta.marketCap ?? 'N/A'}, Circulating Supply: ${meta.circulatingSupply ?? 'N/A'}`);
+    if (val.orderBook) {
+      console.log("📝 Order Book Bids:", val.orderBook.bids);
+      console.log("📝 Order Book Asks:", val.orderBook.asks);
     }
+    console.log('-------------------------------');
   }
 }
 
+// ==================
+// Main Listener
+// ==================
 socket.on("cryptoData", (data) => {
-  // Accept both shapes:
-  // 1) single symbol object: { symbol, price, ... }
-  // 2) map: { BTCUSDT: { meta: {...}, orderBook: {...} }, ... } or { BTCUSDT: meta, ... }
+  if (!data) return;
 
-  if (!data) return console.warn('Received empty cryptoData');
-
+  // single symbol (chart)
   if (data.symbol) {
-    // single-symbol object
     return handleSingleSymbol(data);
   }
 
-  if (typeof data === 'object') {
+  // map payload (dashboard / multi)
+  if (typeof data === "object") {
     return handleMapPayload(data);
   }
 
-  console.warn('Unknown cryptoData shape:', data);
+  console.warn("⚠️ Unknown cryptoData shape:", data);
 });
 
 socket.on("disconnect", () => {
