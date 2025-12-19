@@ -4,7 +4,6 @@ const axios = require('axios');
 const router = express.Router();
 
 const GNEWS_API_KEY = '762f04f672b496f842fefa4e61f5ff49';
-
 exports.getNews = async (req, res) => {
   try {
     const topic =
