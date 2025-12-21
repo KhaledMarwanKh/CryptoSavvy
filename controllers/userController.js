@@ -3,9 +3,9 @@ const jwt = require("jsonwebtoken");
 const catchasync = require("../utils/catchasync");
 const AppError = require("../utils/appError");
 
-const cloudinary= require('cloudinary').v2
-const apiFeatures =require('../utils/apiFeatures')
-const sendEmail =require('../utils/email')
+const cloudinary = require('cloudinary').v2
+const apiFeatures = require('../utils/apiFeatures')
+const sendEmail = require('../utils/email')
 
 
 
@@ -37,28 +37,28 @@ const generatetoken = (id) =>
       expiresIn: process.env.JWT_EXPIRES_IN,
     }
   );
-  
-  const uploadAndDelete = async (file) => {
-    const filePath = path.resolve(file.path);
-  
-    const result = await cloudinary.uploader.upload(filePath, {
-      resource_type: "auto",
-    });
-  
-    fs.unlinkSync(filePath); // حذف الملف بعد رفعه
-    return result.secure_url;
-  };
-  exports.logout = (req, res,next) => {
-    res.cookie('jwt', 'loggedout', {
-      httpOnly: true,
-      expires: new Date(Date.now() + 10 * 1000)
-    });
-  
-    res.status(200).json({
-      status: 'success',
-      message: 'logout successfly'
-    });
-  };exports.signup = catchasync(async (req, res, next) => {
+
+const uploadAndDelete = async (file) => {
+  const filePath = path.resolve(file.path);
+
+  const result = await cloudinary.uploader.upload(filePath, {
+    resource_type: "auto",
+  });
+
+  fs.unlinkSync(filePath); // حذف الملف بعد رفعه
+  return result.secure_url;
+};
+exports.logout = (req, res, next) => {
+  res.cookie('jwt', 'loggedout', {
+    httpOnly: true,
+    expires: new Date(Date.now() + 10 * 1000)
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'logout successfly'
+  });
+}; exports.signup = catchasync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
   // إنشاء المستخدم الجديد
@@ -105,22 +105,22 @@ const generatetoken = (id) =>
 
   // createSendToken(newUser, 201, res);
 });
-exports.successSingnUp =catchasync (async (req, res, next) => {
-const resetCode = req.body.code;
-const { email } = req.body;
+exports.successSingnUp = catchasync(async (req, res, next) => {
+  const resetCode = req.body.code;
+  const { email } = req.body;
   let user = await userModel.findOne({
     email,
     resetCode: resetCode,
     resetCodeExpires: { $gt: Date.now() },
-  });   
+  });
   if (!user) {
     return next(new AppError("الرمز غير صحيح أو منتهي الصلاحية", 400));
-  } 
+  }
   user.resetCode = undefined;
-  user.resetCodeExpires = undefined;  
+  user.resetCodeExpires = undefined;
   user.activate = true;
   await user.save({ validateBeforeSave: false });
-  createSendToken(user, 200, res);  
+  createSendToken(user, 200, res);
 
 })
 exports.login = catchasync(async (req, res, next) => {
@@ -133,13 +133,13 @@ exports.login = catchasync(async (req, res, next) => {
   let user;
   let userType;
 
-  user = await userModel.findOne({ email,activeate:true}).select("+password");
-  
+  user = await userModel.findOne({ email, activate: true }).select("+password");
+
   if (!user) {
     return next(new AppError("Incorrect email or password", 401));
   }
   const correct = await user.correctpassword(password, user.password);
-  
+
 
   if (!correct) {
     return next(new AppError("Incorrect email or password", 401));
@@ -157,17 +157,17 @@ exports.getProfile = catchasync(async (req, res, next) => {
   res.json({ status: "success", data: userdata });
 });
 exports.updateProfile = catchasync(async (req, res, next) => {
-  let imageUrl=""
+  let imageUrl = ""
   const { userid, name } = req.body;
   const updateData = {};
-  
+
   if (name) updateData.name = name;
-  
+
   await userModel.findByIdAndUpdate(userid, updateData);
 
-res.status(200).json({
-  status:"success",
-  message :"updated data"
-})
+  res.status(200).json({
+    status: "success",
+    message: "updated data"
+  })
 });
 

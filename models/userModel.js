@@ -1,12 +1,23 @@
 const mongoose = require('mongoose')
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-const crypto =require('crypto')
+const crypto = require('crypto')
 
 
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: [true, "please provide your name"],
+    },
+    email: {
+      type: String,
+      required: [true, "please provide your email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "please provide a valid email"],
+    },
     password: {
       type: String,
       minlength: 8,
@@ -24,13 +35,13 @@ const userSchema = new mongoose.Schema(
     },
     resetCode: String,
     resetCodeExpires: Date,
-  activate: {
-    type: Boolean,
-    default: false,
-  }
-
-},
-  {timestamps:true}
+    activate: {
+      type: Boolean,
+      default: false,
+    },
+    passwordChangedAt: Date,
+  },
+  { timestamps: true }
 );
 
 userSchema.pre("save", async function (next) {
@@ -68,13 +79,13 @@ userSchema.pre("save", async function (next) {
   next();
 });
 userSchema.methods.createPasswordResetCode = function () {
-  const resetCode = Math.floor(100000 + Math.random() * 900000).toString(); 
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   this.resetCode = resetCode;
-  this.resetCodeExpires = Date.now() + 10 * 60 * 1000; 
+  this.resetCodeExpires = Date.now() + 10 * 60 * 1000;
 
   return resetCode;
 };
-const userModel=mongoose.model('user',userSchema)
+const userModel = mongoose.model('user', userSchema)
 
-module.exports=userModel
+module.exports = userModel
