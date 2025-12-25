@@ -26,7 +26,7 @@ const globalError = require("./controllers/errorController");
 const userRoute = require("./routes/userRoute");
 const cryptoHistoryRoute = require("./routes/cryptoRoute");
 const newsRoute = require("./routes/newsRoute");
-
+const currencyRoute = require("./routes/currencyRoutes");
 // =====================
 // Environment Configuration
 // =====================
@@ -100,7 +100,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoute);
 app.use("/api/crypto", cryptoHistoryRoute);
 app.use("/api/news", newsRoute);
-
+app.use("/api/currency",currencyRoute)
 // =====================
 // Unhandled Routes
 // =====================
