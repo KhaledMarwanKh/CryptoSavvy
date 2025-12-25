@@ -1,4 +1,4 @@
-# CryptoSavvy | Backend & AI API Specification
+# CryptoSavvy | Backend 
 
 ## 🏗️ System Architecture Overview
 CryptoSavvy implements a high-performance, distributed architecture designed for real-time market analysis and predictive modeling.
