@@ -8,7 +8,7 @@
     "start:nodemon": "nodemon server.js",
     "dev": "NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js",
-    "postinstall": "npx playwright install"
+  "postinstall": "npx playwright install chromium"
   },
   "keywords": [],
   "author": "",
