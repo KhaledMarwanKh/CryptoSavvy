@@ -8,8 +8,8 @@ const socket = io("http://localhost:4000");
 // Pagination State
 // ==================
 let currentPage = 1;
-const pageSize = 5; // عدد العملات بكل صفحة
-const mode = "dashboard"; // dashboard | chart
+const pageSize = 2; // عدد العملات بكل صفحة
+const mode = "chart"; // dashboard | chart
 
 // ==================
 // Helpers
@@ -61,15 +61,13 @@ function prevPage() {
 // ==================
 function handleSingleSymbol(data) {
   console.log(`💰 ${data.symbol}`);
+  console.log(`💵 Price: ${data.price ?? 'N/A'}`);
   console.log(`📈 High24h: ${data.high24h ?? 'N/A'}, Low24h: ${data.low24h ?? 'N/A'}`);
   console.log(`🔄 Change: ${data.changePercent ?? 'N/A'}% , Volume: ${data.volume ?? 'N/A'}`);
   console.log(`💹 Market Cap: ${data.marketCap ?? 'N/A'}, Circulating Supply: ${data.circulatingSupply ?? 'N/A'}`);
-  if (data.orderBook) {
-    console.log("📝 Order Book Bids:", data.orderBook.bids);
-    console.log("📝 Order Book Asks:", data.orderBook.asks);
-  }
   console.log('-------------------------------');
 }
+
 
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {

@@ -20,7 +20,7 @@ const { Server } = require("socket.io");
 // =====================
 // Local Imports
 // =====================
-const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoSocket");
+const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoRestApi");
 const appError = require("./utils/appError");
 const globalError = require("./controllers/errorController");
 const userRoute = require("./routes/userRoute");
