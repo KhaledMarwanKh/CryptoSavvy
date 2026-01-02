@@ -1,4 +1,3 @@
-// client.js
 const { io } = require("socket.io-client");
 
 // الاتصال بالسيرفر
@@ -22,22 +21,10 @@ function sendDashboardState() {
   });
 }
 
-// ==================
-// Socket Events
-// ==================
-socket.on("connect", () => {
-  console.log("✅ Connected to server");
-
-  if (mode === "dashboard") {
-    sendDashboardState();
-  }
-
-  if (mode === "chart") {
-    // اشترك برمز واحد (مثال: BTCUSDT)
-    socket.emit("setMode", { mode: "chart" });
-    socket.emit("subscribe", "BTCUSDT");
-  }
-});
+function subscribeSymbols(symbols = []) {
+  socket.emit("setMode", { mode: "chart" });
+  symbols.forEach(s => socket.emit("subscribe", s.toUpperCase()));
+}
 
 // ==================
 // Pagination Controls
@@ -65,44 +52,48 @@ function handleSingleSymbol(data) {
   console.log(`📈 High24h: ${data.high24h ?? 'N/A'}, Low24h: ${data.low24h ?? 'N/A'}`);
   console.log(`🔄 Change: ${data.changePercent ?? 'N/A'}% , Volume: ${data.volume ?? 'N/A'}`);
   console.log(`💹 Market Cap: ${data.marketCap ?? 'N/A'}, Circulating Supply: ${data.circulatingSupply ?? 'N/A'}`);
+  if (data.orderBook) {
+    console.log("📝 Order Book Bids:", data.orderBook.bids);
+    console.log("📝 Order Book Asks:", data.orderBook.asks);
+  }
   console.log('-------------------------------');
 }
-
 
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
 
-    const meta = val.meta || {};
+    // إذا البيانات داخل meta كما أرسل السيرفر
+    const meta = val.meta || val;
+
     console.log(`💰 ${symbol.toUpperCase()}`);
+    console.log(`💵 Price: ${meta.price ?? 'N/A'}`);
     console.log(`📈 High24h: ${meta.high24h ?? 'N/A'}, Low24h: ${meta.low24h ?? 'N/A'}`);
     console.log(`🔄 Change: ${meta.changePercent ?? 'N/A'}% , Volume: ${meta.volume ?? 'N/A'}`);
     console.log(`💹 Market Cap: ${meta.marketCap ?? 'N/A'}, Circulating Supply: ${meta.circulatingSupply ?? 'N/A'}`);
-    if (val.orderBook) {
-      console.log("📝 Order Book Bids:", val.orderBook.bids);
-      console.log("📝 Order Book Asks:", val.orderBook.asks);
+    if (meta.orderBook) {
+      console.log("📝 Order Book Bids:", meta.orderBook.bids);
+      console.log("📝 Order Book Asks:", meta.orderBook.asks);
     }
     console.log('-------------------------------');
   }
 }
 
 // ==================
-// Main Listener
+// Socket Events
 // ==================
+socket.on("connect", () => {
+  console.log("✅ Connected to server");
+
+  if (mode === "dashboard") sendDashboardState();
+  if (mode === "chart") subscribeSymbols(["BTCUSDT"]);
+});
+
 socket.on("cryptoData", (data) => {
   if (!data) return;
 
-  // single symbol (chart)
-  if (data.symbol) {
-    return handleSingleSymbol(data);
-  }
-
-  // map payload (dashboard / multi)
-  if (typeof data === "object") {
-    return handleMapPayload(data);
-  }
-
-  console.warn("⚠️ Unknown cryptoData shape:", data);
+  // chart أو dashboard
+  handleMapPayload(data);
 });
 
 socket.on("disconnect", () => {
