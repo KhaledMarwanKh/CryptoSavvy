@@ -19,10 +19,10 @@ const CRYPTO_SYMBOLS = [
   "xrpusdt",
   "bnbusdt",
   "dogeusdt",
-  "avaxusdt",
-  "linkusdt",
-  "maticusdt",
-  "dotusdt",
+  "avaxusdt"
+  // "linkusdt",
+  // "maticusdt",
+  // "dotusdt",
 ];
 
 const COINGECKO_MAP = {
@@ -34,10 +34,10 @@ const COINGECKO_MAP = {
   XRPUSDT: "ripple",
   BNBUSDT: "binancecoin",
   DOGEUSDT: "dogecoin",
-  AVAXUSDT: "avalanche-2",
-  LINKUSDT: "chainlink",
-  MATICUSDT: "matic-network",
-  DOTUSDT: "polkadot",
+  AVAXUSDT: "avalanche-2"
+  // LINKUSDT: "chainlink",
+  // MATICUSDT: "matic-network",
+  // DOTUSDT: "polkadot",
 };
 
 // ==================== HELPER FUNCTIONS ====================
@@ -184,12 +184,21 @@ async function startCryptoSocket(io, userSubscriptions) {
 
         const [symbol] = entry;
         marketData[symbol] = {
-          ...(marketData[symbol] || {}),
-          marketCap: item.market_cap ?? null,
-          circulatingSupply: item.circulating_supply ?? null,
-          totalSupply: item.total_supply ?? null,
-          cg_last_updated: item.last_updated ?? null,
-        };
+  ...(marketData[symbol] || {}),
+  marketCap: item.market_cap ?? null,
+  circulatingSupply: item.circulating_supply ?? null,
+  totalSupply: item.total_supply ?? null,
+
+  coin: {
+    id: item.id,
+    name: item.name,                 // ⭐ اسم العملة
+    symbol: item.symbol.toUpperCase(), // ⭐ BTC
+    logo: item.image,                // ⭐ رابط الصورة
+  },
+
+  cg_last_updated: item.last_updated ?? null,
+};
+
         changedSymbols.add(symbol);
       });
 
@@ -336,6 +345,8 @@ async function startCryptoSocket(io, userSubscriptions) {
       toSend[symbol] = {
         meta: {
           symbol,
+          baseSymbol: data.coin?.symbol ?? null,
+          logo: data.coin?.logo ?? null,
           price: Number(data.price || NaN),
           high24h: Number(data.high24h || NaN),
           low24h: Number(data.low24h || NaN),
@@ -390,26 +401,47 @@ async function startCryptoSocket(io, userSubscriptions) {
           });
 
           io.to(socketId).emit("cryptoData", payload);
-        } else if (mode === "chart") {
-          const normalized = Array.isArray(userSymbols)
-            ? userSymbols.map((s) => s.toUpperCase()).filter(Boolean)
-            : [];
-          if (normalized.length === 0) continue;
+      } else if (mode === "chart") {
+  const normalized = Array.isArray(userSymbols)
+    ? userSymbols.map((s) => s.toUpperCase()).filter(Boolean)
+    : [];
+  if (normalized.length === 0) continue;
 
-          if (normalized.length === 1 && toSend[normalized[0]]) {
-            io.to(socketId).emit("cryptoData", {
-              ...toSend[normalized[0]].meta,
-              orderBook: toSend[normalized[0]].orderBook,
-            });
-          } else {
-            const payload = Object.fromEntries(
-              normalized.filter((s) => toSend[s]).map((s) => [s, toSend[s]])
-            );
-            if (Object.keys(payload).length) {
-              io.to(socketId).emit("cryptoData", payload);
-            }
+  const payload = {};
+  for (const sym of normalized) {
+    if (!marketData[sym]) continue;
+
+    payload[sym] = {
+      meta: {
+        symbol: sym,
+        baseSymbol: data.coin?.symbol ?? null,
+        logo: data.coin?.logo ?? null,
+        price: marketData[sym].price ?? null,
+        high24h: marketData[sym].high24h ?? null,
+        low24h: marketData[sym].low24h ?? null,
+        volume: marketData[sym].volume ?? null,
+        changePercent: marketData[sym].changePercent ?? null,
+        marketCap: marketData[sym].marketCap ?? null,
+        circulatingSupply: marketData[sym].circulatingSupply ?? null,
+        lastUpdate:
+          marketData[sym].lastTickerUpdate ||
+          marketData[sym].cg_last_updated ||
+          new Date().toISOString(),
+      },
+      orderBook: marketData[sym].orderBook
+        ? {
+            bids: marketData[sym].orderBook.bids.slice(0, 20),
+            asks: marketData[sym].orderBook.asks.slice(0, 20),
           }
-        } else {
+        : null,
+    };
+  }
+
+  if (Object.keys(payload).length) {
+    io.to(socketId).emit("cryptoData", payload);
+  }
+}
+ else {
           // Default mode: send all changed data
           io.to(socketId).emit("cryptoData", toSend);
         }

@@ -31,10 +31,10 @@ exports.getNews = catchasync(async (req, res, next) => {
   if (sources) params.sources = sources;
   if (inTitle) params.in = "title";
 
-  const response = await axios.get("https://gnews.io/api/v4/top-headlines", {
+  const response = await axios.get("https://gnews.io/api/v4/search", {
     params,
   });
-
+ 
   // فلترة المكرر
   let articles = response.data.articles.map((article) => ({
     title: article.title,

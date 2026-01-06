@@ -10,22 +10,23 @@ const RECONNECT_BASE_DELAY = 1000;
 const RECONNECT_MAX_ATTEMPTS = 6;
 
 const CRYPTO_SYMBOLS = [
-  "btcusdt","ethusdt","solusdt","adausdt","xrpusdt",
-  "bnbusdt","dogeusdt","avaxusdt","linkusdt","maticusdt","dotusdt"
+  "btcusdt","ethusdt"
+  //,"solusdt","adausdt","xrpusdt",
+  //"bnbusdt","dogeusdt","avaxusdt","linkusdt","maticusdt","dotusdt"
 ];
 
 const COINGECKO_MAP = {
   BTCUSDT: "bitcoin",
   ETHUSDT: "ethereum",
-  SOLUSDT: "solana",
-  ADAUSDT: "cardano",
-  XRPUSDT: "ripple",
-  BNBUSDT: "binancecoin",
-  DOGEUSDT: "dogecoin",
-  AVAXUSDT: "avalanche-2",
-  LINKUSDT: "chainlink",
-  MATICUSDT: "matic-network",
-  DOTUSDT: "polkadot",
+  // SOLUSDT: "solana",
+  // ADAUSDT: "cardano",
+  // XRPUSDT: "ripple",
+  // BNBUSDT: "binancecoin",
+  // DOGEUSDT: "dogecoin",
+  // AVAXUSDT: "avalanche-2",
+  // LINKUSDT: "chainlink",
+  // MATICUSDT: "matic-network",
+  // DOTUSDT: "polkadot",
 };
 
 // ==================== HELPERS ====================

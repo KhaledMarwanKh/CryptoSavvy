@@ -20,13 +20,15 @@ const { Server } = require("socket.io");
 // =====================
 // Local Imports
 // =====================
-const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoRestApi");
+const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoSocket");
 const appError = require("./utils/appError");
 const globalError = require("./controllers/errorController");
 const userRoute = require("./routes/userRoute");
 const cryptoHistoryRoute = require("./routes/cryptoRoute");
 const newsRoute = require("./routes/newsRoute");
 const currencyRoute = require("./routes/currencyRoutes");
+const { startAutoFetch } = require("./services/sypService");
+startAutoFetch()
 // =====================
 // Environment Configuration
 // =====================

@@ -8,7 +8,7 @@ const socket = io("http://localhost:4000");
 // ==================
 let currentPage = 1;
 const pageSize = 2; // عدد العملات بكل صفحة
-const mode = "chart"; // dashboard | chart
+const mode = "dashboard"; // dashboard | chart
 
 // ==================
 // Helpers
@@ -17,13 +17,13 @@ function sendDashboardState() {
   socket.emit("setMode", {
     mode: "dashboard",
     page: currentPage,
-    pageSize
+    pageSize,
   });
 }
 
 function subscribeSymbols(symbols = []) {
   socket.emit("setMode", { mode: "chart" });
-  symbols.forEach(s => socket.emit("subscribe", s.toUpperCase()));
+  symbols.forEach((s) => socket.emit("subscribe", s.toUpperCase()));
 }
 
 // ==================
@@ -47,37 +47,59 @@ function prevPage() {
 // Data Handlers
 // ==================
 function handleSingleSymbol(data) {
+    console.log(`💰 ${data.logo}`);
+  console.log(`💰 ${data.baseSymbol}`);
+
   console.log(`💰 ${data.symbol}`);
-  console.log(`💵 Price: ${data.price ?? 'N/A'}`);
-  console.log(`📈 High24h: ${data.high24h ?? 'N/A'}, Low24h: ${data.low24h ?? 'N/A'}`);
-  console.log(`🔄 Change: ${data.changePercent ?? 'N/A'}% , Volume: ${data.volume ?? 'N/A'}`);
-  console.log(`💹 Market Cap: ${data.marketCap ?? 'N/A'}, Circulating Supply: ${data.circulatingSupply ?? 'N/A'}`);
+  console.log(`💵 Price: ${data.price ?? "N/A"}`);
+  console.log(
+    `📈 High24h: ${data.high24h ?? "N/A"}, Low24h: ${data.low24h ?? "N/A"}`
+  );
+  console.log(
+    `🔄 Change: ${data.changePercent ?? "N/A"}% , Volume: ${data.volume ?? "N/A"}`
+  );
+  console.log(
+    `💹 Market Cap: ${data.marketCap ?? "N/A"}, Circulating Supply: ${data.circulatingSupply ?? "N/A"}`
+  );
   if (data.orderBook) {
     console.log("📝 Order Book Bids:", data.orderBook.bids);
     console.log("📝 Order Book Asks:", data.orderBook.asks);
   }
-  console.log('-------------------------------');
+  console.log("-------------------------------");
 }
 
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
+console.log(`💰 ${map}`);
 
-    // إذا البيانات داخل meta كما أرسل السيرفر
-    const meta = val.meta || val;
-
+    const meta = val.meta;
+    const orderBook = val.orderBook;
+console.log(`💰 ${meta.logo}`);
+  console.log(`💰 ${meta.baseSymbol}`);
     console.log(`💰 ${symbol.toUpperCase()}`);
-    console.log(`💵 Price: ${meta.price ?? 'N/A'}`);
-    console.log(`📈 High24h: ${meta.high24h ?? 'N/A'}, Low24h: ${meta.low24h ?? 'N/A'}`);
-    console.log(`🔄 Change: ${meta.changePercent ?? 'N/A'}% , Volume: ${meta.volume ?? 'N/A'}`);
-    console.log(`💹 Market Cap: ${meta.marketCap ?? 'N/A'}, Circulating Supply: ${meta.circulatingSupply ?? 'N/A'}`);
-    if (meta.orderBook) {
-      console.log("📝 Order Book Bids:", meta.orderBook.bids);
-      console.log("📝 Order Book Asks:", meta.orderBook.asks);
+    console.log(`💵 Price: ${meta.price ?? "N/A"}`);
+    console.log(
+      `📈 High24h: ${meta.high24h ?? "N/A"}, Low24h: ${meta.low24h ?? "N/A"}`
+    );
+    console.log(
+      `🔄 Change: ${meta.changePercent ?? "N/A"}% , Volume: ${meta.volume ?? "N/A"}`
+    );
+    console.log(
+      `💹 Market Cap: ${meta.marketCap ?? "N/A"}, Circulating Supply: ${meta.circulatingSupply ?? "N/A"}`
+    );
+
+    if (orderBook) {
+      console.log("📝 Order Book Bids:", orderBook.bids);
+      console.log("📝 Order Book Asks:", orderBook.asks);
+    } else {
+      console.log("⚠️ Order Book not available yet");
     }
-    console.log('-------------------------------');
+
+    console.log("-------------------------------");
   }
 }
+
 
 // ==================
 // Socket Events
