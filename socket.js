@@ -7,7 +7,7 @@ const socket = io("http://localhost:4000");
 // Pagination State
 // ==================
 let currentPage = 1;
-const pageSize = 2; // عدد العملات بكل صفحة
+const pageSize = 5; // عدد العملات بكل صفحة
 const mode = "dashboard"; // dashboard | chart
 
 // ==================
@@ -47,7 +47,7 @@ function prevPage() {
 // Data Handlers
 // ==================
 function handleSingleSymbol(data) {
-    console.log(`💰 ${data.logo}`);
+  console.log(`💰 ${data.logo}`);
   console.log(`💰 ${data.baseSymbol}`);
 
   console.log(`💰 ${data.symbol}`);
@@ -71,12 +71,10 @@ function handleSingleSymbol(data) {
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
-console.log(`💰 ${map}`);
 
     const meta = val.meta;
     const orderBook = val.orderBook;
-console.log(`💰 ${meta.logo}`);
-  console.log(`💰 ${meta.baseSymbol}`);
+    console.log(`💰 ${meta.index}`);
     console.log(`💰 ${symbol.toUpperCase()}`);
     console.log(`💵 Price: ${meta.price ?? "N/A"}`);
     console.log(
@@ -99,7 +97,6 @@ console.log(`💰 ${meta.logo}`);
     console.log("-------------------------------");
   }
 }
-
 
 // ==================
 // Socket Events
