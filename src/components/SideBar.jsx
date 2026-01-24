@@ -22,7 +22,7 @@ const SideBar = ({ open, setOpen }) => {
         document.addEventListener("mousedown", handleClickOutSide);
 
         return () => document.removeEventListener('mousedown', handleClickOutSide);
-    }, [])
+    }, []);
 
     return (
         <div ref={ref} className={`w-[250px] h-[90%] absolute z-50 bg-[#0f1115] px-3 py-4 flex flex-col justify-between sidebar ${open ? 'left-0' : 'left-[-250px]'} transition-all duration-150 rounded`}>
