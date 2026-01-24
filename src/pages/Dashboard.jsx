@@ -1,13 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowUp, ArrowDown, ArrowUpDown, DollarSign, LayoutGrid, BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
-import { cryptoList as cryptoData, FIAT_RATES, formatCurrency, NEWS_HEADLINES } from '../data/cryptoData';
+import { DollarSign, LayoutGrid, BarChart3, TrendingUp, TrendingDown, FilterIcon } from 'lucide-react';
+import { FIAT_RATES, formatLargeNumbers } from '../data/cryptoData';
 import { useNavigate } from 'react-router';
 import CurrencyConverter from '../components/CurrencyConventor';
-import SortableHeader from '../components/SortableHeader';
 import NewsTicker from '../components/NewsTricker';
 import StatCard from '../components/StatCard';
 import { formatLargeNumber } from '../data/cryptoData';
 import { FaSearch } from 'react-icons/fa';
+import FilterDialog from '../components/FilterDialog';
+import { getFilteredData } from '../data/component-functions';
+import { io } from 'socket.io-client';
 
 const ChangePill = ({ change }) => {
   const isPositive = change >= 0;
@@ -24,69 +26,145 @@ const ChangePill = ({ change }) => {
 };
 
 const Dashboard = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [crypto, setCrypto] = useState([]);
+  const [filterConfig, setFilterConfig] = useState({
+    applyFilters: false,
+    volume: {
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY
+    },
+    marketCap: {
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY
+    },
+    price: {
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY
+    },
+  })
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'rank', direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'index', direction: 'asc' });
   const navigate = useNavigate();
-
-  // Function to handle sorting
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    } else if (sortConfig.key === key && sortConfig.direction === 'desc') {
-      direction = 'asc';
-    }
-    setSortConfig({ key, direction });
-  };
 
   // --- Calculations for Stat Cards ---
   const totalCoins = crypto.length;
 
-  const totalMarketCap = useMemo(() =>
-    crypto.reduce((sum, crypto) => sum + crypto.marketCap, 0), [crypto]
-  );
+  const totalMarketCap = useMemo(() => {
+    if (crypto) {
+      return crypto?.reduce((sum, crypto) => sum + crypto?.marketCap, 0)
+    }
 
-  const totalVolume = useMemo(() =>
-    crypto.reduce((sum, crypto) => sum + crypto.volume, 0), [crypto]
+    return 0;
+  }, [crypto]);
+
+  const totalVolume = useMemo(() => {
+    if (crypto) {
+      return crypto?.reduce((sum, crypto) => sum + crypto?.volume, 0)
+    }
+
+    return 0;
+  }, [crypto]
+
   );
 
   // Filter and sort data logic
   const filteredAndSortedData = useMemo(() => {
-    let sortableData = [...crypto];
 
-    if (searchTerm !== '') {
-      const lowerCaseSearch = searchTerm.toLowerCase();
-      sortableData = sortableData.filter(crypto =>
-        crypto.name.toLowerCase().includes(lowerCaseSearch) ||
-        crypto.symbol.toLowerCase().includes(lowerCaseSearch)
-      );
+    if (crypto) {
+      return getFilteredData(searchTerm, sortConfig, crypto, filterConfig);
     }
 
-    if (sortConfig.key) {
-      sortableData.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
+    return [];
 
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+  }, [searchTerm, sortConfig, crypto, filterConfig]);
 
-    return sortableData;
-  }, [searchTerm, sortConfig, crypto]);
+  const socket = io("https://lounge-producing-electron-one.trycloudflare.com/");
 
   useEffect(() => {
-    setCrypto(cryptoData);
-  }, []);
+    setIsLoading(true);
+
+    socket.connect("connect", () => {
+      console.log("ON");
+    })
+
+    socket.emit("setMode", {
+      mode: "dashboard",
+      page: currentPage,
+      pageSize: pageSize
+    })
+
+    socket.on("cryptoData", (data) => {
+      if (!data) {
+        setCrypto([]);
+      }
+
+      const newData = Object.values(data).map(value => value.meta);
+
+      if (isLoading) {
+        setCrypto(newData)
+      } else {
+        if (newData?.length < filteredAndSortedData?.length) {
+          const updatedData = filteredAndSortedData.map((crypto) => {
+            const updatedItem = newData.filter(newCrypto => newCrypto.symbol === crypto.symbol)[0];
+
+            if (updatedItem) {
+              return updatedItem;
+            } else {
+              return crypto;
+            }
+
+          });
+
+          setCrypto(updatedData);
+        } else {
+          setCrypto(newData);
+        }
+
+      }
+
+      setIsLoading(false);
+    })
+
+    setTimeout(() => {
+      setIsLoading(false);
+      setCrypto([
+        {
+          "index": "1",
+          "baseSymbol": "BTC",
+          "symbol": "Bitcoin",
+          "price": 67234.50,
+          "change24h": 2.45,
+          "low24h": 2000,
+          "high24h": 3000,
+          "circulatingSupply": 3000,
+          "marketCap": 1320000000000,
+          "volume": 32000000000,
+          "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+        },
+        {
+          "index": "2",
+          "baseSymbol": "BTC",
+          "symbol": "Bitcoin",
+          "price": 5050000,
+          "change24h": 2.00,
+          "low24h": 2001,
+          "high24h": 300,
+          "circulatingSupply": 3000,
+          "marketCap": 13200000,
+          "volume": 320000,
+          "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+        },
+      ])
+    }, 3000)
+
+
+  }, [pageSize, currentPage]);
 
   return (
-    <div className="min-h-screen bg-[#0f121a] rounded p-4 sm:p-8 font-inter fade-in animate-in">
+    <div className="overflow-y-scroll bg-[#0f121a] rounded p-4 sm:p-8 font-inter fade-in animate-in relative">
       <div className="max-w-7xl mx-auto">
 
         {/* --- NEW: Stat Cards Grid (Responsive) --- */}
@@ -120,21 +198,32 @@ const Dashboard = () => {
         {/* --- END Stat Cards Grid --- */}
 
         {/* Main Content Layout: Table + Aside */}
-        <div className="grid grid-cols-1 xl:grid-cols-[4fr_2fr] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[4fr_2fr] gap-8">
 
           {/* 1. Main Table Section */}
           <div className="w-full">
-            <div className="shadow-2xl rounded-xl overflow-scroll border border-gray-800 h-[70vh] md:h-[109vh] px-3 bg-[#0f1115]">
+            <div className="shadow-2xl rounded-xl overflow-scroll border border-gray-800 h-[70vh] md:h-[130vh] px-3 bg-[#0f1115]">
               {/* Search Bar */}
-              <div className="my-4 relative">
-                <FaSearch className='absolute opacity-25 right-3 text-xl top-[50%] translate-y-[-50%]' />
-                <input
-                  type="text"
-                  placeholder="Search by name or symbol..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-5 py-3 bg-[#0f1115] border border-gray-700 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left outline-none text-[0.7rem] sm:text-[1rem]"
-                />
+              <div className="my-4 flex gap-2">
+                <div className='relative grow'>
+                  <FaSearch className='absolute opacity-25 right-3 text-xl top-[50%] translate-y-[-50%]' />
+                  <input
+                    type="text"
+                    placeholder="Search by name or symbol..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-5 py-3 bg-gray-700 border border-gray-700 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left outline-none text-[0.7rem] sm:text-[1rem]"
+                  />
+                </div>
+
+                <button className='p-3 bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors duration-150' onClick={() => setFilterConfig((prev) => ({ ...prev, applyFilters: true }))}>
+                  <FilterIcon className='w-4 h-4' />
+                </button>
+              </div>
+
+              <div className='flex items-center  justify-between'>
+                <button disabled={isLoading} onClick={() => setCurrentPage(currentPage + 1)} className={`w-[100px] py-2 my-2 ${isLoading || currentPage === 1 ? "bg-gray-600 pointer-events-none" : "bg-blue-600"} rounded-lg active:bg-gray-700 transition-all duration-100`}>Previous</button>
+                <button disabled={isLoading} onClick={() => setCurrentPage(currentPage - 1)} className={`w-[100px] py-2 my-2 ${isLoading ? "bg-gray-600 pointer-events-none" : "bg-blue-600"} rounded-lg active:bg-gray-700 transition-all duration-100`}>Next</button>
               </div>
 
               <table className="w-full text-sm text-left text-gray-400">
@@ -142,138 +231,146 @@ const Dashboard = () => {
                 {/* Table Header */}
                 <thead className="text-xs uppercase bg-[#0f1115] text-gray-400 border-b border-gray-700 sticky top-0">
                   <tr>
-                    {/* Rank */}
                     <th
                       scope="col"
-                      className="p-4 cursor-pointer text-center select-none"
-                      onClick={() => handleSort('rank')}
+                      className="p-4 text-center select-none"
                     >
-                      <div className="flex items-center justify-center group">
-                        <span>Rank</span>
-                        {sortConfig.key === 'rank' && (
-                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 mr-1 text-white" /> : <ArrowDown className="w-3 h-3 mr-1 text-white" />
-                        )}
-                      </div>
+                      Rank
                     </th>
 
-                    {/* Asset (Name) - Text is left-aligned */}
                     <th
                       scope="col"
-                      className="px-6 py-3 cursor-pointer select-none text-left"
-                      onClick={() => handleSort('name')}
+                      className="px-6 py-3 select-none text-center"
                     >
-                      <div className="flex items-center group">
-                        <span>Asset</span>
-                        {sortConfig.key === 'name' ? (
-                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 mr-1 text-white" /> : <ArrowDown className="w-3 h-3 mr-1 text-white" />
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 mr-1 text-gray-500 group-hover:text-gray-400" />
-                        )}
-                      </div>
+                      Asset
                     </th>
 
-                    {/* Price - Right-aligned numbers */}
-                    <SortableHeader
-                      title="Price"
-                      sortKey="price"
-                      currentSort={sortConfig}
-                      onClick={handleSort}
-                      className="text-right"
-                    />
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      Price
+                    </th>
 
-                    {/* 24h Change - Right-aligned numbers */}
-                    <SortableHeader
-                      title="24h Change"
-                      sortKey="change24h"
-                      currentSort={sortConfig}
-                      onClick={handleSort}
-                      className="text-right"
-                    />
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      24h Change
+                    </th>
 
-                    {/* 7d Change - Right-aligned numbers */}
-                    <SortableHeader
-                      title="7d Change"
-                      sortKey="change7d"
-                      currentSort={sortConfig}
-                      onClick={handleSort}
-                      className="text-right"
-                    />
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      High 24h
+                    </th>
 
-                    {/* Market Cap - Right-aligned numbers */}
-                    <SortableHeader
-                      title="Market Cap"
-                      sortKey="marketCap"
-                      currentSort={sortConfig}
-                      onClick={handleSort}
-                      className="text-right"
-                    />
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      Low 24h
+                    </th>
 
-                    {/* Volume - Right-aligned numbers */}
-                    <SortableHeader
-                      title="Volume (24h)"
-                      sortKey="volume"
-                      currentSort={sortConfig}
-                      onClick={handleSort}
-                      className="text-right"
-                    />
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      Market Cap
+                    </th>
+
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      Volume (24h)
+                    </th>
+
+                    <th
+                      scope="col"
+                      className={`px-6 py-3 select-none whitespace-nowrap text-center`}
+                    >
+                      Circulating Supply
+                    </th>
                   </tr>
                 </thead>
 
                 {/* Table Body */}
                 <tbody>
-                  {filteredAndSortedData.length > 0 ? (
-                    filteredAndSortedData.map((crypto) => (
+                  {filteredAndSortedData?.length > 0 && !isLoading ? (
+                    filteredAndSortedData?.map((crypto) => (
                       <tr
-                        onClick={() => navigate('/coin/' + crypto.id)}
-                        key={crypto.id}
-                        className="bg-[#0f1115]border-b border-gray-800 hover:bg-gray-800 transition duration-150 cursor-pointer"
+                        onClick={() => navigate('/coin/' + crypto?.symbol)}
+                        key={crypto?.symbol}
+                        className="bg-[#0f1115] border-b border-gray-800 hover:bg-gray-800 transition duration-150 cursor-pointer"
                       >
                         {/* Rank */}
                         <td className="p-4 font-semibold text-center text-gray-300">
-                          {crypto.rank}
+                          {crypto?.index}
                         </td>
 
                         {/* Asset Name and Symbol - Left-aligned text */}
                         <th scope="row" className="px-3 py-4 font-medium text-white whitespace-nowrap text-center">
                           <div className="flex items-center">
-                            <img className="w-6 h-6 rounded-full mr-3" src="" alt={`${crypto.name}`} onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/24x24/1F2937/FFFFFF?text=?" }} />
-                            <div className='text-left'>
-                              <p className="text-base text-white font-bold">{crypto.name}</p>
-                              <p className="text-xs text-gray-400">{crypto.symbol}</p>
+                            <img className="w-4 h-4 rounded-full mr-2" src={crypto?.logo} alt={`${crypto?.symbol}`} />
+                            <div className='flex flex-col justify-center'>
+                              <p className="text-xs text-gray-400">{crypto?.symbol}</p>
+                              <p className="text-sm text-gray-300">{crypto?.baseSymbol}</p>
                             </div>
                           </div>
                         </th>
 
                         {/* Price - Right-aligned number */}
                         <td className=" py-4 text-center font-mono text-white">
-                          {formatCurrency(crypto.price)} $
+                          {formatLargeNumber(crypto?.price)}
                         </td>
 
                         {/* 24h Change - Right-aligned number */}
                         <td className="px-6 py-4 text-center">
-                          <ChangePill change={crypto.change24h} />
+                          <ChangePill change={crypto?.changePercent | 0.00} />
                         </td>
 
                         {/* 7d Change - Right-aligned number */}
                         <td className="px-6 py-4 text-center">
-                          <ChangePill change={crypto.change7d} />
+                          {formatLargeNumber(crypto?.high24h)}
+                        </td>
+
+                        <td className="px-6 py-4 text-center">
+                          {formatLargeNumber(crypto?.low24h)}
                         </td>
 
                         {/* Market Cap  */}
                         <td className="px-6 py-4 text-center font-medium text-gray-300">
-                          {formatLargeNumber(crypto.marketCap)}
+                          {formatLargeNumber(crypto?.marketCap)}
                         </td>
 
                         {/* Volume */}
                         <td className="px-6 py-4 text-center text-gray-400">
-                          {formatLargeNumber(crypto.volume)}
+                          {formatLargeNumber(crypto?.volume)}
+                        </td>
+
+                        {/** Circulating Supply */}
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {formatLargeNumbers(crypto?.circulatingSupply)}
                         </td>
                       </tr>
                     ))
+                  ) : searchTerm.trim() === "" && isLoading ? (
+                    <tr>
+                      <td colSpan={9} className="p-8 text-center text-lg text-gray-500">
+
+                        <div className='w-full flex flex-col items-center justify-center gap-2'>
+                          <span className="loading loading-spinner"></span>
+                          Loading
+                        </div>
+
+                      </td>
+                    </tr>
                   ) : (
                     <tr>
-                      <td colSpan="7" className="p-8 text-center text-lg text-gray-500">
-                        No results found for "{searchTerm}"
+                      <td colSpan="9" className="p-8 text-center text-lg text-gray-500">
+                        No results found
                       </td>
                     </tr>
                   )}
@@ -284,11 +381,24 @@ const Dashboard = () => {
 
           {/* 2. Aside Section*/}
           <aside className="block space-y-8 h-full">
-            <NewsTicker headlines={NEWS_HEADLINES} />
-            <CurrencyConverter cryptoList={cryptoData} rates={FIAT_RATES} />
+            <NewsTicker />
+            <CurrencyConverter cryptoList={crypto} rates={FIAT_RATES} />
           </aside>
         </div>
       </div>
+
+      {
+        filterConfig.applyFilters && (
+          <FilterDialog
+            filterConfig={filterConfig}
+            sortConfig={sortConfig}
+            setFilterConfig={setFilterConfig}
+            setSortConfig={setSortConfig}
+          />
+        )
+      }
+
+
     </div>
   );
 };

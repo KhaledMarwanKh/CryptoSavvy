@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { createChart, CrosshairMode } from 'lightweight-charts';
+import { AreaSeries, createChart, CrosshairMode } from 'lightweight-charts';
 
-const ExchangeChart = ({ data, isPositive, baseCurrency, quoteCurrency }) => {
+const ExchangeChart = ({ data, isPositive }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -17,7 +17,9 @@ const ExchangeChart = ({ data, isPositive, baseCurrency, quoteCurrency }) => {
         locale: 'en-US',
       },
       layout: {
-        backgroundColor: 'transparent',
+        background: {
+          color: "transparent"
+        },
         textColor: '#9ca3af',
         fontFamily: 'Inter, sans-serif',
       },
@@ -32,7 +34,7 @@ const ExchangeChart = ({ data, isPositive, baseCurrency, quoteCurrency }) => {
         },
       },
       crosshair: {
-        mode: 1,
+        mode: CrosshairMode.Normal,
       },
       rightPriceScale: {
         borderColor: 'rgba(55, 65, 81, 0.5)',
@@ -60,7 +62,7 @@ const ExchangeChart = ({ data, isPositive, baseCurrency, quoteCurrency }) => {
     chartRef.current = chart;
 
     // Create area series
-    const areaSeries = chart.addAreaSeries({
+    const areaSeries = chart.addSeries(AreaSeries, {
       topColor: 'rgba(6, 182, 212, 0.4)',
       bottomColor: 'rgba(6, 182, 212, 0.0)',
       lineColor: '#06b6d4',

@@ -2,6 +2,7 @@ import navigationRoutes from '../routes/navigationRoutes'
 import { Link, useLocation } from 'react-router'
 import { LogOut, Settings } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { BiPhoneCall, BiQuestionMark } from 'react-icons/bi';
 
 const SideBar = ({ open, setOpen }) => {
     const location = useLocation();
@@ -42,7 +43,7 @@ const SideBar = ({ open, setOpen }) => {
 
 
             <div className='w-full'>
-                {/* <Link onClick={() => {
+                <Link onClick={() => {
                     setOpen(!open);
                 }} to="/about" className={`w-full flex items-center rounded-lg text-nowrap gap-3 mt-2 px-3 py-3 text-[#9CA3AF] ${isActive("/about") ? "bg-[#3B82F6] text-white font-bold" : ""} ${!isActive("/about") ? "hover:bg-slate-700 " : "cursor-default"} transition-all duration-300`}>
                     <BiQuestionMark />
@@ -51,23 +52,22 @@ const SideBar = ({ open, setOpen }) => {
 
                 <Link onClick={() => {
                     setOpen(!open);
-                    setIsLoading(true);
                 }} to="/contact" className={`w-full flex items-center rounded-lg text-nowrap gap-3 mt-2 px-3 py-3 text-[#9CA3AF] ${isActive("/contact") ? "bg-[#3B82F6] text-white font-bold" : ""} ${!isActive("/contact") ? "hover:bg-slate-700 " : "cursor-default"} transition-all duration-300`}>
                     <BiPhoneCall />
                     <span>Contact Us</span>
-                </Link> */}
+                </Link>
 
                 <Link onClick={() => {
                     setOpen(!open);
                 }} to="/settings" className={`w-full flex items-center rounded-lg text-nowrap gap-3 mt-2 px-3 py-3 text-[#9CA3AF] ${isActive("/settings") ? "bg-[#3B82F6] text-white font-bold" : ""} ${!isActive("/settings") ? "hover:bg-slate-700 " : "cursor-default"} transition-all duration-300`}>
-                    <Settings />
+                    <Settings className='w-5 h-5' />
                     <span>Settings</span>
                 </Link>
 
                 <Link onClick={() => {
                     setOpen(!open);
                 }} to="/auth/login" className={`w-full flex items-center rounded-lg text-nowrap gap-3 mt-2 px-3 py-3 text-[#9CA3AF] ${!isActive("login") ? "hover:bg-slate-700 " : "cursor-default"} transition-all duration-300`}>
-                    <LogOut />
+                    <LogOut className='w-5 h-5' />
                     <span>Logout</span>
                 </Link>
             </div>

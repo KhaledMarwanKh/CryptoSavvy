@@ -15,7 +15,7 @@ const CurrencyConverter = ({ cryptoList, rates }) => {
     const convertedValue = (cryptoAmount * cryptoPriceUSD * fiatRate);
 
     return (
-        <div className="bg-[#0f1115] p-5 rounded-xl shadow-lg border border-gray-700 space-y-4">
+        <div className="bg-[#0f1115] flex-grow p-5 rounded-xl shadow-lg border border-gray-700 space-y-4">
             <h2 className="text-lg font-semibold text-white flex items-center border-b border-gray-700 pb-2">
                 <Repeat2 className="w-5 h-5 text-blue-400 mr-2" />
                 Quick Currency Converter
@@ -79,7 +79,7 @@ const CurrencyConverter = ({ cryptoList, rates }) => {
                     {formatCurrency(convertedValue || 0)} {fiatSymbol}
                 </div>
                 <p className="text-xs text-gray-500 mt-1 text-center">
-                    Current Price of {currentCrypto.symbol}: {formatCurrency(cryptoPriceUSD || 0)} $
+                    Current Price of {currentCrypto?.baseSymbol}: {formatCurrency(cryptoPriceUSD || 0)} $
                 </p>
             </div>
         </div>

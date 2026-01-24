@@ -292,13 +292,60 @@ export const FIAT_RATES = {
   SAR: { rate: 3.75, symbol: 'SAR', name: 'Saudi Riyal' },
 };
 
-export const NEWS_HEADLINES = [
-  "Report: Institutional investment in cryptocurrencies hits a new high in the last quarter.",
-  "Bitcoin surpasses analyst expectations, approaching new record highs.",
-  "New Euro-backed stablecoin launches in European markets.",
-  "Trading platforms strengthen cybersecurity measures against increasing breaches.",
-  "Ethereum announces network expansion plan to boost transaction speed.",
-];
+export const newsData = {
+  "status": "success",
+  "count": 10,
+  "articles": [
+    {
+      "title": "Novo imposto sobre renda na Bolsa atrai investidor para ETFs de dividendos; veja o que gestoras e analistas projetam para 2026",
+      "description": "Com proventos de ações taxados, ETFs de dividendos ganham espaço no radar dos investidores. Gestores e analistas explicam se 2026 será o ano dos ETFs de renda e quais produtos podem se destacar.",
+      "url": "https://einvestidor.estadao.com.br/investimentos/etfs-de-dividendos-2026-tributacao-renda-projecoes/",
+      "publishedAt": "2025-12-03T08:30:41Z",
+      "source": "Estadão E-Investidor",
+      "image": "https://einvestidor.estadao.com.br/wp-content/themes/e-investidor/assets/img/card-share-large-1200x631.jpg"
+    },
+    {
+      "title": "Kezdenek megnyugodni a tőzsdék, emelkedik a piac",
+      "description": "Volatilis volt a hangulat az elmúlt napokban.",
+      "url": "https://www.portfolio.hu/uzlet/20251203/kezdenek-megnyugodni-a-tozsdek-emelkedik-a-piac-803710",
+      "publishedAt": "2025-12-03T08:20:00Z",
+      "source": "Portfolio.hu",
+      "image": "https://pcdn.hu/articles/images-xl/g/e/t/gettyimages-1358049866-arfolyam-befektetes-elemzes-gazdasag-grafikon-kereskedes-penzugy-piac-766133.jpg"
+    },
+    {
+      "title": "Akciju cenas Volstrītā pieaug, bet Eiropas biržās mainās bez vienotas tendences",
+      "description": "Dienas Bizness - Uzticamākais Latvijas biznesa ziņu portāls. Viss par biznesa aktualitātēm, svarīgākajiem notikumiem un negaidītākajiem pavērsieniem.",
+      "url": "https://www.db.lv/zinas/akciju-cenas-volstrita-pieaug-bet-eiropas-birzas-mainas-bez-vienotas-tendences-524265",
+      "publishedAt": "2025-12-03T08:01:04Z",
+      "source": "Dienas Bizness",
+      "image": "https://cdntest.db.lv/lvold/1200/2019/articles/2025/12/524265__692fc3e06d5cd.jpg"
+    },
+    {
+      "title": "Chinese scammers deported from Southeast Asia now targeting foreigners",
+      "description": "The rise of so-called “foreigner-butchering” scams, which mimic schemes run in Southeast Asian compounds, has triggered fresh warnings from Chinese officials.",
+      "url": "https://www.channelnewsasia.com/east-asia/china-scammers-deported-southeast-asia-foreigner-butchering-5530201",
+      "publishedAt": "2025-12-03T07:38:57Z",
+      "source": "CNA",
+      "image": "https://dam.mediacorp.sg/image/upload/s--eydMGcBO--/c_fill,g_auto,h_676,w_1200/fl_relative,g_south_east,l_mediacorp:cna:watermark:2023-11:afp_watermark_14112023,w_0.1/f_auto,q_auto/v1/mediacorp/cna/image/2025/12/03/000_36y43fu.jpg?itok=X0dcnj2H"
+    },
+    {
+      "title": "American Bitcoin Corp: Aktie von Eric Trumps Firma stürzt ab",
+      "description": "Die Firma von Donald Trumps Sohn Eric hat an der Börse binnen eines Tages rund eine Milliarde Dollar an Wert verloren. Auch andere Kryptofirmen des Clans kriseln.",
+      "url": "https://www.spiegel.de/wirtschaft/unternehmen/american-bitcoin-corp-aktie-von-eric-trumps-firma-stuerzt-ab-a-88eb8800-d0c3-4819-9166-5945a40ceafa",
+      "publishedAt": "2025-12-03T07:08:00Z",
+      "source": "Spiegel",
+      "image": "https://cdn.prod.www.spiegel.de/images/15d0b60b-8162-4a42-9012-7d6700097087_w1200_r1.778_fpx66.67_fpy50.jpg"
+    },
+    {
+      "title": "Borsa Italiana, il commento della seduta del 3 dicembre 2025",
+      "description": "La cronaca della giornata di Borsa Italiana di oggi, mercoledì 3 dicembre 2025",
+      "url": "https://www.soldionline.it/notizie/azioni-italia/borsa-italiana-commento-giornata-3-dicembre-2025",
+      "publishedAt": "2025-12-03T07:07:00Z",
+      "source": "Soldionline",
+      "image": "https://www.soldionline.it/pictures/2022/03/10/mercato_29.jpeg"
+    },
+  ]
+};
 
 // Support and resistance levels
 export const supportResistanceLevels = {
@@ -351,6 +398,8 @@ export const exchangeRates = {
   AED: 3.67,
   KWD: 0.31,
 };
+
+let i = 400;
 
 // Generate historical data for chart
 export const generateHistoricalData = (baseCurrency, quoteCurrency, interval) => {
@@ -436,14 +485,23 @@ export const formatLargeNumber = (num) => {
   if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
   if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
   if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+  if (num >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'K';
   return '$' + formatCurrency(num);
 };
 
-export function generateChartData(days = 30) {
+export const formatLargeNumbers = (num) => {
+  if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+  if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+  return num;
+};
+
+export function generateChartData(price, days = 30) {
   const data = [];
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
-  let basePrice = 60000 + Math.random() * 10000;
+  let basePrice = price + Math.random() * 10000;
 
   for (let i = days; i >= 0; i--) {
     const time = Math.floor((now - i * dayMs) / 1000);
@@ -614,16 +672,21 @@ export function updateCryptoTable(prevCryptoData) {
 
 }
 
-export function updateCoinDetails(prevData) {
-  const pos = ((Math.round(Math.random())) ? 1 : -1);
+export function updateChart(basePrice, newTime) {
+  const now = newTime;
+  const dayMs = 24 * 60 * 60 * 1000;
 
-  const randomNumber = Math.random();
+  const time = Math.floor((now + dayMs) / 1000);
+  const volatility = 0.02;
+  const trend = Math.sin(i++ / 10) * 0.01;
+  const change = (Math.random() - 0.5) * volatility + trend;
 
-  let price = prevData.price + ((randomNumber * 10).toFixed(2) + 1000.00) * pos;
-  let change24h = prevData.change24h + ((randomNumber * 10).toFixed(2)) * pos;
-  let change7d = prevData.change7d + ((randomNumber * 10).toFixed(2)) * pos;
-  let volume = prevData.volume + ((randomNumber * 10000000).toFixed(2) + 1000.00) * pos;
-  let marketCap = prevData.marketCap + ((randomNumber * 1000000).toFixed(2) + 1000.00) * pos;
+  basePrice *= (1 + change);
 
-  return { ...prevData, price, volume, change24h, change7d, marketCap };
+  const open = basePrice;
+  const close = basePrice * (1 + (Math.random() - 0.5) * 0.01);
+  const high = Math.max(open, close) * (1 + Math.random() * 0.01);
+  const low = Math.min(open, close) * (1 - Math.random() * 0.01);
+
+  return { time, open, close, high, low };
 }

@@ -4,7 +4,7 @@ import ChartSection from '../components/ChartSection';
 import OrderBook from '../components/OrderBook';
 import TechnicalAnalysis from '../components/TechnicalAnalysis';
 import SupportResistance from '../components/SupportResistance';
-import { cryptoList, formatLargeNumber } from '../data/cryptoData';
+import { formatLargeNumber } from '../data/cryptoData';
 import { useParams } from 'react-router';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import AnalysesEditor from '../components/AnalysesEditor';
@@ -18,7 +18,19 @@ const CoinDetails = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      setCoinDetails(cryptoList.filter(coin => coin.id === coinId)[0]);
+      setCoinDetails({
+        "index": "1",
+        "baseSymbol": "BTC",
+        "symbol": "Bitcoin",
+        "price": 88000,
+        "change24h": 2.45,
+        "low24h": 2000,
+        "high24h": 3000,
+        "circulatingSupply": 3000,
+        "marketCap": 1320000000000,
+        "volume": 32000000000,
+        "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+      });
     }
   }, [coinId, isLoading]);
 
@@ -54,15 +66,15 @@ const CoinDetails = () => {
             <div className="flex items-center justify-between flex-col gap-3 sm:flex-row h">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold">
-                    <img src={crypto?.icon} className='w-full h-full rounded-full' alt="" />
+                  <div className="w-14 h-14 rounded-full text-sm font-bold">
+                    <img src={coinDetails?.logo} className='w-full h-full rounded-full' alt="" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold">{coinDetails?.name}</h1>
-                      <span className="text-xs bg-gray-800 px-2 py-1 rounded">#{coinDetails?.rank}</span>
+                      <h1 className="text-xl font-bold">{coinDetails?.symbol}</h1>
+                      <span className="text-xs bg-gray-800 px-2 py-1 rounded">#{coinDetails?.index}</span>
                     </div>
-                    <p className="text-sm text-gray-400">{coinDetails?.symbol}</p>
+                    <p className="text-sm text-gray-400">{coinDetails?.baseSymbol}</p>
                   </div>
                 </div>
               </div>
@@ -83,21 +95,29 @@ const CoinDetails = () => {
             <div className="flex items-center flex-col sm:flex-row gap-8 mt-4 statis">
               <div>
                 <p className="text-xs text-center md:text-left text-gray-400 mb-1">Price</p>
-                <p className="text-2xl font-bold">{coinDetails?.price?.toFixed(2) || 0.00}$</p>
+                <p className="text-2xl font-bold">{formatLargeNumber(coinDetails?.price?.toFixed(2)) || 0.00}$</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-1">24h Change</p>
-                <p className={`text-lg font-semibold ${coinDetails?.change24h > 0 ? "text-green-500" : coinDetails?.change24h === 0 ? "text-gray-500" : "text-red-500"} flex items-center gap-1`}>
-                  <span>{coinDetails?.change24h > 0 ? <ArrowUp /> : <ArrowDown />}</span> {coinDetails?.change24h?.toFixed(2)}
+                <p className={`text-lg text-center font-semibold ${coinDetails?.change24h > 0 ? "text-green-500" : coinDetails?.change24h === 0 ? "text-gray-500" : "text-red-500"} flex items-center gap-1`}>
+                  <span>{coinDetails?.change24h > 0 ? <ArrowUp /> : <ArrowDown />}</span> {coinDetails?.change24h?.toFixed(2) || 0.00}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">Market Cap</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.marketCap?.toFixed(2))}</p>
+                <p className="text-xs text-center text-gray-400 mb-1">Market Cap</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.marketCap?.toFixed(2)) || 0.00}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">24h Volume</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.volume?.toFixed(2))}</p>
+                <p className="text-xs text-center text-gray-400 mb-1">24h Volume</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.volume?.toFixed(2)) || 0.00}</p>
+              </div>
+              <div>
+                <p className="text-xs text-center text-gray-400 mb-1">Low 24h</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.low24h?.toFixed(2)) || 0.00}</p>
+              </div>
+              <div>
+                <p className="text-xs text-center text-gray-400 mb-1">High 24h</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.high24h?.toFixed(2)) || 0.00}</p>
               </div>
             </div>
           </header>
@@ -111,12 +131,12 @@ const CoinDetails = () => {
             <div className="grid grid-cols-12 gap-6">
               {/* Chart Section - Left side */}
               <div className="col-span-12 lg:col-span-8">
-                <ChartSection crypto={cryptoList.filter(coin => coin.id === coinId)[0]} setEditorState={setEditorState} />
+                <ChartSection crypto={coinDetails} setEditorState={setEditorState} />
               </div>
 
               {/* OrderBook - Right side */}
               <div className="col-span-12 lg:col-span-4">
-                <OrderBook basePrice={cryptoList.filter(coin => coin.id === coinId)[0]?.price} />
+                <OrderBook basePrice={coinDetails?.price} />
               </div>
             </div>
 

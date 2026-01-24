@@ -41,7 +41,7 @@ const CurrencyConverterAndRates = () => {
   const isPositive = rateChange >= 0;
 
   return (
-    <div className="min-h-screen bg-[#0f121a] text-gray-100 rounded animate-in fade-in">
+    <div className="min-h-screen bg-[#18191d] text-gray-100 rounded animate-in fade-in">
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-6 py-3 space-y-3">
@@ -56,7 +56,7 @@ const CurrencyConverterAndRates = () => {
                 <select
                   value={baseCurrency}
                   onChange={(e) => setBaseCurrency(e.target.value)}
-                  className="bg-[#0a0b0d] border border-gray-700 text-white px-4 py-2.5 rounded-lg focus:border-blue-500 transition-colors cursor-pointer"
+                  className="bg-gray-700 border border-gray-700 text-white px-4 py-2.5 rounded-lg focus:border-blue-500 transition-colors cursor-pointer"
                 >
                   {currencies.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -70,7 +70,7 @@ const CurrencyConverterAndRates = () => {
                 <select
                   value={quoteCurrency}
                   onChange={(e) => setQuoteCurrency(e.target.value)}
-                  className="bg-[#0a0b0d] border border-gray-700 text-white px-4 py-2.5 rounded-lg focus:border-blue-500 transition-colors cursor-pointer"
+                  className="bg-gray-700 border border-gray-700 text-white px-4 py-2.5 rounded-lg focus:border-blue-500 transition-colors cursor-pointer"
                 >
                   {currencies.filter(c => c.code !== baseCurrency).map((c) => (
                     <option key={c.code} value={c.code}>

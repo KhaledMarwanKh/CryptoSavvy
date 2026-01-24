@@ -1,32 +1,29 @@
-import { Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { newsData } from "../data/cryptoData";
 
-const NewsTicker = ({ headlines }) => {
+const NewsTicker = () => {
     const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
 
     // Auto-rotate the news headline every 5 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentNewsIndex(prevIndex => (prevIndex + 1) % headlines.length);
-        }, 5000);
+            setCurrentNewsIndex((currentNewsIndex + 1) % newsData.articles.length)
+        }, 10000);
         return () => clearInterval(interval);
-    }, [headlines.length]);
+    }, []);
 
     return (
-        <div className="bg-[#0f1115] p-4 rounded-xl shadow-lg border border-gray-700 space-y-3">
-            <h2 className="text-lg font-semibold text-white flex items-center border-b border-gray-700 pb-2">
-                <Zap className="w-5 h-5 text-yellow-400 mr-2" />
-                Crypto News
-            </h2>
-            <div className="flex items-center overflow-hidden">
-                <div
-                    key={currentNewsIndex}
-                    className="text-sm text-gray-300 transition-opacity duration-1000 ease-in-out opacity-100"
-                >
-                    {headlines[currentNewsIndex]}
-                </div>
+        <a href={newsData.articles[currentNewsIndex].url} className="bg-[#0f1115] block p-2 rounded-xl shadow-lg border border-gray-700 space-y-3 overflow-hidden relative cursor-pointer group">
+            <div className="h-full relative overflow-hidden">
+                <img
+                    src={newsData.articles[currentNewsIndex].image}
+                    alt={newsData.articles[currentNewsIndex].title}
+                    className="w-full h-full object-cover transition-transform duration-100 group-hover:scale-105 rounded-xl"
+                />
             </div>
-        </div>
+
+            <p className="font-bold text-wrap text-lg my-6 group-hover:text-gray-300 duration-100">{newsData.articles[currentNewsIndex].title}</p>
+        </a>
     );
 };
 

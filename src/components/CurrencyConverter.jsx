@@ -44,7 +44,7 @@ const CurrencyConverter = ({ currencies, convertCurrency }) => {
             <select
               value={fromCurrency}
               onChange={(e) => setFromCurrency(e.target.value)}
-              className={`flex-1 bg-[#0a0b0d] border border-gray-700 text-white px-4 py-3 rounded-lg focus:border-emerald-500 transition-all duration-200 cursor-pointer ${isSwapping ? 'translate-y-2 opacity-50' : ''
+              className={`flex-1 bg-gray-700 border border-gray-700 text-white px-4 py-3 rounded-lg focus:border-emerald-500 transition-all duration-200 cursor-pointer ${isSwapping ? 'translate-y-2 opacity-50' : ''
                 }`}
             >
               {currencies.map((c) => (
@@ -63,7 +63,7 @@ const CurrencyConverter = ({ currencies, convertCurrency }) => {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full bg-[#1a1a24] border border-gray-700 text-white text-lg font-medium pl-10 pr-4 py-3 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors"
+              className="w-full bg-gray-700 border border-gray-700 text-white text-lg font-medium pl-10 pr-4 py-3 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -72,7 +72,7 @@ const CurrencyConverter = ({ currencies, convertCurrency }) => {
         <div className="flex justify-center">
           <button
             onClick={handleSwapCurrencies}
-            className="p-3 bg-[#0a0b0d]/10 hover:bg-[#0a0b0d]/20 rounded-full text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95"
+            className="p-3 bbg-gray-700/10 hover:bg-gray-700/20 rounded-full text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95"
           >
             <ArrowUpDown className={`w-5 h-5 transition-transform duration-200 ${isSwapping ? 'rotate-180' : ''}`} />
           </button>
@@ -85,7 +85,7 @@ const CurrencyConverter = ({ currencies, convertCurrency }) => {
             <select
               value={toCurrency}
               onChange={(e) => setToCurrency(e.target.value)}
-              className={`flex-1 bg-[#0a0b0d] border border-gray-700 text-white px-4 py-3 rounded-lg focus:border-emerald-500 transition-all duration-200 cursor-pointer ${isSwapping ? '-translate-y-2 opacity-50' : ''
+              className={`flex-1 bg-gray-700 border border-gray-700 text-white px-4 py-3 rounded-lg focus:border-emerald-500 transition-all duration-200 cursor-pointer ${isSwapping ? '-translate-y-2 opacity-50' : ''
                 }`}
             >
               {currencies.map((c) => (

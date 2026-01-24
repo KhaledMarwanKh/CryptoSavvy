@@ -207,10 +207,10 @@ const AIAnalysis = () => {
         {/* Header/Introduction Section */}
         <div className="text-center mb-12 py-8 bg-[#0f1115] rounded-2xl shadow-2xl shadow-gray-900/30 border border-gray-700">
           <Brain className="w-16 h-16 mx-auto mb-4 text-blue-400 shadow-blue-500/50" />
-          <h1 className="text-4xl font-extrabold mb-2 text-white">
+          <h1 className="text-2xl md:text-3xl font-extrabold mb-2 text-white">
             AI Financial Analyst
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+          <p className="text-sm md:text-lg text-gray-400 max-w-2xl mx-auto">
             Our data-driven assistant performs a comprehensive technical and fundamental analysis of market assets to provide actionable, forward-looking recommendations.
           </p>
         </div>
@@ -236,7 +236,7 @@ const AIAnalysis = () => {
         {/* Analysis Results Section */}
         {analysis && (
           <div className="bg-[#0f1115] p-6 sm:p-8 rounded-2xl border border-blue-500/30 animate-in fade-in duration-500">
-            <h2 className="text-3xl font-extrabold mb-8 border-b border-gray-700 pb-4 text-white">
+            <h2 className="text-2xl md:text-3xl  font-extrabold mb-8 border-b border-gray-700 pb-4 text-white">
               Investment Recommendation Summary
             </h2>
 
@@ -305,7 +305,7 @@ const AIAnalysis = () => {
         {/* No analysis message */}
         {!analysis && !loading && (
           <div className="text-center p-12 bg-[#0f1115] rounded-xl border border-gray-700">
-            <p className="text-gray-400 text-lg">
+            <p className="text-gray-400 text-sm md:text-lg">
               Click "Generate Analysis" to receive a real-time, data-backed financial recommendation.
             </p>
           </div>

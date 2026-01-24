@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { createChart, ColorType, AreaSeries } from 'lightweight-charts';
+import { createChart, ColorType, AreaSeries, CrosshairMode } from 'lightweight-charts';
 
-export const CurrencyChart = ({ 
-  data, 
+export const CurrencyChart = ({
+  data,
   colors: {
     backgroundColor = 'transparent',
     lineColor = '#2962FF',
     textColor = 'black',
     areaTopColor = '#2962FF',
     areaBottomColor = 'rgba(41, 98, 255, 0.28)',
-  } = {} 
+  } = {}
 }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
@@ -31,6 +31,9 @@ export const CurrencyChart = ({
       },
       width: chartContainerRef.current.clientWidth,
       height: 400,
+      crosshair: {
+        mode: CrosshairMode.Normal
+      },
       grid: {
         vertLines: { color: 'rgba(197, 203, 206, 0.1)' },
         horzLines: { color: 'rgba(197, 203, 206, 0.1)' },
@@ -46,8 +49,8 @@ export const CurrencyChart = ({
         // Fix locale issues by using simple date formatting
         timeFormatter: (timestamp) => {
           const date = new Date(timestamp * 1000);
-          return date.toLocaleDateString('en-US', { 
-            month: 'short', 
+          return date.toLocaleDateString('en-US', {
+            month: 'short',
             day: 'numeric',
             hour: timestamp > 1000000000000 ? 'numeric' : undefined,
             minute: timestamp > 1000000000000 ? '2-digit' : undefined
@@ -67,8 +70,8 @@ export const CurrencyChart = ({
     seriesRef.current = newSeries;
 
     if (data && data.length > 0) {
-        newSeries.setData(data);
-        chart.timeScale().fitContent();
+      newSeries.setData(data);
+      chart.timeScale().fitContent();
     }
 
     window.addEventListener('resize', handleResize);
@@ -84,7 +87,7 @@ export const CurrencyChart = ({
     if (seriesRef.current && data && data.length > 0) {
       seriesRef.current.setData(data);
       if (chartRef.current) {
-          chartRef.current.timeScale().fitContent();
+        chartRef.current.timeScale().fitContent();
       }
     }
   }, [data]);

@@ -18,8 +18,6 @@ export function initCanvas(strokeColor, strokeStyle, strokeWidth, drawMode) {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext("2d");
 
-    console.log(canvas, ctx);
-
     currentTool = drawMode;
     currentColor = strokeColor;
     currentThickness = strokeWidth;
@@ -110,7 +108,7 @@ function resizeCanvas() {
     const parent = canvas.parentElement;
 
     canvas.width = parent.clientWidth - 8;
-    canvas.height = parent.clientHeight - 8;
+    canvas.height = parent.clientHeight - 200;
 
     // إعادة تطبيق النمط
     applyStyle(ctx);

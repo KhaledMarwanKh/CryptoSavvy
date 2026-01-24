@@ -5,6 +5,7 @@
 * {
     @apply font-sans;
     box-sizing: border-box;
+    scrollbar-width: none;
 }
 
 :root {
@@ -156,7 +157,7 @@
 
 /* Smooth animations */
 .animate-in {
-    animation-duration: 1000ms;
+    animation-duration: 500ms;
     animation-fill-mode: both;
 }
 
@@ -180,12 +181,12 @@
 
 @keyframes slideInFromBottom {
     from {
-        transform: translateY(20px);
+        transform: translateY(20px) translateX(-50%);
         opacity: 0;
     }
 
     to {
-        transform: translateY(0);
+        transform: translateY(-50%) translateX(-50%);
         opacity: 1;
     }
 }
@@ -233,6 +234,10 @@
 
 .dot {
     animation: pulse-dot 1s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+input {
+    @apply outline-none focus:ring-blue-500
 }
 
 @keyframes progress-slide {

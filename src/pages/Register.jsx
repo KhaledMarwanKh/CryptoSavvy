@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockIcon, User } from "lucide-react";
+import { TfiEmail } from "react-icons/tfi";
 const Register = () => {
   const [input, setInput] = useState({
     fullName: "",
@@ -21,13 +22,13 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-      <div className="bg-white p-10 rounded-2xl shadow-md w-full max-w-md mx-auto px-4 border border-gray-100">
+    <div className="h-full px-3 flex items-center justify-center bg-[rgb(15,18,26)]">
+      <div className="bg-[#0f1115] p-2 py-3 md:p-4 rounded-2xl w-full max-w-md mx-auto px-4 border border-gray-100">
         {/*Title */}
-        <h1 className="text-3xl font-bold text-center text-indigo-600 mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-center text-blue-700 mb-2">
           Creat New Account
         </h1>
-        <p className="text-center text-gray-500 mb-8">
+        <p className="text-sm text-center text-gray-300 mb-8">
           {" "}
           Join CryptoSavvy Today
         </p>
@@ -42,12 +43,12 @@ const Register = () => {
         >
           {/*Full Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Full Name
             </label>
             <div className="relative ">
-              <span className="absolute inset-y-0 left-0 flex item-center pl-3 text-gray-400">
-                👤
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3 text-gray-400">
+                <User className="w-4 h-4" />
               </span>
               <input
                 value={input.fullName}
@@ -55,19 +56,19 @@ const Register = () => {
                   setInput({ ...input, fullName: event.target.value });
                 }}
                 type="text"
-                placeholder="John Doe"
-                className="w-full pl-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indiog-400"
+                placeholder="Name"
+                className="w-full px-10 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
               />
             </div>
           </div>
           {/*Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Email
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                ✉️
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3 text-gray-400">
+                <TfiEmail className="w-4 h-4" />
               </span>
               <input
                 value={input.email}
@@ -76,18 +77,18 @@ const Register = () => {
                 }}
                 type="email"
                 placeholder="your@email.com"
-                className="w-full pl-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full px-10 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
               ></input>
             </div>
           </div>
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                🔒
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3 text-gray-400">
+                <LockIcon className="w-4 h-4" />
               </span>
               <input
                 value={input.password}
@@ -97,13 +98,13 @@ const Register = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 title="Please Eter"
-                className="w-full pl-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full px-10 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
               />
               {/* Eye icon */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-300 hover:text-gray-400"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -117,12 +118,12 @@ const Register = () => {
           </div>
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Confirm Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                🔒
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3 text-gray-400">
+                <LockIcon className="w-4 h-4" />
               </span>
               <input
                 value={input.confirmPassword}
@@ -131,12 +132,12 @@ const Register = () => {
                 }}
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full pl-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full px-10 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-300 hover:text-gray-500"
               >
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -153,8 +154,7 @@ const Register = () => {
             disabled={!isFormValid}
             type="submit"
             className={`
-            w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition  ${isFormValid ? "bg-green-500" : "bg-gray-400 cursor-not-allowed"
-              }`}
+            w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 transition cursor-not-allowed`}
           >
             Create Account
           </button>
@@ -164,7 +164,7 @@ const Register = () => {
           Already have an account?
           <Link
             to="/login"
-            className="text-blue-600 font-medium hover:underline"
+            className="text-blue-600 font-medium hover:underline ml-1"
           >
             Login
           </Link>

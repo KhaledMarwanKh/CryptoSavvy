@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ChartSection from './ChartSection';
 import ColorPicker from './ColorSelector'
 import WidthSelector from './WidthSelector';
@@ -18,6 +18,21 @@ const AnalysesEditor = ({ editorState, crypto, setEditorState }) => {
   const [cursorMode, setCursorMode] = useState('draw');
   const [initMode, setInitMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const ref = useRef(null);
+
+  const handleClickOutSide = ({ target }) => {
+
+    if (ref.current && !ref.current.contains(target)) {
+      setShowSettings(false);
+    }
+
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutSide);
+
+    return () => document.removeEventListener('mousedown', handleClickOutSide);
+  }, [])
 
   useEffect(() => {
     initCanvas(strokeColor, strokeStyle, strokeWidth, drawingMode)
@@ -37,10 +52,10 @@ const AnalysesEditor = ({ editorState, crypto, setEditorState }) => {
   }, [strokeColor, strokeStyle, strokeWidth, drawingMode, initMode])
 
   return (
-    <div className='w-full rounded-sm h-[10%] z-50 bg-[#0f121a] gap-2 px-3 sm:px-4 py-3 relative fade-in animate-in'>
+    <div className='w-full rounded-sm z-50 bg-[#0f121a] gap-2 px-3 sm:px-4 py-7 relative fade-in animate-in'>
 
       {/* Main Toolbar */}
-      <div className={`bg-[#0f1115] p-3 rounded-2xl shadow-xl flex flex-col items-start gap-2 justify-start border border-gray-700 transition-all duration-100 absolute z-[2000] ${showSettings ? "top-[0px]" : "top-[-1000px]"} left-[0]`}>
+      <div ref={ref} className={`bg-[#0f1115] p-3 rounded-2xl shadow-xl flex flex-col items-start gap-2 justify-start border border-gray-700 transition-all duration-100 absolute z-[2000] ${showSettings ? "top-[0px]" : "top-[-1000px]"} left-[0]`}>
 
         <div className='w-full flex justify-between items-center'>
           {/* Section 1: Color Selection */}
@@ -71,7 +86,7 @@ const AnalysesEditor = ({ editorState, crypto, setEditorState }) => {
       </div>
 
       <div className='w-full canvas-container relative'>
-        <ChartSection crypto={crypto} setEditorState={setEditorState} editorState={editorState} />
+        <ChartSection setCursorMode={setCursorMode} crypto={crypto} setEditorState={setEditorState} editorState={editorState} />
         <canvas style={{ display: cursorMode === 'draw' ? "block" : "none" }} id="canvas" className='cursor-crosshair bg-transparent absolute bottom-8 left-0 z-[50]'>
 
         </canvas>

@@ -96,9 +96,9 @@ const Profile = () => {
     };
 
     return (
-        <div className="text-white p-8 bg-[#0f121a] min-h-screen fade-in animate-in rounded">
+        <div className="text-white p-3 sm:p-5 lg:p-8 bg-[#0f121a] min-h-screen fade-in animate-in rounded">
             {/* USER INFO CARD */}
-            <div className="bg-[#0f1115] p-6 rounded-xl shadow mb-10">
+            <div className="bg-[#0f1115] p-3 md:p-6 rounded-xl shadow mb-10">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
                         <User size={32} />
@@ -112,7 +112,7 @@ const Profile = () => {
                     <div>
                         <label className="text-sm font-medium">Full Name</label>
                         <input
-                            className="w-full mt-1 px-4 py-2 bg-[#0f1115] border border-gray-800 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full mt-1 px-4 py-2 bg-gray-700 border border-gray-800 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                             value={inputProfile.name}
                             onChange={(e) => {
                                 setInputProfile({ ...inputProfile, name: e.target.value });
@@ -122,7 +122,7 @@ const Profile = () => {
                     <div>
                         <label className="text-sm font-medium">Email</label>
                         <input
-                            className="w-full mt-1 px-4 py-2 bg-[#0f1115] border border-gray-800 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full mt-1 px-4 py-2 bg-gray-700 border border-gray-800 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                             value={inputProfile.email}
                             onChange={(e) => {
                                 setInputProfile({ ...inputProfile, email: e.target.value });
@@ -143,7 +143,7 @@ const Profile = () => {
                 )}
             </div>
             {/* ALERT SETTINGS */}
-            <div className="bg-[#0f1115] p-6 rounded-xl shadow mb-10">
+            <div className="bg-[#0f1115] p-2 md:p-6 rounded-xl shadow mb-10">
                 <div className="flex items-center gap-2 mb-4">
                     <Bell className="text-blue-400" />
                     <h2 className="text-xl font-semibold text-white">
@@ -151,28 +151,28 @@ const Profile = () => {
                     </h2>
                 </div>
                 <div className="space-y-5">
-                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-4 rounded-lg">
-                        <div>
-                            <h3 className="font-medium">Price Alerts</h3>
-                            <p className="text-gray-400 text-sm">
+                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-2 md:p-4 rounded-lg">
+                        <div className="w-[70%]">
+                            <h3 className="font-medium mb-2">Price Alerts</h3>
+                            <p className="text-gray-400 text-[0.7rem] md:text-sm">
                                 Get notified when prices reach specified levels
                             </p>
                         </div>
                         <ToggleSwitch enabled={priceAlerts} setEnabled={setPriceAlerts} />
                     </div>
-                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-4 rounded-lg">
-                        <div>
-                            <h3 className="font-medium">Weekly Report</h3>
-                            <p className="text-gray-400 text-sm">
+                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-2 md:p-4 rounded-lg">
+                        <div className="w-[70%]">
+                            <h3 className="font-medium mb-2">Weekly Report</h3>
+                            <p className="text-gray-400 text-[0.7rem] md:text-sm">
                                 Weekly summary of your portfolio and market performance
                             </p>
                         </div>
                         <ToggleSwitch enabled={weeklyReport} setEnabled={setWeeklyReport} />
                     </div>
-                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-4 rounded-lg">
-                        <div>
-                            <h3 className="font-medium">Market News</h3>
-                            <p className="text-gray-400 text-sm">
+                    <div className="flex justify-between items-center bg-[#0f1115] border border-gray-800 p-2 md:p-4 rounded-lg">
+                        <div className="w-[70%]">
+                            <h3 className="font-medium mb-2">Market News</h3>
+                            <p className="text-gray-400 text-[0.7rem] md:text-sm">
                                 Instant updates about important news and developments
                             </p>
                         </div>

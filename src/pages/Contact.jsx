@@ -29,7 +29,7 @@ const Contact = () => {
   )}`;
 
   return (
-    <div className=" bg-[#0f121a] text-white p-6 rounded md:p-10 fade-in animate-in">
+    <div className="h-full bg-[#0f121a] text-white p-6 rounded md:p-10 fade-in animate-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/*Contact Form */}
         <form className=" flex-1 bg-[#0f1115] p-6 rounded-xl shadow-md space-y-5">
@@ -42,7 +42,7 @@ const Contact = () => {
               }}
               type="text"
               placeholder="Your Name"
-              className="w-full px-4 py-2 rounded-md bg-[#0f1115] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></input>
           </div>
           <div>
@@ -54,7 +54,7 @@ const Contact = () => {
               }}
               type="email"
               placeholder="your@email.com"
-              className="w-full px-4 py-2 rounded-md bg-[#0f1115] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></input>
           </div>
           <div>
@@ -66,7 +66,7 @@ const Contact = () => {
               }}
               rows="5"
               placeholder="Write your message"
-              className="w-full px-4 py-2 rounded-md bg-[#0f1115] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
           </div>
           <button
