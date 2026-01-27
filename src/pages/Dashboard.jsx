@@ -9,7 +9,7 @@ import { formatLargeNumber } from '../data/cryptoData';
 import { FaSearch } from 'react-icons/fa';
 import FilterDialog from '../components/FilterDialog';
 import { getFilteredData } from '../data/component-functions';
-import { io } from 'socket.io-client';
+import socketHandler from '../api/socket';
 
 const ChangePill = ({ change }) => {
   const isPositive = change >= 0;
@@ -28,7 +28,6 @@ const ChangePill = ({ change }) => {
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [crypto, setCrypto] = useState([]);
   const [filterConfig, setFilterConfig] = useState({
     applyFilters: false,
@@ -81,87 +80,33 @@ const Dashboard = () => {
 
   }, [searchTerm, sortConfig, crypto, filterConfig]);
 
-  const socket = io("https://lounge-producing-electron-one.trycloudflare.com/");
+  let loading = true;
 
   useEffect(() => {
-    setIsLoading(true);
 
-    socket.connect("connect", () => {
-      console.log("ON");
-    })
-
-    socket.emit("setMode", {
-      mode: "dashboard",
-      page: currentPage,
-      pageSize: pageSize
-    })
-
-    socket.on("cryptoData", (data) => {
-      if (!data) {
-        setCrypto([]);
+    if (loading) {
+      if (socketHandler.getMode() !== "dashboard") {
+        socketHandler.setMode("dashboard");
       }
 
-      const newData = Object.values(data).map(value => value.meta);
+      socketHandler.initSocket();
 
-      if (isLoading) {
-        setCrypto(newData)
-      } else {
-        if (newData?.length < filteredAndSortedData?.length) {
-          const updatedData = filteredAndSortedData.map((crypto) => {
-            const updatedItem = newData.filter(newCrypto => newCrypto.symbol === crypto.symbol)[0];
+      socketHandler.registerSocketEvents(setCrypto);
 
-            if (updatedItem) {
-              return updatedItem;
-            } else {
-              return crypto;
-            }
+      socketHandler.registerSocketDashboardDataEvent(setIsLoading, setCrypto);
+    }
 
-          });
+    return () => loading = false;
 
-          setCrypto(updatedData);
-        } else {
-          setCrypto(newData);
-        }
+  }, [])
 
-      }
+  useEffect(() => {
+    socketHandler.setPage(currentPage);
+  }, [currentPage])
 
-      setIsLoading(false);
-    })
-
-    setTimeout(() => {
-      setIsLoading(false);
-      setCrypto([
-        {
-          "index": "1",
-          "baseSymbol": "BTC",
-          "symbol": "Bitcoin",
-          "price": 67234.50,
-          "change24h": 2.45,
-          "low24h": 2000,
-          "high24h": 3000,
-          "circulatingSupply": 3000,
-          "marketCap": 1320000000000,
-          "volume": 32000000000,
-          "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
-        },
-        {
-          "index": "2",
-          "baseSymbol": "BTC",
-          "symbol": "Bitcoin",
-          "price": 5050000,
-          "change24h": 2.00,
-          "low24h": 2001,
-          "high24h": 300,
-          "circulatingSupply": 3000,
-          "marketCap": 13200000,
-          "volume": 320000,
-          "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
-        },
-      ])
-    }, 3000)
-
-
-  }, [pageSize, currentPage]);
+  useEffect(() => {
+    console.table(crypto, filteredAndSortedData)
+  }, [crypto, filteredAndSortedData])
 
   return (
     <div className="overflow-y-scroll bg-[#0f121a] rounded p-4 sm:p-8 font-inter fade-in animate-in relative">
@@ -323,7 +268,7 @@ const Dashboard = () => {
 
                         {/* Price - Right-aligned number */}
                         <td className=" py-4 text-center font-mono text-white">
-                          {formatLargeNumber(crypto?.price)}
+                          {"$" + crypto?.price}
                         </td>
 
                         {/* 24h Change - Right-aligned number */}

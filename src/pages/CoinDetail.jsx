@@ -9,39 +9,28 @@ import { useParams } from 'react-router';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import AnalysesEditor from '../components/AnalysesEditor';
 import CandlestickLoader from '../components/CandleStickLoader';
+import socketHandler from '../api/socket';
 
 const CoinDetails = () => {
   const { coinId } = useParams();
   const [coinDetails, setCoinDetails] = useState({});
+  const [orderBook, setOrderBook] = useState({});
   const [editorState, setEditorState] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoading) {
-      setCoinDetails({
-        "index": "1",
-        "baseSymbol": "BTC",
-        "symbol": "Bitcoin",
-        "price": 88000,
-        "change24h": 2.45,
-        "low24h": 2000,
-        "high24h": 3000,
-        "circulatingSupply": 3000,
-        "marketCap": 1320000000000,
-        "volume": 32000000000,
-        "logo": "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
-      });
+
+    if (socketHandler.getMode() !== "chart") {
+      socketHandler.setMode("chart");
     }
-  }, [coinId, isLoading]);
 
+    socketHandler.initSocket();
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000)
+    socketHandler.registerSocketEvents(setCoinDetails);
 
-    return () => clearTimeout(timeout)
-  }, [])
+    socketHandler.registerSocketChartDataEvent(coinId, setCoinDetails, setOrderBook, setIsLoading);
+
+  }, [coinId])
 
   if (isLoading) {
     return (
@@ -95,29 +84,29 @@ const CoinDetails = () => {
             <div className="flex items-center flex-col sm:flex-row gap-8 mt-4 statis">
               <div>
                 <p className="text-xs text-center md:text-left text-gray-400 mb-1">Price</p>
-                <p className="text-2xl font-bold">{formatLargeNumber(coinDetails?.price?.toFixed(2)) || 0.00}$</p>
+                <p className="text-2xl font-bold">{coinDetails.price?.toFixed(2) ?? 0.00}$</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-1">24h Change</p>
-                <p className={`text-lg text-center font-semibold ${coinDetails?.change24h > 0 ? "text-green-500" : coinDetails?.change24h === 0 ? "text-gray-500" : "text-red-500"} flex items-center gap-1`}>
-                  <span>{coinDetails?.change24h > 0 ? <ArrowUp /> : <ArrowDown />}</span> {coinDetails?.change24h?.toFixed(2) || 0.00}
+                <p className={`text-lg text-center font-semibold ${coinDetails.change24h > 0 ? "text-green-500" : coinDetails?.change24h === 0 ? "text-gray-500" : "text-red-500"} flex items-center gap-1`}>
+                  <span>{coinDetails?.change24h > 0 ? <ArrowUp /> : <ArrowDown />}</span> {coinDetails.changePercent?.toFixed(2) ?? 0.00}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-center text-gray-400 mb-1">Market Cap</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.marketCap?.toFixed(2)) || 0.00}</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails.marketCap?.toFixed(2)) ?? 0.00}</p>
               </div>
               <div>
                 <p className="text-xs text-center text-gray-400 mb-1">24h Volume</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.volume?.toFixed(2)) || 0.00}</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails.volume?.toFixed(2)) ?? 0.00}</p>
               </div>
               <div>
                 <p className="text-xs text-center text-gray-400 mb-1">Low 24h</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.low24h?.toFixed(2)) || 0.00}</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails.low24h?.toFixed(2)) ?? 0.00}</p>
               </div>
               <div>
                 <p className="text-xs text-center text-gray-400 mb-1">High 24h</p>
-                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails?.high24h?.toFixed(2)) || 0.00}</p>
+                <p className="text-lg font-semibold">{formatLargeNumber(coinDetails.high24h?.toFixed(2)) ?? 0.00}</p>
               </div>
             </div>
           </header>
@@ -136,7 +125,7 @@ const CoinDetails = () => {
 
               {/* OrderBook - Right side */}
               <div className="col-span-12 lg:col-span-4">
-                <OrderBook basePrice={coinDetails?.price} />
+                <OrderBook orderBook={orderBook} />
               </div>
             </div>
 
