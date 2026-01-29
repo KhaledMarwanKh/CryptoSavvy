@@ -1,14 +1,14 @@
 const { io } = require("socket.io-client");
 
 // الاتصال بالسيرفر
-const socket = io("http://localhost:4000");
+const socket = io("https://donors-calm-jeans-referring.trycloudflare.com");
 
 // ==================
 // Pagination State
 // ==================
-let currentPage = 1;
+let currentPage = 2;
 const pageSize = 5; // عدد العملات بكل صفحة
-const mode = "dashboard"; // dashboard | chart
+const mode = "chart"; // dashboard | chart
 
 // ==================
 // Helpers
@@ -71,7 +71,7 @@ function handleSingleSymbol(data) {
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
-
+    console.log(val.orderBook);
     const meta = val.meta;
     const orderBook = val.orderBook;
     console.log(`💰 ${meta.index}`);

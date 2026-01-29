@@ -335,142 +335,149 @@ async function startCryptoSocket(io, userSubscriptions) {
 
   // ==================== BROADCASTING ====================
 
-  const broadcaster = setInterval(() => {
-    const now = Date.now();
-    if (!changedSymbols.size || now - lastBroadcast < 2000) return;
-    lastBroadcast = now;
+// ==================== BROADCASTING ====================
 
-    // Build data to send
-    const toSend = {};
-    for (const symbol of changedSymbols) {
-      const data = marketData[symbol];
-      if (!data) continue;
+const broadcaster = setInterval(() => {
+  const now = Date.now();
+  // التأكد من وجود عملات تغيرت أو مرور وقت كافٍ على البث العام
+  if (!changedSymbols.size || now - lastBroadcast < 2000) return;
+  lastBroadcast = now;
 
-      toSend[symbol] = {
-        meta: {
-          index: CRYPTO_SYMBOLS.indexOf(symbol.toLowerCase()) + 1,
-          symbol,
-          baseSymbol: data.coin?.symbol ?? null,
-          logo: data.coin?.logo ?? null,
-          price: Number(data.price || NaN),
-          high24h: Number(data.high24h || NaN),
-          low24h: Number(data.low24h || NaN),
-          volume: Number(data.volume || NaN),
-          changePercent: Number(data.changePercent || NaN),
-          marketCap: data.marketCap ?? null,
-          circulatingSupply: data.circulatingSupply ?? null,
-          lastUpdate:
-            data.lastTickerUpdate ||
-            data.cg_last_updated ||
-            new Date().toISOString(),
-        },
-        orderBook: data.orderBook
-          ? {
-              bids: data.orderBook.bids.slice(0, 20),
-              asks: data.orderBook.asks.slice(0, 20),
-              lastUpdateId: data.orderBook.lastUpdateId,
-            }
-          : null,
-      };
-    }
+  // 1. بناء البيانات التي تغيرت (Global Payload)
+  const toSend = {};
+  for (const symbol of changedSymbols) {
+    const data = marketData[symbol];
+    if (!data) continue;
 
-    // Send to subscribed users
-    for (const [socketId, userData] of Object.entries(userSubscriptions)) {
-      try {
-        const {
-          mode,
-          symbols: userSymbols = [],
-          page = 1,
-          pageSize = 5,
-        } = userData || {};
+    toSend[symbol] = {
+      meta: {
+        index: CRYPTO_SYMBOLS.indexOf(symbol.toLowerCase()) + 1,
+        symbol,
+        baseSymbol: data.coin?.symbol ?? null,
+        logo: data.coin?.logo ?? null,
+        price: Number(data.price || NaN),
+        high24h: Number(data.high24h || NaN),
+        low24h: Number(data.low24h || NaN),
+        volume: Number(data.volume || NaN),
+        changePercent: Number(data.changePercent || NaN),
+        marketCap: data.marketCap ?? null,
+        circulatingSupply: data.circulatingSupply ?? null,
+        lastUpdate:
+          data.lastTickerUpdate ||
+          data.cg_last_updated ||
+          new Date().toISOString(),
+      },
+      orderBook: data.orderBook
+        ? {
+            bids: data.orderBook.bids.slice(0, 20),
+            asks: data.orderBook.asks.slice(0, 20),
+            lastUpdateId: data.orderBook.lastUpdateId,
+          }
+        : null,
+    };
+  }
 
-        if (mode === "dashboard") {
-          const availableSymbols = CRYPTO_SYMBOLS.filter(
-            (s) => toSend[s.toUpperCase()]
-          );
+  // 2. إرسال البيانات للمستخدمين المشتركين بناءً على الـ Mode والوقت
+  for (const [socketId, userData] of Object.entries(userSubscriptions)) {
+    try {
+      const {
+        mode,
+        symbols: userSymbols = [],
+        page = 1,
+        pageSize = 5,
+        lastSentAt = 0, // نستخدم هذا المتغير لتخزين وقت آخر بث لهذا العميل
+      } = userData || {};
 
-          const sortedEntries = availableSymbols
-            .map((s) => [s.toUpperCase(), toSend[s.toUpperCase()]])
-            .sort((a, b) => {
-              const aCap = a[1].meta.marketCap || 0;
-              const bCap = b[1].meta.marketCap || 0;
-              return bCap - aCap;
-            });
+      // موازنة البث: إذا كان الوضع شارت، نتحقق هل مرت 5 ثوانٍ؟
+      if (mode === "chart") {
+        if (now - lastSentAt < 5000) {
+          continue; // لا تبث الآن، انتظر الدورة القادمة
+        }
+      }
 
-          const start = (page - 1) * pageSize;
-          const end = page * pageSize;
+      if (mode === "dashboard") {
+        const availableSymbols = CRYPTO_SYMBOLS.filter(
+          (s) => toSend[s.toUpperCase()]
+        );
 
-          const payload = {};
-
-          sortedEntries.forEach(([symbol, data]) => {
-            const index = SYMBOL_INDEX_MAP[symbol];
-            if (!index) return;
-
-            // ✅ شرطك الأساسي
-            if (index > start && index <= end) {
-              payload[symbol] = {
-                meta: {
-                  ...data.meta,
-                  index,
-                },
-              };
-            }
+        const sortedEntries = availableSymbols
+          .map((s) => [s.toUpperCase(), toSend[s.toUpperCase()]])
+          .sort((a, b) => {
+            const aCap = a[1].meta.marketCap || 0;
+            const bCap = b[1].meta.marketCap || 0;
+            return bCap - aCap;
           });
 
-          if (Object.keys(payload).length) {
-            io.to(socketId).emit("cryptoData", payload);
-          }
-        } else if (mode === "chart") {
-          const normalized = Array.isArray(userSymbols)
-            ? userSymbols.map((s) => s.toUpperCase()).filter(Boolean)
-            : [];
-          if (normalized.length === 0) continue;
-
-          const payload = {};
-          for (const sym of normalized) {
-            if (!marketData[sym]) continue;
-
-            payload[sym] = {
-              meta: {
-                symbol: sym,
-                baseSymbol: data.coin?.symbol ?? null,
-                logo: data.coin?.logo ?? null,
-                price: marketData[sym].price ?? null,
-                high24h: marketData[sym].high24h ?? null,
-                low24h: marketData[sym].low24h ?? null,
-                volume: marketData[sym].volume ?? null,
-                changePercent: marketData[sym].changePercent ?? null,
-                marketCap: marketData[sym].marketCap ?? null,
-                circulatingSupply: marketData[sym].circulatingSupply ?? null,
-                lastUpdate:
-                  marketData[sym].lastTickerUpdate ||
-                  marketData[sym].cg_last_updated ||
-                  new Date().toISOString(),
-              },
-              orderBook: marketData[sym].orderBook
-                ? {
-                    bids: marketData[sym].orderBook.bids.slice(0, 20),
-                    asks: marketData[sym].orderBook.asks.slice(0, 20),
-                  }
-                : null,
+        const start = (page - 1) * pageSize;
+        const end = page * pageSize;
+console.log(`📊 Sending dashboard data to ${socketId}: page ${page}, items ${start + 1}-${end}`);
+        const payload = {};
+        sortedEntries.forEach(([symbol, data]) => {
+          const index = SYMBOL_INDEX_MAP[symbol];
+          if (index && index > start && index <= end) {
+            payload[symbol] = {
+              meta: { ...data.meta, index },
             };
           }
+        });
 
-          if (Object.keys(payload).length) {
-            io.to(socketId).emit("cryptoData", payload);
-          }
-        } else {
-          // Default mode: send all changed data
-          io.to(socketId).emit("cryptoData", toSend);
+        if (Object.keys(payload).length) {
+          io.to(socketId).emit("cryptoData", payload);
+          userData.lastSentAt = now; // تحديث وقت الإرسال
         }
-      } catch (err) {
-        console.error("⚠️ Error emitting to client:", err.message);
+      } 
+      else if (mode === "chart") {
+        const normalized = Array.isArray(userSymbols)
+          ? userSymbols.map((s) => s.toUpperCase()).filter(Boolean)
+          : [];
+        
+        if (normalized.length === 0) continue;
+
+        const payload = {};
+        for (const sym of normalized) {
+          const currentData = marketData[sym];
+          if (!currentData) continue;
+
+          payload[sym] = {
+            meta: {
+              symbol: sym,
+              baseSymbol: currentData.coin?.symbol ?? null,
+              logo: currentData.coin?.logo ?? null,
+              price: currentData.price ?? null,
+              high24h: currentData.high24h ?? null,
+              low24h: currentData.low24h ?? null,
+              volume: currentData.volume ?? null,
+              changePercent: currentData.changePercent ?? null,
+              marketCap: currentData.marketCap ?? null,
+              circulatingSupply: currentData.circulatingSupply ?? null,
+              lastUpdate: currentData.lastTickerUpdate || currentData.cg_last_updated || new Date().toISOString(),
+            },
+            orderBook: currentData.orderBook
+              ? {
+                  bids: currentData.orderBook.bids.slice(0, 20),
+                  asks: currentData.orderBook.asks.slice(0, 20),
+                }
+              : null,
+          };
+        }
+
+        if (Object.keys(payload).length) {
+          io.to(socketId).emit("cryptoData", payload);
+          userData.lastSentAt = now; // تحديث وقت الإرسال بعد نجاح البث (سيتم الانتظار 5ث أخرى)
+        }
+      } 
+      else {
+        // الوضع الافتراضي
+        io.to(socketId).emit("cryptoData", toSend);
+        userData.lastSentAt = now;
       }
+    } catch (err) {
+      console.error("⚠️ Error emitting to client:", err.message);
     }
+  }
 
-    changedSymbols.clear();
-  }, BROADCAST_INTERVAL_MS);
-
+  changedSymbols.clear();
+}, BROADCAST_INTERVAL_MS);
   // ==================== CLEANUP ====================
 
   return function stop() {
