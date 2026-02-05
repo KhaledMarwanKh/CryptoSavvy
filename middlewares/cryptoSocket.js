@@ -1,18 +1,13 @@
 const WebSocket = require("ws");
 const axios = require("axios");
-const { isLowercase } = require("validator");
 
 // ==================== CONSTANTS ====================
 
-const BROADCAST_INTERVAL_MS = 500; // Interval for broadcasting updated data (milliseconds)
-const MARKET_CAP_UPDATE_INTERVAL = 5 * 60 * 1000; // Interval for updating market cap from CoinGecko (5 minutes)
-const SNAPSHOT_COOLDOWN = 1500; // Cooldown time between loading Order Book snapshots (milliseconds)
-const RECONNECT_MAX_DELAY = 30000; // Maximum delay for WebSocket reconnection (milliseconds)
-const RECONNECT_BASE_DELAY = 1000; // Base delay for reconnection (milliseconds)
-const RECONNECT_MAX_ATTEMPTS = 6; // Maximum number of reconnection attempts
+const BROADCAST_INTERVAL_MS = 5000;
+const MARKET_CAP_UPDATE_INTERVAL = 5 * 60 * 1000;
+const SNAPSHOT_COOLDOWN = 1500;
 
 const CRYPTO_SYMBOLS = [
-  // List of supported cryptocurrency symbols from Binance
   "btcusdt",
   "ethusdt",
   "solusdt",
@@ -21,16 +16,13 @@ const CRYPTO_SYMBOLS = [
   "bnbusdt",
   "dogeusdt",
   "avaxusdt",
-  // "linkusdt",
-  // "maticusdt",
-  // "dotusdt",
 ];
+
 const SYMBOL_INDEX_MAP = Object.fromEntries(
   CRYPTO_SYMBOLS.map((s, i) => [s.toUpperCase(), i + 1])
 );
 
 const COINGECKO_MAP = {
-  // Mapping of Binance symbols to CoinGecko API coin names
   BTCUSDT: "bitcoin",
   ETHUSDT: "ethereum",
   SOLUSDT: "solana",
@@ -39,32 +31,30 @@ const COINGECKO_MAP = {
   BNBUSDT: "binancecoin",
   DOGEUSDT: "dogecoin",
   AVAXUSDT: "avalanche-2",
-  // LINKUSDT: "chainlink",
-  // MATICUSDT: "matic-network",
-  // DOTUSDT: "polkadot",
 };
 
-// ==================== HELPER FUNCTIONS ====================
+// ==================== STATE ====================
 
-/**
- * Applies depth update to order book
- * @param {Object} book - Order book object
- * @param {Object} update - Update data from Binance
- */
+const marketData = {};
+const reloadState = {};
+
+// 🔒 ADDITION (1): ترتيب ثابت للداشبورد
+let DASHBOARD_ORDER = null;
+let dashboardLocked = false;
+
+// ==================== HELPERS ====================
+
 function applyDepthUpdate(book, update) {
   const updateBook = (side, items) => {
     items.forEach(([price, qty]) => {
       const p = parseFloat(price);
       const q = parseFloat(qty);
       if (q === 0) {
-        book[side] = book[side].filter((x) => x.price !== p);
+        book[side] = book[side].filter(x => x.price !== p);
       } else {
-        const existing = book[side].find((x) => x.price === p);
-        if (existing) {
-          existing.quantity = q;
-        } else {
-          book[side].push({ price: p, quantity: q });
-        }
+        const existing = book[side].find(x => x.price === p);
+        if (existing) existing.quantity = q;
+        else book[side].push({ price: p, quantity: q });
       }
     });
     book[side].sort((a, b) =>
@@ -77,417 +67,241 @@ function applyDepthUpdate(book, update) {
   updateBook("asks", update.a || []);
 }
 
-// ==================== MAIN FUNCTION ====================
+// ==================== SNAPSHOT ====================
 
-/**
- * Starts the crypto WebSocket connection and data broadcasting
- * @param {Object} io - Socket.io instance
- * @param {Object} userSubscriptions - User subscription data
- * @returns {Function} Stop function
- */
-async function startCryptoSocket(io, userSubscriptions) {
-  // State variables
-  const marketData = {};
-  const changedSymbols = new Set();
-  const reloadState = {};
-  let reconnectAttempts = 0;
-  let socket = null;
-  let shouldStop = false;
-  let lastBroadcast = 0;
+async function loadCryptoSnapshot(symLower) {
+  const symbol = symLower.toUpperCase();
+  reloadState[symbol] ??= { reloading: false, lastAttempt: 0 };
 
-  // ==================== INNER FUNCTIONS ====================
+  const now = Date.now();
+  if (
+    reloadState[symbol].reloading ||
+    now - reloadState[symbol].lastAttempt < SNAPSHOT_COOLDOWN
+  ) return;
 
-  /**
-   * Loads crypto snapshot from Binance
-   * @param {string} symLower - Symbol in lowercase
-   */
-  async function loadCryptoSnapshot(symLower) {
-    const symbol = symLower.toUpperCase();
-    reloadState[symbol] = reloadState[symbol] || {
-      reloading: false,
-      lastAttempt: 0,
+  reloadState[symbol].reloading = true;
+  reloadState[symbol].lastAttempt = now;
+
+  try {
+    const res = await axios.get(
+      "https://api.binance.com/api/v3/depth",
+      { params: { symbol, limit: 1000 } }
+    );
+
+    marketData[symbol] = {
+      ...(marketData[symbol] || {}),
+      symbol,
+      orderBook: {
+        lastUpdateId: res.data.lastUpdateId,
+        bids: res.data.bids.map(([p, q]) => ({
+          price: +p,
+          quantity: +q,
+        })).slice(0, 20),
+        asks: res.data.asks.map(([p, q]) => ({
+          price: +p,
+          quantity: +q,
+        })).slice(0, 20),
+        buffer: [],
+      },
     };
-    const now = Date.now();
+  } finally {
+    setTimeout(() => (reloadState[symbol].reloading = false), 300);
+  }
+}
 
-    if (
-      reloadState[symbol].reloading ||
-      now - reloadState[symbol].lastAttempt < SNAPSHOT_COOLDOWN
-    ) {
-      return;
-    }
+// ==================== MARKET CAP ====================
 
-    reloadState[symbol].reloading = true;
-    reloadState[symbol].lastAttempt = now;
+async function updateCryptoMarketCap() {
+  try {
+    const ids = Object.values(COINGECKO_MAP).join(",");
+    const res = await axios.get(
+      "https://api.coingecko.com/api/v3/coins/markets",
+      { params: { vs_currency: "usd", ids } }
+    );
 
-    try {
-      const res = await axios.get("https://api.binance.com/api/v3/depth", {
-        params: { symbol, limit: 1000 },
-        timeout: 10000,
-      });
+    res.data.forEach(item => {
+      const entry = Object.entries(COINGECKO_MAP)
+        .find(([_, id]) => id === item.id);
+      if (!entry) return;
 
-      const { bids, asks, lastUpdateId } = res.data;
+      const [symbol] = entry;
 
       marketData[symbol] = {
         ...(marketData[symbol] || {}),
-        symbol,
-        orderBook: {
-          lastUpdateId,
-          bids: bids
-            .map(([p, q]) => ({
-              price: parseFloat(p),
-              quantity: parseFloat(q),
-            }))
-            .slice(0, 20),
-          asks: asks
-            .map(([p, q]) => ({
-              price: parseFloat(p),
-              quantity: parseFloat(q),
-            }))
-            .slice(0, 20),
-          buffer: [],
+        marketCap: item.market_cap,
+        circulatingSupply: item.circulating_supply,
+        cg_last_updated: item.last_updated,
+        coin: {
+          symbol: item.symbol.toUpperCase(),
+          logo: item.image,
         },
       };
+    });
 
-      console.log(`📥 Snapshot loaded for ${symbol}`);
-      changedSymbols.add(symbol);
-    } catch (err) {
-      console.error(`❌ Error loading snapshot for ${symbol}:`, err.message);
-    } finally {
-      setTimeout(() => {
-        reloadState[symbol].reloading = false;
-      }, 300);
-    }
-  }
-
-  /**
-   * Updates crypto market cap data from CoinGecko
-   */
-  async function updateCryptoMarketCap() {
-    try {
-      const ids = Object.values(COINGECKO_MAP).join(",");
-      const res = await axios.get(
-        "https://api.coingecko.com/api/v3/coins/markets",
-        {
-          params: {
-            vs_currency: "usd",
-            ids,
-            order: "market_cap_desc",
-            per_page: 250,
-            page: 1,
-            sparkline: false,
-          },
-          timeout: 10000,
-        }
+    // 🔒 ADDITION (2): قفل ترتيب الداشبورد مرة واحدة فقط
+    if (!dashboardLocked) {
+      const allReady = CRYPTO_SYMBOLS.every(
+        s => marketData[s.toUpperCase()]?.marketCap
       );
 
-      res.data.forEach((item) => {
-        const entry = Object.entries(COINGECKO_MAP).find(
-          ([_, id]) => id === item.id
-        );
-        if (!entry) return;
+      if (allReady) {
+        DASHBOARD_ORDER = CRYPTO_SYMBOLS
+          .map(s => s.toUpperCase())
+          .sort(
+            (a, b) =>
+              (marketData[b].marketCap || 0) -
+              (marketData[a].marketCap || 0)
+          );
 
-        const [symbol] = entry;
-        marketData[symbol] = {
-          ...(marketData[symbol] || {}),
-          marketCap: item.market_cap ?? null,
-          circulatingSupply: item.circulating_supply ?? null,
-          totalSupply: item.total_supply ?? null,
-
-          coin: {
-            id: item.id,
-            name: item.name, // ⭐ اسم العملة
-            symbol: item.symbol.toUpperCase(), // ⭐ BTC
-            logo: item.image, // ⭐ رابط الصورة
-          },
-
-          cg_last_updated: item.last_updated ?? null,
-        };
-
-        changedSymbols.add(symbol);
-      });
-
-      console.log("✅ Crypto Market Cap updated");
-    } catch (err) {
-      console.error("⚠️ Error fetching crypto market cap:", err.message);
+        dashboardLocked = true;
+        console.log("📌 Dashboard order locked");
+      }
     }
+  } catch (err) {
+    console.error("MarketCap error:", err.message);
   }
+}
 
-  /**
-   * Handles WebSocket message from Binance
-   * @param {string} data - Raw message data
-   */
-  function handleMessage(data) {
-    try {
-      const msg = JSON.parse(data);
-      if (!msg?.data || !msg?.stream) return;
+// ==================== MAIN ====================
 
-      const stream = msg.stream;
-      const symbol = (msg.data.s || stream.split("@")[0]).toUpperCase();
+function startCryptoSocket(io, userSubscriptions) {
+  const streams = [
+    ...CRYPTO_SYMBOLS.map(s => `${s}@ticker`),
+    ...CRYPTO_SYMBOLS.map(s => `${s}@depth@100ms`),
+  ].join("/");
 
-      // Handle ticker data
-      if (stream.includes("@ticker")) {
-        const d = msg.data;
-        marketData[symbol] = {
-          ...(marketData[symbol] || {}),
-          symbol,
-          price: Number(d.c || NaN),
-          high24h: Number(d.h || NaN),
-          low24h: Number(d.l || NaN),
-          volume: Number(d.v || NaN),
-          changePercent: Number(d.P || NaN),
-          lastTickerUpdate: new Date().toISOString(),
-        };
-        changedSymbols.add(symbol);
-      }
+  const ws = new WebSocket(
+    `wss://stream.binance.com:9443/stream?streams=${streams}`
+  );
 
-      // Handle order book data
-      if (stream.includes("@depth")) {
-        const d = msg.data;
-        const book = marketData[symbol].orderBook || {
-          buffer: [],
-          bids: [],
-          asks: [],
-        };
-        book.buffer.push(d);
+  ws.on("message", raw => {
+    const msg = JSON.parse(raw);
+    if (!msg?.data) return;
 
-        if (book.lastUpdateId) {
-          const U = d.U || 0;
-          const u = d.u || 0;
-          if (
-            u > book.lastUpdateId &&
-            U <= book.lastUpdateId + 1 &&
-            u >= book.lastUpdateId + 1
-          ) {
-            applyDepthUpdate(book, d);
-            book.lastUpdateId = u;
-            book.buffer = book.buffer.filter((x) => x.u > book.lastUpdateId);
-            changedSymbols.add(symbol);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("⚠️ Error parsing Binance data:", err.message);
-    }
-  }
+    const symbol = msg.data.s;
+    if (!symbol) return;
 
-  /**
-   * Reconnects to WebSocket with exponential backoff
-   */
-  function reconnectWithBackoff() {
-    reconnectAttempts++;
-    const delay = Math.min(
-      RECONNECT_MAX_DELAY,
-      RECONNECT_BASE_DELAY *
-        Math.pow(2, Math.min(reconnectAttempts, RECONNECT_MAX_ATTEMPTS))
-    );
-    setTimeout(() => {
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        connect();
-      }
-    }, delay);
-  }
-
-  /**
-   * Establishes WebSocket connection to Binance
-   */
-  function connect() {
-    const streams = [
-      ...CRYPTO_SYMBOLS.map((s) => `${s}@ticker`),
-      ...CRYPTO_SYMBOLS.map((s) => `${s}@depth@100ms`),
-    ].join("/");
-
-    socket = new WebSocket(
-      `wss://stream.binance.com:9443/stream?streams=${streams}`
-    );
-
-    socket.on("open", () => {
-      reconnectAttempts = 0;
-      console.log("✅ Connected to Binance WebSocket");
-    });
-
-    socket.on("message", handleMessage);
-
-    socket.on("close", (code) => {
-      if (!shouldStop) {
-        console.log(`❌ WebSocket closed (code=${code}). Reconnecting...`);
-        reconnectWithBackoff();
-      }
-    });
-
-    socket.on("error", (err) => {
-      console.error("⚠️ Binance WebSocket error:", err.message);
-    });
-  }
-
-  // ==================== INITIALIZATION ====================
-
-  // Load initial data
-  await Promise.all([
-    ...CRYPTO_SYMBOLS.map((s) => loadCryptoSnapshot(s)),
-    updateCryptoMarketCap(),
-  ]);
-
-  // Set up periodic market cap updates
-  setInterval(updateCryptoMarketCap, MARKET_CAP_UPDATE_INTERVAL);
-
-  // Connect to WebSocket
-  connect();
-
-  // ==================== BROADCASTING ====================
-
-// ==================== BROADCASTING ====================
-
-const broadcaster = setInterval(() => {
-  const now = Date.now();
-  // التأكد من وجود عملات تغيرت أو مرور وقت كافٍ على البث العام
-  if (!changedSymbols.size || now - lastBroadcast < 2000) return;
-  lastBroadcast = now;
-
-  // 1. بناء البيانات التي تغيرت (Global Payload)
-  const toSend = {};
-  for (const symbol of changedSymbols) {
-    const data = marketData[symbol];
-    if (!data) continue;
-
-    toSend[symbol] = {
-      meta: {
-        index: CRYPTO_SYMBOLS.indexOf(symbol.toLowerCase()) + 1,
+    if (msg.stream.includes("@ticker")) {
+      marketData[symbol] ??= {};
+      Object.assign(marketData[symbol], {
         symbol,
-        baseSymbol: data.coin?.symbol ?? null,
-        logo: data.coin?.logo ?? null,
-        price: Number(data.price || NaN),
-        high24h: Number(data.high24h || NaN),
-        low24h: Number(data.low24h || NaN),
-        volume: Number(data.volume || NaN),
-        changePercent: Number(data.changePercent || NaN),
-        marketCap: data.marketCap ?? null,
-        circulatingSupply: data.circulatingSupply ?? null,
-        lastUpdate:
-          data.lastTickerUpdate ||
-          data.cg_last_updated ||
-          new Date().toISOString(),
-      },
-      orderBook: data.orderBook
-        ? {
-            bids: data.orderBook.bids.slice(0, 20),
-            asks: data.orderBook.asks.slice(0, 20),
-            lastUpdateId: data.orderBook.lastUpdateId,
-          }
-        : null,
-    };
-  }
+        price: +msg.data.c,
+        high24h: +msg.data.h,
+        low24h: +msg.data.l,
+        volume: +msg.data.v,
+        changePercent: +msg.data.P,
+        lastTickerUpdate: new Date().toISOString(),
+      });
+    }
 
-  // 2. إرسال البيانات للمستخدمين المشتركين بناءً على الـ Mode والوقت
-  for (const [socketId, userData] of Object.entries(userSubscriptions)) {
-    try {
-      const {
-        mode,
-        symbols: userSymbols = [],
-        page = 1,
-        pageSize = 5,
-        lastSentAt = 0, // نستخدم هذا المتغير لتخزين وقت آخر بث لهذا العميل
-      } = userData || {};
+    if (msg.stream.includes("@depth")) {
+      const book = marketData[symbol]?.orderBook;
+      if (!book) return;
 
-      // موازنة البث: إذا كان الوضع شارت، نتحقق هل مرت 5 ثوانٍ؟
-      if (mode === "chart") {
-        if (now - lastSentAt < 5000) {
-          continue; // لا تبث الآن، انتظر الدورة القادمة
+      book.buffer.push(msg.data);
+
+      if (book.lastUpdateId) {
+        const { U, u } = msg.data;
+        if (u > book.lastUpdateId && U <= book.lastUpdateId + 1) {
+          applyDepthUpdate(book, msg.data);
+          book.lastUpdateId = u;
         }
       }
+    }
+  });
 
+  // ==================== BROADCAST (كما كان + تعديل بسيط) ====================
+
+  setInterval(() => {
+    const toSend = {};
+    for (const sym in marketData) {
+      toSend[sym] = marketData[sym];
+    }
+
+    for (const [socketId, user] of Object.entries(userSubscriptions)) {
+      const { mode = "dashboard", page = 1, pageSize = 5, symbols = [] } = user;
+
+      // ================= DASHBOARD =================
       if (mode === "dashboard") {
-        const availableSymbols = CRYPTO_SYMBOLS.filter(
-          (s) => toSend[s.toUpperCase()]
-        );
-
-        const sortedEntries = availableSymbols
-          .map((s) => [s.toUpperCase(), toSend[s.toUpperCase()]])
-          .sort((a, b) => {
-            const aCap = a[1].meta.marketCap || 0;
-            const bCap = b[1].meta.marketCap || 0;
-            return bCap - aCap;
-          });
+        const list = dashboardLocked
+          ? DASHBOARD_ORDER
+          : CRYPTO_SYMBOLS.map(s => s.toUpperCase());
 
         const start = (page - 1) * pageSize;
-        const end = page * pageSize;
-console.log(`📊 Sending dashboard data to ${socketId}: page ${page}, items ${start + 1}-${end}`);
+        const end = start + pageSize;
+
         const payload = {};
-        sortedEntries.forEach(([symbol, data]) => {
-          const index = SYMBOL_INDEX_MAP[symbol];
-          if (index && index > start && index <= end) {
-            payload[symbol] = {
-              meta: { ...data.meta, index },
-            };
-          }
+
+        list.slice(start, end).forEach((symbol, i) => {
+          const d = toSend[symbol];
+          if (!d) return;
+
+          payload[symbol] = {
+            meta: {
+              index: start + i + 1,
+              symbol,
+              baseSymbol: d.coin?.symbol,
+              logo: d.coin?.logo,
+              price: d.price,
+              high24h: d.high24h,
+              low24h: d.low24h,
+              volume: d.volume,
+              changePercent: d.changePercent,
+              marketCap: d.marketCap,
+              lastUpdate: d.lastTickerUpdate || d.cg_last_updated,
+            },
+          };
         });
 
         if (Object.keys(payload).length) {
           io.to(socketId).emit("cryptoData", payload);
-          userData.lastSentAt = now; // تحديث وقت الإرسال
         }
-      } 
-      else if (mode === "chart") {
-        const normalized = Array.isArray(userSymbols)
-          ? userSymbols.map((s) => s.toUpperCase()).filter(Boolean)
-          : [];
-        
-        if (normalized.length === 0) continue;
+      }
 
+      // ================= CHART (كما كان بدون أي تغيير) =================
+      else if (mode === "chart") {
         const payload = {};
-        for (const sym of normalized) {
-          const currentData = marketData[sym];
-          if (!currentData) continue;
+        symbols.map(s => s.toUpperCase()).forEach(sym => {
+          const d = marketData[sym];
+          if (!d) return;
 
           payload[sym] = {
             meta: {
               symbol: sym,
-              baseSymbol: currentData.coin?.symbol ?? null,
-              logo: currentData.coin?.logo ?? null,
-              price: currentData.price ?? null,
-              high24h: currentData.high24h ?? null,
-              low24h: currentData.low24h ?? null,
-              volume: currentData.volume ?? null,
-              changePercent: currentData.changePercent ?? null,
-              marketCap: currentData.marketCap ?? null,
-              circulatingSupply: currentData.circulatingSupply ?? null,
-              lastUpdate: currentData.lastTickerUpdate || currentData.cg_last_updated || new Date().toISOString(),
+              baseSymbol: d.coin?.symbol,
+              logo: d.coin?.logo,
+              price: d.price,
+              high24h: d.high24h,
+              low24h: d.low24h,
+              volume: d.volume,
+              changePercent: d.changePercent,
+              marketCap: d.marketCap,
+              circulatingSupply: d.circulatingSupply,
+              lastUpdate: d.lastTickerUpdate || d.cg_last_updated,
             },
-            orderBook: currentData.orderBook
+            orderBook: d.orderBook
               ? {
-                  bids: currentData.orderBook.bids.slice(0, 20),
-                  asks: currentData.orderBook.asks.slice(0, 20),
+                  bids: d.orderBook.bids.slice(0, 20),
+                  asks: d.orderBook.asks.slice(0, 20),
                 }
               : null,
           };
-        }
+        });
 
         if (Object.keys(payload).length) {
           io.to(socketId).emit("cryptoData", payload);
-          userData.lastSentAt = now; // تحديث وقت الإرسال بعد نجاح البث (سيتم الانتظار 5ث أخرى)
         }
-      } 
-      else {
-        // الوضع الافتراضي
-        io.to(socketId).emit("cryptoData", toSend);
-        userData.lastSentAt = now;
       }
-    } catch (err) {
-      console.error("⚠️ Error emitting to client:", err.message);
     }
-  }
+  }, BROADCAST_INTERVAL_MS);
 
-  changedSymbols.clear();
-}, BROADCAST_INTERVAL_MS);
-  // ==================== CLEANUP ====================
+  // ==================== INIT ====================
 
-  return function stop() {
-    shouldStop = true;
-    try {
-      socket?.terminate();
-    } catch {}
-    clearInterval(broadcaster);
-    console.log("🛑 Crypto socket stopped.");
-  };
+  CRYPTO_SYMBOLS.forEach(loadCryptoSnapshot);
+  updateCryptoMarketCap();
+  setInterval(updateCryptoMarketCap, MARKET_CAP_UPDATE_INTERVAL);
+
+  console.log("✅ Crypto socket started");
 }
 
 module.exports = { startCryptoSocket };

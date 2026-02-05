@@ -1,13 +1,13 @@
 const { io } = require("socket.io-client");
 
 // الاتصال بالسيرفر
-const socket = io("https://donors-calm-jeans-referring.trycloudflare.com");
+const socket = io("http://localhost:4000");
 
 // ==================
 // Pagination State
 // ==================
 let currentPage = 2;
-const pageSize = 5; // عدد العملات بكل صفحة
+const pageSize = 4; // عدد العملات بكل صفحة
 const mode = "chart"; // dashboard | chart
 
 // ==================
