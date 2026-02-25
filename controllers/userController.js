@@ -58,7 +58,8 @@ const generatetoken = (id) =>
       status: 'success',
       message: 'logout successfly'
     });
-  };exports.signup = catchasync(async (req, res, next) => {
+  };
+  exports.signup = catchasync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
   // إنشاء المستخدم الجديد
@@ -79,15 +80,18 @@ const generatetoken = (id) =>
       email: newUser.email,
       subject: "رمز تفعيل الحساب (صالح لمدة 10 دقائق)",
       html: `
-        <p>مرحبًا ${newUser.name || "عزيزي المستخدم"}،</p>
-        <p>شكرًا لتسجيلك في منصة تيليسكوب للخدمات التعليمية.</p>
-        <p>رمز تفعيل حسابك هو:</p>
-        <h2 style="color:#4a90e2;letter-spacing:3px;">${verificationCode}</h2>
-        <p>الرمز صالح لمدة <strong>10 دقائق</strong> فقط.</p>
-        <hr>
-        <p>منصة تيليسكوب للخدمات التعليمية 🚀</p>
-      `,
-      text: `رمز تفعيل حسابك هو: ${verificationCode}. صالح لمدة 10 دقائق.`,
+  <p>مرحبًا ${newUser.name || "عزيزي المستخدم"}،</p>
+  <p>شكرًا لتسجيلك في منصة <strong>Crypto Savvy</strong>.</p>
+  <p>رمز تفعيل حسابك هو:</p>
+  <h2 style="color:#4a90e2;letter-spacing:3px;">${verificationCode}</h2>
+  <p>الرمز صالح لمدة <strong>10 دقائق</strong> فقط.</p>
+  <hr>
+  <p>
+    منصة <strong>Crypto Savvy</strong> 🚀 - 
+    <a href="https://cryptosavvy.com" target="_blank">زور الموقع</a>
+  </p>
+`,
+text: `رمز تفعيل حسابك هو: ${verificationCode}. صالح لمدة 10 دقائق.`,
     });
 
     res.status(201).json({
@@ -99,7 +103,7 @@ const generatetoken = (id) =>
     newUser.resetCode = undefined;
     newUser.resetCodeExpires = undefined;
     await newUser.save({ validateBeforeSave: false });
-    return next(new AppError("حدث خطأ أثناء إرسال البريد الإلكتروني.", 500));
+    return next(new AppError(err.message, 500));
   }
 
 

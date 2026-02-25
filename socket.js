@@ -8,7 +8,7 @@ const socket = io("http://localhost:4000");
 // ==================
 let currentPage = 2;
 const pageSize = 4; // عدد العملات بكل صفحة
-const mode = "chart"; // dashboard | chart
+const mode = "dashboard"; // dashboard | chart
 
 // ==================
 // Helpers

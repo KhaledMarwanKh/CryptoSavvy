@@ -28,7 +28,9 @@ const cryptoHistoryRoute = require("./routes/cryptoRoute");
 const newsRoute = require("./routes/newsRoute");
 const currencyRoute = require("./routes/currencyRoutes");
 const { startAutoFetch } = require("./services/sypService");
+const {connectDb} =require('./config/mongodb')
 startAutoFetch()
+//connectDb();
 // =====================
 // Environment Configuration
 // =====================
