@@ -8,7 +8,7 @@ const socket = io("http://localhost:4000");
 // ==================
 let currentPage = 2;
 const pageSize = 4; // عدد العملات بكل صفحة
-const mode = "dashboard"; // dashboard | chart
+const mode = "all"; // dashboard | chart
 
 // ==================
 // Helpers
@@ -71,9 +71,9 @@ function handleSingleSymbol(data) {
 function handleMapPayload(map) {
   for (const [symbol, val] of Object.entries(map)) {
     if (!val) continue;
-    console.log(val.orderBook);
     const meta = val.meta;
     const orderBook = val.orderBook;
+    console.log(`🖼 Logo: ${meta.logo ?? "No logo yet"}`);
     console.log(`💰 ${meta.index}`);
     console.log(`💰 ${symbol.toUpperCase()}`);
     console.log(`💵 Price: ${meta.price ?? "N/A"}`);
@@ -106,6 +106,9 @@ socket.on("connect", () => {
 
   if (mode === "dashboard") sendDashboardState();
   if (mode === "chart") subscribeSymbols(["BTCUSDT"]);
+    else if (mode === "all") {
+    socket.emit("setMode", { mode: "all" });
+  }
 });
 
 socket.on("cryptoData", (data) => {

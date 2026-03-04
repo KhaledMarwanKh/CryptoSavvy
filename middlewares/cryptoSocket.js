@@ -292,6 +292,46 @@ function startCryptoSocket(io, userSubscriptions) {
           io.to(socketId).emit("cryptoData", payload);
         }
       }
+  // ================= ALL (NEW MODE) =================
+else if (mode === "all") {
+  const list = dashboardLocked
+    ? DASHBOARD_ORDER
+    : CRYPTO_SYMBOLS.map(s => s.toUpperCase());
+
+  const payload = {};
+
+  list.forEach((symbol, i) => {
+    const d = toSend[symbol];
+    if (!d) return;
+
+    payload[symbol] = {
+      meta: {
+        index: i + 1,
+        symbol,
+        baseSymbol: d.coin?.symbol,
+        logo: d.coin?.logo,
+        price: d.price,
+        high24h: d.high24h,
+        low24h: d.low24h,
+        volume: d.volume,
+        changePercent: d.changePercent,
+        marketCap: d.marketCap,
+        circulatingSupply: d.circulatingSupply,
+        lastUpdate: d.lastTickerUpdate || d.cg_last_updated,
+      },
+      orderBook: d.orderBook
+        ? {
+            bids: d.orderBook.bids.slice(0, 20),
+            asks: d.orderBook.asks.slice(0, 20),
+          }
+        : null,
+    };
+  });
+
+  if (Object.keys(payload).length) {
+    io.to(socketId).emit("cryptoData", payload);
+  }
+}    
     }
   }, BROADCAST_INTERVAL_MS);
 

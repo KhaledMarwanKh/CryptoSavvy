@@ -147,16 +147,21 @@ io.on("connection", (socket) => {
 
   // -------- setMode --------
   socket.on("setMode", ({ mode, page, pageSize }) => {
-    const user = userSubscriptions[socket.id];
-    if (!user) return;
+  const user = userSubscriptions[socket.id];
+  if (!user) return;
 
-    if (typeof mode === "string") user.mode = mode === "chart" ? "chart" : "dashboard";
-    if (page) user.page = page;
-    if (pageSize) user.pageSize = pageSize;
+  if (typeof mode === "string") {
+    const allowedModes = ["dashboard", "chart", "all"];
+    if (allowedModes.includes(mode)) {
+      user.mode = mode;
+    }
+  }
 
-    console.log(`⚙️ ${socket.id} mode: ${user.mode}, page: ${user.page}`);
-  });
+  if (page) user.page = page;
+  if (pageSize) user.pageSize = pageSize;
 
+  console.log(`⚙️ ${socket.id} mode: ${user.mode}, page: ${user.page}`);
+});
   // -------- dashboard pagination --------
   socket.on("dashboardNext", () => {
     const user = userSubscriptions[socket.id];
