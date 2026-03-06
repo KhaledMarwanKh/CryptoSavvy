@@ -16,6 +16,7 @@ const hpp = require("hpp");
 const morgan = require("morgan");
 const http = require("http");
 const { Server } = require("socket.io");
+const cookieParser = require('cookie-parser');
 
 // =====================
 // Local Imports
@@ -30,7 +31,7 @@ const currencyRoute = require("./routes/currencyRoutes");
 const { startAutoFetch } = require("./services/sypService");
 const {connectDb} =require('./config/mongodb')
 startAutoFetch()
-//connectDb();
+connectDb();
 // =====================
 // Environment Configuration
 // =====================
@@ -46,6 +47,7 @@ const port = process.env.PORT || 4000;
 // CORS Configuration
 // =====================
 const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+app.use(cookieParser());
 
 app.use(
   cors({

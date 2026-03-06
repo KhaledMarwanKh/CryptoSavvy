@@ -48,17 +48,17 @@ const generatetoken = (id) =>
     fs.unlinkSync(filePath); // حذف الملف بعد رفعه
     return result.secure_url;
   };
-  exports.logout = (req, res,next) => {
-    res.cookie('jwt', 'loggedout', {
-      httpOnly: true,
-      expires: new Date(Date.now() + 10 * 1000)
-    });
-  
-    res.status(200).json({
-      status: 'success',
-      message: 'logout successfly'
-    });
-  };
+  exports.logout = (req, res, next) => {
+  res.cookie('jwt', 'loggedout', {
+    httpOnly: true,
+    expires: new Date(Date.now() - 1000)
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'logout successfully'
+  });
+};
   exports.signup = catchasync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
@@ -137,8 +137,8 @@ exports.login = catchasync(async (req, res, next) => {
   let user;
   let userType;
 
-  user = await userModel.findOne({ email,activeate:true}).select("+password");
-  
+  user = await userModel.findOne({email,activate:true}).select("+password");
+  console.log(email)
   if (!user) {
     return next(new AppError("Incorrect email or password", 401));
   }
