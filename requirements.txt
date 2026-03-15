@@ -1,0 +1,24 @@
+# ============================================
+# CryptoSavvy AI Service - Dependencies
+# ============================================
+
+# Web Framework
+fastapi
+uvicorn[standard]
+pydantic
+
+# Machine Learning
+tensorflow
+scikit-learn
+numpy
+pandas
+joblib
+
+# Technical Analysis Indicators
+ta
+
+# HTTP Client
+httpx
+
+# CORS
+python-multipart
