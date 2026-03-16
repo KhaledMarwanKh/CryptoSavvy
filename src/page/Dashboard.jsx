@@ -169,9 +169,8 @@ function Dashboard() {
 
     useEffect(() => {
         const params = {
-            apikey: import.meta.env.VITE_GNEWS_API,
             lang: "en",
-            q: "bitcoin OR ethereum OR crypto OR blockchain",
+            topic: "bitcoin OR ethereum OR crypto OR blockchain",
             max: 20,
         }
 

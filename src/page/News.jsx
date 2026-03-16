@@ -62,18 +62,17 @@ const News = () => {
         setIsLoading(true);
 
         const params = {
-            apikey: import.meta.env.VITE_GNEWS_API,
             lang: "en",
-            q: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
+            topic: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
             max: 20,
             sortBy: activeFilters.sortBy,
             page: currentPage,
-            from: activeFilters.dateFrom,
-            to: activeFilters.dateTo
+            from: activeFilters.dateFrom ? new Date(activeFilters.dateFrom).toISOString() : "",
+            to: activeFilters.dateTo ? new Date(activeFilters.dateTo).toISOString() : ""
         }
 
         newsHandler.getNews(params).then((res) => {
-            setTotalNumber(res?.totalArticles);
+            setTotalNumber(res?.count);
             setFilteredNews(res?.articles);
             setIsLoading(false);
         })
