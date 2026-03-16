@@ -1,9 +1,9 @@
-const catchasync =require('../utils/catchasync')
+const catchasync = require('../utils/catchasync')
 const appError = require('../utils/appError')
 const jwt = require("jsonwebtoken");
 const userModel = require('../models/userModel');
-const sendEmail =require('../utils/email')
-const crypto =require('crypto')
+const sendEmail = require('../utils/email')
+const crypto = require('crypto')
 const createSendToken = (nuser, statusCode, res) => {
   const token = generatetoken(nuser);
   const cookieOption = {
@@ -24,50 +24,59 @@ const createSendToken = (nuser, statusCode, res) => {
 
 const generatetoken = (id) =>
   jwt.sign(
-    { email: id.email, password: id.password },
+    { id: id._id, email: id.email },
     process.env.JWT_SECRET_KEY,
     {
       expiresIn: process.env.JWT_EXPIRES_IN,
     }
   );
-  
-  
+
+
 exports.authUser = catchasync(async (req, res, next) => {
+  // 1) Getting token and check if it's there
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
 
-  // getting token and check of it's there
-  const token = req.cookies.jwt;
   if (!token) {
-
     return next(
-      new appError("you are not logged in , please log in to get access", 401),
+      new appError("You are not logged in, please log in to get access", 401)
     );
   }
-  //verfication token
-  const decode = jwt.verify(token, process.env.JWT_SECRET_KEY);
-  // check if user still exists
-  const currentuser = await userModel.findOne({email:decode.email}).select('-password');
+
+  // 2) Verification token
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+  // 3) Check if user still exists
+  const currentuser = await userModel.findById(decoded.id).select("-password");
   if (!currentuser) {
-    // may be user not still in my database
     return next(
-      new appError("the user belonging to this token does no longer exist"),
+      new appError("The user belonging to this token does no longer exist", 401)
     );
   }
 
-//  check if user changed password after the token was issued
-  if (currentuser.changedPasswordAfter(decode.iat)) {
+  // 4) Check if user changed password after the token was issued
+  if (currentuser.changedPasswordAfter(decoded.iat)) {
     return next(
-      new appError("user recently changee password!! please log in again", 401),
+      new appError("User recently changed password! Please log in again.", 401)
     );
   }
-  req.body.userid =currentuser.id;
-  //Grant acces to protcted route
 
+  // Grant access to protected route
+  req.user = currentuser;
+  req.body.userid = currentuser.id;
   next();
 });
 // api for forget  password
 exports.forgetPassword = catchasync(async (req, res, next) => {
   const { email } = req.body;
- 
+
   let account = await userModel.findOne({ email });
   let role = "user";
 
@@ -115,7 +124,7 @@ exports.verifyResetCode = catchasync(async (req, res, next) => {
     resetCodeExpires: { $gt: Date.now() },
   });
 
-    if (!account) {
+  if (!account) {
     return next(new appError("code is not correct or not available", 400));
   }
   account.resetCode = undefined;

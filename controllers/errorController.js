@@ -36,7 +36,8 @@ module.exports = (err, req, res, next) => {
       message: err.message,
       stack: err.stack,
     });
-  } else if (process.env.NODE_ENV === "production") {
+  } else {
+    // Production mode OR any other NODE_ENV value — never leak internals
     console.error("ERROR 💥", err);
 
     let error = Object.create(err);
@@ -55,7 +56,7 @@ module.exports = (err, req, res, next) => {
         message: error.message,
       });
     } else {
-      // Unexpected error
+      // Unexpected/programming error — don't leak details
       return res.status(500).json({
         status: "error",
         message: "Something went very wrong!",
@@ -63,3 +64,4 @@ module.exports = (err, req, res, next) => {
     }
   }
 };
+

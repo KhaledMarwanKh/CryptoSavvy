@@ -1,37 +1,59 @@
 const mongoose = require('mongoose')
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-const crypto =require('crypto')
+const crypto = require('crypto')
 
 
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: [true, "Please provide your name"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, "Please provide your email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide a valid email"],
+    },
     password: {
       type: String,
+      required: [true, "Please provide a password"],
       minlength: 8,
       select: false,
     },
     passwordConfirm: {
       type: String,
-      required: [true, "please confirm a password"],
+      required: [true, "Please confirm your password"],
       validate: {
         validator: function (val) {
           return val === this.password;
         },
-        message: "passwords are not the same",
+        message: "Passwords are not the same",
       },
     },
+    passwordChangedAt: Date,
     resetCode: String,
     resetCodeExpires: Date,
-  activate: {
-    type: Boolean,
-    default: false,
-  }
-
-},
-  {timestamps:true}
+    activate: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
 );
+
+userSchema.methods.createPasswordResetCode = function () {
+  const resetCode = crypto.randomInt(100000, 999999).toString();
+
+  this.resetCode = resetCode;
+  this.resetCodeExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetCode;
+};
 
 userSchema.pre("save", async function (next) {
   // delete only when password actuly modified
@@ -67,14 +89,6 @@ userSchema.pre("save", async function (next) {
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
-userSchema.methods.createPasswordResetCode = function () {
-  const resetCode = Math.floor(100000 + Math.random() * 900000).toString(); 
+const userModel = mongoose.model('user', userSchema)
 
-  this.resetCode = resetCode;
-  this.resetCodeExpires = Date.now() + 10 * 60 * 1000; 
-
-  return resetCode;
-};
-const userModel=mongoose.model('user',userSchema)
-
-module.exports=userModel
+module.exports = userModel
