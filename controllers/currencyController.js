@@ -2,7 +2,7 @@ const exchangeService = require("../services/exchangeService");
 const catchasync = require("../utils/catchasync");
 const AppError = require("../utils/appError");
 const spyService = require("../services/sypService");
-
+const creptoTable = require("../services/creptoTable");
 
 
 
@@ -21,4 +21,13 @@ exports.getsyp = catchasync(async (req, res, next) => {
   const result = await spyService.getRates();
   res.json({ price: result });
 
+});
+
+exports.getCreptoTable = catchasync(async (req, res, next) => {
+  const { from } = req.query;
+  if (!from) {
+    return next(new AppError("from is required", 400));
+  }
+  const result = await creptoTable.getTable(from);
+  res.json(result);
 });

@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "start:nodemon": "nodemon server.js",
+    "start": "node app.js",
+    "start:nodemon": "nodemon app.js",
     "dev": "NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js",
     "postinstall": "npx playwright install chromium"
@@ -37,6 +37,7 @@
     "express": "^4.21.1",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.4.1",
+    "express-validator": "^7.3.1",
     "helmet": "^8.0.0",
     "hpp": "^0.2.3",
     "http": "^0.0.1-security",

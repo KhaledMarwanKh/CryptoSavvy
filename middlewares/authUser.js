@@ -124,7 +124,7 @@ exports.verifyResetCode = catchasync(async (req, res, next) => {
   await account.save({ validateBeforeSave: false });
   res.status(200).json({
     status: "success",
-    message: `code is success (${role})`,
+    message: `code is success`,
   });
 });
 

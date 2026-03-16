@@ -1,120 +1,23 @@
-// =====================
-// server.js
-// =====================
-
-// =====================
-// External Imports
-// =====================
 const dotenv = require("dotenv");
-const express = require("express");
-const cors = require("cors");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
-const xss = require("xss-clean");
-const hpp = require("hpp");
-const morgan = require("morgan");
 const http = require("http");
 const { Server } = require("socket.io");
-const cookieParser = require('cookie-parser');
 
 // =====================
-// Local Imports
-// =====================
-const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoSocket");
-const appError = require("./utils/appError");
-const globalError = require("./controllers/errorController");
-const userRoute = require("./routes/userRoute");
-const cryptoHistoryRoute = require("./routes/cryptoRoute");
-const newsRoute = require("./routes/newsRoute");
-const currencyRoute = require("./routes/currencyRoutes");
-const { startAutoFetch } = require("./services/sypService");
-const {connectDb} =require('./config/mongodb')
-startAutoFetch()
-connectDb();
-// =====================
-// Environment Configuration
+// Load Environment Variables
 // =====================
 dotenv.config({ path: "./.env" });
 
-// =====================
-// App Initialization
-// =====================
-const app = express();
+// Local Imports
+const app = require("./app");
+const { startCryptoSocket, cryptoSymbols } = require("./middlewares/cryptoSocket");
+const { startAutoFetch } = require("./services/sypService");
+const {connectDb} =require('./config/mongodb')
+
+startAutoFetch()
+connectDb();
+
 const port = process.env.PORT || 4000;
-
-// =====================
-// CORS Configuration
-// =====================
 const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
-app.use(cookieParser());
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (!allowedOrigins.includes(origin)) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-
-      return callback(null, true);
-    },
-    credentials: true,
-  })
-);
-
-app.options("*", cors({ origin: allowedOrigins, credentials: true }));
-
-// =====================
-// Static Files
-// =====================
-app.use("/uploads", express.static("uploads"));
-
-// =====================
-// Global Middlewares
-// =====================
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
-app.use(helmet());
-
-app.use(
-  "/api",
-  rateLimit({
-    max: 100,
-    windowMs: 15 * 60 * 1000,
-    message: "Too many requests from this IP, please try again later.",
-  })
-);
-
-app.use(express.json());
-app.use(mongoSanitize());
-app.use(xss());
-app.use(hpp({ whitelist: [] }));
-
-// =====================
-// Routes
-// =====================
-app.get("/", (req, res) => {
-  res.send("API IS RUNNING");
-});
-
-app.use("/api/user", userRoute);
-app.use("/api/crypto", cryptoHistoryRoute);
-app.use("/api/news", newsRoute);
-app.use("/api/currency",currencyRoute)
-// =====================
-// Unhandled Routes
-// =====================
-app.all("*", (req, res, next) => {
-  next(new appError(`can't find ${req.originalUrl} on this server!`, 404));
-});
-
-app.use(globalError);
 
 // =====================
 // HTTP Server + Socket.IO Setup
@@ -127,6 +30,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
 
 // =====================
 // Socket Subscriptions Store

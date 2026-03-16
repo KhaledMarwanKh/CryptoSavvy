@@ -4,4 +4,6 @@ const currencyController = require("../controllers/currencyController");
 
 router.get("/convert", currencyController.convertCurrency);
 router.get("/syp", currencyController.getsyp);
+router.get("/CreptoTable", currencyController.getCreptoTable);
+
 module.exports = router;
