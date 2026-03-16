@@ -1,0 +1,270 @@
+{
+    "dashboard": {
+        "sidebBar": {
+            "latestNews": "Latest News",
+            "readStory": "Read Full Story"
+        },
+        "convertor": {
+            "amount": "Amount",
+            "cryptoCurrency": "Crypto Currency",
+            "fiatCurrency": "Fiat Currency",
+            "totalValueIn": "Total Value in ",
+            "currentPriceOf": "Current Price of",
+            "inputsPlaceholder": {
+                "enterAmount": "Enter Amount"
+            }
+        },
+        "cards": {
+            "totalMarketCap": "Total Market Cap",
+            "totalVolume": "Total Volume",
+            "totalCoins": "Total Coins"
+        },
+        "tableSection": {
+            "filters": "Filter",
+            "inputsPlaceholder": {
+                "searchCoin": "Search coin..."
+            },
+            "tableHeaders": {
+                "coin": "Coin",
+                "price": "Price",
+                "voulme": "Volume",
+                "marketCap": "Market Cap",
+                "circulatingSupply": "Circulating Supply",
+                "high24h": "High 24h",
+                "low24h": "Low 24h",
+                "change24h": "Change 24h",
+                "rank": "Rank"
+            }
+        },
+        "filterDialog": {
+            "advancedFilters": "Advanced Filters",
+            "inputsPlaceolder": {
+                "minVolume": "Min Volume",
+                "minPrice": "Min Price",
+                "minMarketCap": "Min Market Cap"
+            },
+            "applyFilters": "Apply Filters",
+            "order": {
+                "desc": "Descending",
+                "asc": "Ascending"
+            }
+        }
+    },
+    "login": {
+        "labels": {
+            "email": "Email",
+            "password": "Password"
+        },
+        "forgot": "Forgot Your Password ?",
+        "click": "Click Here",
+        "login": "Login",
+        "haveAccount": "Don't have an account?",
+        "create": " Create new account",
+        "errorMessags": {
+            "m1": "Please enter your email address.",
+            "m2": "Please enter your password.",
+            "m3": "Password must be at least 8 characters"
+        },
+        "title": "Welcome to the smart analysis platform"
+    },
+    "register": {
+        "errorMessages": {
+            "m1": "Please enter your Name.",
+            "m2": "Please enter your email address.",
+            "m3": "Please enter your password.",
+            "m4": "Please enter confirm password.",
+            "m5": "Password must be at least 8 characters",
+            "m6": "Unmatching passwords."
+        },
+        "title": "Create New Account",
+        "greet": "Join CryptoSavvy today",
+        "labels": {
+            "name": "Full Name",
+            "email": "Email",
+            "password": "Password",
+            "confirm": "Confirm Password"
+        },
+        "create": "Create Account",
+        "haveAcc": " Already have an account?",
+        "login": "Login"
+    },
+    "verification": {
+        "errorMessages": {
+            "m1": "Please enter your email address.",
+            "m2": "Please enter code"
+        },
+        "ver": "Verification",
+        "verA": "Verify Your Account",
+        "enterCode": "Enter your email and the verification code sent to you.",
+        "verCode": "Verification Code",
+        "error": "Code should be 6 digits.",
+        "verLoad": "Verifying...",
+        "verL": "Verify",
+        "resend": "Resend Code",
+        "foot": "Didn’t receive the email? Check your spam folder.",
+        "sucVerS": "Signup verified Successfully",
+        "errVer": "Something goes wrong",
+        "sucVerC": "Code verified successfully",
+        "resendCode": "A Verification Code is sent to"
+    },
+    "forgotPassword": {
+        "title": "Forgot Password",
+        "titleSec": "Enter your email and we will send you a reset code.",
+        "send": "Send Code",
+        "backTO": "Back To",
+        "sign": "Sign In"
+    },
+    "resetPassword": {
+        "errorMessages": {
+            "m1": "Please enter your email address.",
+            "m2": "Please enter your password.",
+            "m3": "Password must be at least 8 characters",
+            "m4": "Please enter confirm password."
+        },
+        "successMessages": {
+            "s1": "Password has been changed successfully"
+        },
+        "signIn": "Sign In",
+        "remPass": "Remember your password?"
+    },
+    "about": {
+        "feature_1": {
+            "title": "AI Price Prediction",
+            "desc": "Advanced ML models forecasting market moves."
+        },
+        "feature_2": {
+            "title": "Real-time Monitoring",
+            "desc": "Live tracking of global exchange data 24/7."
+        },
+        "feature_3": {
+            "title": "Technical Indicators",
+            "desc": "Deep dives into RSI, MACD, and EMA trends."
+        },
+        "feature_4": {
+            "title": "Risk Assessment",
+            "desc": "Volatility scoring to protect your capital."
+        },
+        "feature_5": {
+            "title": "High Speed",
+            "desc": "Cloud-optimized infrastructure for zero lag."
+        },
+        "feature_6": {
+            "title": "Multi-Asset Support",
+            "desc": "BTC, ETH, and all major altcoins included."
+        },
+        "heroSection": {
+            "header1": "Smart Crypto Market Insights",
+            "header2": "Empowering traders with AI-driven analysis to navigate the volatility of the blockchain with confidence."
+        },
+        "introSection": {
+            "h1": "What is ",
+            "p1": "CryptoSavvy is an advanced crypto-analysis platform that leverages cutting-edge AI and machine-learning models. We help traders make smarter, more confident decisions by turning noise into actionable intelligence.",
+            "list": {
+                "l1": "Real-time market data",
+                "l2": "Price movements",
+                "l3": "Trading volume",
+                "l4": "Technical indicators"
+            },
+            "pre": "Predicted"
+        },
+        "featureGrid": {
+            "h": "Key Features",
+            "p": "Everything you need to master the market in one dashboard."
+        },
+        "whyChooseUs": {
+            "h": "Why CryptoSavvy?",
+            "p": "We transform complex blockchain & market data into easy-to-understand insights. Stay ahead of volatility and make data-driven decisions with a platform built for speed and security.",
+            "button": "Start Trading Smarter"
+        }
+    },
+    "contactUs": {
+        "errorMessages": {
+            "m1": "Email is required",
+            "m2": "Name is required",
+            "m3": "Enter a valid email address",
+            "m4": "Subject is required",
+            "m5": "Message is required",
+            "m6": "Please fix the highlighted fields and try again.",
+            "m7": "Something went wrong while sending your message. Please try again."
+        },
+        "successMessages": "Your message has been sent. We’ll get back to you soon.",
+        "infoRows": {
+            "r1": {
+                "title": "Email",
+                "hint": "We typically respond within 1–2 business days."
+            },
+            "r2": {
+                "title": "Phone",
+                "hint": "Mon-Fri"
+            },
+            "r3": {
+                "title": "Email",
+                "value": "Homes",
+                "hint": "Visits by appointment only."
+            },
+            "r4": {
+                "title": "Hours",
+                "hint": "Closed on weekends and holidays."
+            }
+        },
+        "social": "Social",
+        "form": {
+            "send": "Send a message",
+            "fill": "Fill out the form and we’ll reply to your email.",
+            "inputs": {
+                "in1": {
+                    "label": "Name",
+                    "placeholder": "Your Name"
+                },
+                "in2": {
+                    "label": "Email"
+                },
+                "in3": {
+                    "label": "Subject",
+                    "placeholder": "How can we help ?"
+                },
+                "in4": {
+                    "label": "Message",
+                    "placeholder": "Tell us a bit more about what you need…"
+                }
+            },
+            "agree": "By sending this message, you agree to be contacted at the provided email."
+        }
+    },
+    "news": {
+        "search": "Search for topics, news, or trends...",
+        "filter": "Filter",
+        "showing": "Showing",
+        "results": "results",
+        "NotFound": {
+            "no": "No results found",
+            "weCant": " We couldn't find any news articles matching your search or filters. Try adjusting your criteria.",
+            "clear": "Clear All Filters"
+        },
+        "filterDialog": {
+            "range": "Date Range",
+            "from": "From",
+            "to": "To",
+            "sortBy": "Sort By"
+        }
+    },
+    "coinDetails": {
+        "labels": {
+            "price": "Price",
+            "change": "24h Change",
+            "high": "24h High",
+            "low": "24h Low",
+            "volume": "volume",
+            "market": "Market Cap"
+        },
+        "trade": "Trade",
+        "watch": "+ Wishlist",
+        "analyze": "Analyze Chart",
+        "book": {
+            "title": "Order Book",
+            "price": "Price",
+            "amount": "Amount",
+            "total": "Total"
+        }
+    }
+}
