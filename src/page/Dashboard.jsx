@@ -2,7 +2,7 @@ import React, {
     useCallback,
     useEffect,
     useMemo,
-    useState
+    useState,
 } from "react";
 import {
     Newspaper,
@@ -25,8 +25,11 @@ import Card from "../components/Dashboard/Card";
 import socket from "../libs/socket";
 import { formatLargeNumbers } from "../utils/formattor";
 import newsHandler from "../libs/NewsHandler";
+import { useTranslation } from "react-i18next";
 
 function Dashboard() {
+    const { t, i18n } = useTranslation();
+
     const navigate = useNavigate();
 
     const [search, setSearch] = useState("");
@@ -169,8 +172,9 @@ function Dashboard() {
 
     useEffect(() => {
         const params = {
+            apikey: import.meta.env.VITE_GNEWS_API,
             lang: "en",
-            topic: "bitcoin OR ethereum OR crypto OR blockchain",
+            q: "bitcoin OR ethereum OR crypto OR blockchain",
             max: 20,
         }
 
@@ -185,7 +189,7 @@ function Dashboard() {
         }, delay)
 
         return () => clearInterval(interval);
-    }, [])
+    }, [i18n.language])
 
     return (
         <div className="min-h-screen flex bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
@@ -197,7 +201,7 @@ function Dashboard() {
                 <div className="mb-10">
                     <div className="flex items-center gap-2 mb-4 text-slate-300">
                         <Newspaper size={18} />
-                        <span>Latest News</span>
+                        <span>{t("dashboard.sidebBar.latestNews")}</span>
                     </div>
                     <article
                         key={news[artNum]?.title}
@@ -238,7 +242,7 @@ function Dashboard() {
                                 href={news[artNum]?.url}
                                 className="inline-flex items-center gap-2 text-blue-500 font-semibold text-sm hover:text-blue-400 transition-colors group/link"
                             >
-                                Read Full Story
+                                {t("dashboard.sidebBar.readStory")}
                                 <ExternalLink className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                             </a>
                         </div>
@@ -257,17 +261,17 @@ function Dashboard() {
                 {/* ===== HEADER CARDS ===== */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <Card
-                        title="Total Market Cap"
+                        title={t("dashboard.cards.totalMarketCap")}
                         value={formatLargeNumbers(totalMarketCap)?.toLocaleString()}
                         icon={<DollarSign />}
                     />
                     <Card
-                        title="Total Volume"
+                        title={t("dashboard.cards.totalVolume")}
                         value={formatLargeNumbers(totalVolume)?.toLocaleString()}
                         icon={<BarChart3 />}
                     />
                     <Card
-                        title="Total Coins"
+                        title={t("dashboard.cards.totalCoins")}
                         value={totalCoins.toLocaleString()}
                         icon={<Coins />}
                     />
@@ -282,7 +286,7 @@ function Dashboard() {
                         />
                         <input
                             type="text"
-                            placeholder="Search coin..."
+                            placeholder={t("dashboard.tableSection.inputsPlaceholder.searchCoin")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -294,7 +298,7 @@ function Dashboard() {
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
                     >
                         <Filter className="w-5 h-5" />
-                        Filter
+                        {t("dashboard.tableSection.filters")}
                     </button>
                 </div>
 
@@ -304,14 +308,14 @@ function Dashboard() {
                         <thead className="border-b border-slate-700/50 text-slate-400">
                             <tr>
                                 <th className="p-3 text-left">#</th>
-                                <th className="p-3 text-left">Coin</th>
-                                <th className="p-3 text-left">Price</th>
-                                <th className="p-3 text-left">Market Cap</th>
-                                <th className="p-3 text-left">Volume</th>
-                                <th className="p-3 text-left">24h %</th>
-                                <th className="p-3 text-left">High</th>
-                                <th className="p-3 text-left">Low</th>
-                                <th className="p-3 text-left">Supply</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.coin")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.price")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.marketCap")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.voulme")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.change24h")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.high24h")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.low24h")}</th>
+                                <th className="p-3 text-left">{t("dashboard.tableSection.tableHeaders.circulatingSupply")}</th>
                             </tr>
                         </thead>
                         {
@@ -405,19 +409,19 @@ function Dashboard() {
                             </div>
                             <div className="text-sm text-slate-400 space-y-1">
                                 <div className="font-bold text-slate-100">
-                                    Price: ${coin.price.toLocaleString()}
+                                    {t("dashboard.tableSection.tableHeaders.price")} : ${coin.price.toLocaleString()}
                                 </div>
                                 <div>
-                                    Market Cap: ${coin.marketCap.toLocaleString()}
+                                    {t("dashboard.tableSection.tableHeaders.marketCap")} : ${coin.marketCap.toLocaleString()}
                                 </div>
                                 <div>
-                                    Volume: ${coin.volume.toLocaleString()}
+                                    {t("dashboard.tableSection.tableHeaders.voulme")} : ${coin.volume.toLocaleString()}
                                 </div>
                                 <div>
-                                    High: ${coin.high24h}
+                                    {t("dashboard.tableSection.tableHeaders.high24h")} : ${coin.high24h}
                                 </div>
                                 <div>
-                                    Low: ${coin.low24h}
+                                    {t("dashboard.tableSection.tableHeaders.low24h")} : ${coin.low24h}
                                 </div>
                             </div>
                         </div>
@@ -433,7 +437,7 @@ function Dashboard() {
                 </div>
 
                 {/* ===== PAGINATION ===== */}
-                <div className="flex justify-end items-center gap-4 mt-6">
+                <div className={`flex ${i18n.language === "ar" ? "flex-row-reverse" : ""} justify-end items-center gap-4 mt-6`}>
                     <button
                         onClick={() => setPage((p) => Math.max(p - 1, 1))}
                         className="p-2 bg-slate-800 rounded hover:bg-slate-700"
@@ -458,7 +462,7 @@ function Dashboard() {
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
                     <div className="bg-slate-900 border border-slate-700 rounded p-6 w-full max-w-lg">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-semibold">Advanced Filters</h3>
+                            <h3 className="text-lg font-semibold">{t("dashboard.filterDialog.advancedFilters")}</h3>
                             <X
                                 className="cursor-pointer"
                                 onClick={() => setShowFilter(false)}
@@ -471,7 +475,7 @@ function Dashboard() {
                                 name="minMarketCap"
                                 type="number"
                                 defaultValue={0}
-                                placeholder="Min Market Cap"
+                                placeholder={t("dashboard.filterDialog.inputsPlaceholder.minMarketCap")}
                                 className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
                             />
                             <input
@@ -479,7 +483,7 @@ function Dashboard() {
                                 name="minVolume"
                                 type="number"
                                 defaultValue={0}
-                                placeholder="Min Volume"
+                                placeholder={t("dashboard.filterDialog.inputsPlaceholder.minVolume")}
                                 className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
                             />
                             <input
@@ -487,35 +491,35 @@ function Dashboard() {
                                 name="minPrice"
                                 type="number"
                                 defaultValue={0}
-                                placeholder="Min Price"
+                                placeholder={t("dashboard.filterDialog.inputsPlaceholder.minPrice")}
                                 className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
                             />
                             <select
                                 name="sortBy"
                                 className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
                             >
-                                <option value="index">Rank</option>
-                                <option value="marketCap">Market Cap</option>
-                                <option value="volume">Volume</option>
-                                <option value="change24h">24h Change</option>
-                                <option value="price">Price</option>
-                                <option value="low24h">Low</option>
-                                <option value="high24h">High</option>
-                                <option value="circulatingSupply">Supply</option>
+                                <option value="index">{t("dashboard.tableSection.tableHeaders.rank")}</option>
+                                <option value="marketCap">{t("dashboard.tableSection.tableHeaders.marketCap")}</option>
+                                <option value="volume">{t("dashboard.tableSection.tableHeaders.voulme")}</option>
+                                <option value="change24h">{t("dashboard.tableSection.tableHeaders.change24h")}</option>
+                                <option value="price">{t("dashboard.tableSection.tableHeaders.price")}</option>
+                                <option value="low24h">{t("dashboard.tableSection.tableHeaders.low24h")}</option>
+                                <option value="high24h">{t("dashboard.tableSection.tableHeaders.high24h")}</option>
+                                <option value="circulatingSupply">{t("dashboard.tableSection.tableHeaders.circulatingSupply")}</option>
                             </select>
                             <select
                                 name="sortOrder"
                                 className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
                             >
-                                <option value="desc">Descending</option>
-                                <option value="asc">Ascending</option>
+                                <option value="desc">{t("dashboard.filterDialog.order.desc")}</option>
+                                <option value="asc">{t("dashboard.filterDialog.order.asc")}</option>
                             </select>
 
                             <button
                                 type="submit"
                                 className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded"
                             >
-                                Apply Filters
+                                {t("dashboard.filterDialog.applyFilters")}
                             </button>
                         </form>
                     </div>

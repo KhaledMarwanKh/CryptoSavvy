@@ -5,7 +5,7 @@ const apiURL = import.meta.env.VITE_API_URL + "/api/news";
 class NewsAPIHandler {
     async getNews(filters) {
         try {
-            const response = (await axios.get(apiURL, { params: filters })).data;
+            const response = (await axios.get("https://gnews.io/api/v4/search", { params: filters })).data;
             return response;
 
         } catch (error) {

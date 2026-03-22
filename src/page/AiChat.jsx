@@ -35,33 +35,158 @@ import {
     MACD,
     BollingerBands,
 } from "technicalindicators";
+import { formatCurrency, formatMessageTime, formatNumber, formatPercent } from "../utils/formattor";
+// import { SYSTEM_PROMPT, STORAGE_KEY, INTERVALS, SUGGESTIONS, DEFAULT_MODEL, SYMBOL_MAP } from "../data/constants";
+import { cn } from "../utils/concators";
+import { getBinanceMarketData, getBinanceOHLC, getMarketSentiment } from "../services/cryptoApi";
+import { useTranslation } from "react-i18next";
 
 const STORAGE_KEY = "crypto-market-chat-history-v1";
 const DEFAULT_MODEL = "gpt-4o-mini"; // change if your Puter account uses another model
 const BINANCE_BASE = "https://data-api.binance.vision/api/v3";
-const INTERVALS = ["15m", "1h", "4h", "1d", "1w"];
+const INTERVALS = ["1m", "5m", "15m", "1h", "4h", "1d", "1w"];
 
 const SYMBOL_MAP = {
     bitcoin: "BTCUSDT",
     btc: "BTCUSDT",
+
     ethereum: "ETHUSDT",
     eth: "ETHUSDT",
+
     solana: "SOLUSDT",
     sol: "SOLUSDT",
+
     binance: "BNBUSDT",
     bnb: "BNBUSDT",
+
     ripple: "XRPUSDT",
     xrp: "XRPUSDT",
+
     cardano: "ADAUSDT",
     ada: "ADAUSDT",
+
     dogecoin: "DOGEUSDT",
     doge: "DOGEUSDT",
+
     chainlink: "LINKUSDT",
     link: "LINKUSDT",
+
     avalanche: "AVAXUSDT",
     avax: "AVAXUSDT",
+
+    polkadot: "DOTUSDT",
+    dot: "DOTUSDT",
+
+    litecoin: "LTCUSDT",
+    ltc: "LTCUSDT",
+
+    tron: "TRXUSDT",
+    trx: "TRXUSDT",
+
+    polygon: "MATICUSDT",
+    matic: "MATICUSDT",
+
+    shiba: "SHIBUSDT",
+    shib: "SHIBUSDT",
+
+    aptos: "APTUSDT",
+    apt: "APTUSDT",
+
+    arbitrum: "ARBUSDT",
+    arb: "ARBUSDT",
+
+    optimism: "OPUSDT",
+    op: "OPUSDT",
+
+    near: "NEARUSDT",
+
+    cosmos: "ATOMUSDT",
+    atom: "ATOMUSDT",
+
+    stellar: "XLMUSDT",
+    xlm: "XLMUSDT",
+
+    filecoin: "FILUSDT",
+    fil: "FILUSDT",
+
+    internetcomputer: "ICPUSDT",
+    icp: "ICPUSDT",
+
+    hedera: "HBARUSDT",
+    hbar: "HBARUSDT",
+
+    vechain: "VETUSDT",
+    vet: "VETUSDT",
+
+    eos: "EOSUSDT",
+
+    tezos: "XTZUSDT",
+    xtz: "XTZUSDT",
+
     sui: "SUIUSDT",
     ton: "TONUSDT",
+
+    بيتكوين: "BTCUSDT",
+    بتكوين: "BTCUSDT",
+
+    ايثريوم: "ETHUSDT",
+    إيثريوم: "ETHUSDT",
+
+    سولانا: "SOLUSDT",
+
+    باينانس: "BNBUSDT",
+    بينانس: "BNBUSDT",
+
+    ريبل: "XRPUSDT",
+
+    كاردانو: "ADAUSDT",
+
+    دوجكوين: "DOGEUSDT",
+    دوج: "DOGEUSDT",
+
+    تشينلينك: "LINKUSDT",
+
+    افالانش: "AVAXUSDT",
+    أفالانش: "AVAXUSDT",
+
+    بولكادوت: "DOTUSDT",
+
+    لايتكوين: "LTCUSDT",
+
+    ترون: "TRXUSDT",
+
+    بوليغون: "MATICUSDT",
+    ماتيك: "MATICUSDT",
+
+    شيبا: "SHIBUSDT",
+
+    ابتوس: "APTUSDT",
+
+    اربتريوم: "ARBUSDT",
+    أربيتروم: "ARBUSDT",
+
+    اوبتيميزم: "OPUSDT",
+
+    نير: "NEARUSDT",
+
+    كوزموس: "ATOMUSDT",
+
+    ستيلار: "XLMUSDT",
+
+    فايلكوين: "FILUSDT",
+
+    "انترنت كمبيوتر": "ICPUSDT",
+
+    هيديرا: "HBARUSDT",
+
+    فيتشين: "VETUSDT",
+
+    ايوس: "EOSUSDT",
+
+    تيزوس: "XTZUSDT",
+
+    سوي: "SUIUSDT",
+    تون: "TONUSDT",
 };
 
 const SUGGESTIONS = [
@@ -69,6 +194,13 @@ const SUGGESTIONS = [
     "Analyze ETHUSDT on the 4h timeframe.",
     "Explain RSI, MACD, and Bollinger Bands in crypto trading.",
     "Give me a crypto market overview today.",
+];
+
+const ARSUGGESTIONS = [
+    "ما هو سعر البيتكوين الآن؟",
+    "حلّل ETHUSDT على إطار 4 ساعات",
+    "اشرح RSI و MACD و Bollinger Bands",
+    "أعطني نظرة عامة على السوق اليوم"
 ];
 
 const SYSTEM_PROMPT = `
@@ -94,9 +226,32 @@ Formatting:
 - Use short headings
 - Use bullets where useful
 - Highlight important numbers in bold
+- Answer in clear english language 
 `;
 
-const cn = (...classes) => classes.filter(Boolean).join(" ");
+const ARSYSTEMPROMPT = `أنت CryptoPilot، مساعد محترف في سوق العملات الرقمية.
+القواعد:
+- أجب فقط على الأسئلة المتعلقة بالعملات الرقمية:
+  أسعار العملات، تحليل السوق، التحليل الفني، المؤشرات، اقتصاديات التوكن (Tokenomics)، مصطلحات البلوكشين، التمويل اللامركزي (DeFi)، معنويات السوق، إدارة المخاطر في المحافظ، التعليم الاستثماري في الكريبتو، وتحليل الملفات أو الصور المتعلقة بالكريبتو.
+- إذا طرح المستخدم سؤالًا غير متعلق بالكريبتو، قم بالرفض بأسلوب مهذب ووجّهه نحو مواضيع العملات الرقمية.
+- استخدم بيانات السوق المباشرة وبيانات المؤشرات عند توفرها.
+- لا تعد أبدًا بتحقيق أرباح أو نتائج مؤكدة.
+- قدم إرشادات استثمارية عملية وتعليمية مع مراعاة المخاطر.
+- عند طلب تحليل السعر أو السوق، قم بشرح:
+  1) الاتجاه الحالي
+  2) الزخم
+  3) مستويات الدعم والمقاومة
+  4) المخاطر
+  5) السيناريوهات المحتملة (صعودية / هبوطية)
+- إذا تم رفع ملفات أو صور، قم بتحليل المتاح فقط واذكر القيود إن وجدت.
+
+التنسيق:
+- استخدم تنسيق Markdown نظيف
+- استخدم عناوين قصيرة
+- استخدم النقاط عند الحاجة
+- قم بإبراز الأرقام المهمة باستخدام **الخط العريض**
+-اجب باللغة العربية واضحة وقم بترجمة المحتوا اذا تطلب الامر
+`;
 
 const uid = () =>
     typeof crypto !== "undefined" && crypto.randomUUID
@@ -105,45 +260,6 @@ const uid = () =>
 
 const round = (n, p = 4) =>
     n == null || Number.isNaN(Number(n)) ? null : Number(Number(n).toFixed(p));
-
-function formatCurrency(value) {
-    if (value == null || Number.isNaN(Number(value))) return "—";
-    const n = Number(value);
-    return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: n < 1 ? 6 : n < 100 ? 4 : 2,
-    }).format(n);
-}
-
-function formatNumber(value, digits = 2) {
-    if (value == null || Number.isNaN(Number(value))) return "—";
-    return new Intl.NumberFormat("en-US", {
-        notation: Math.abs(Number(value)) >= 1000000 ? "compact" : "standard",
-        maximumFractionDigits: digits,
-    }).format(Number(value));
-}
-
-function formatPercent(value) {
-    if (value == null || Number.isNaN(Number(value))) return "—";
-    const n = Number(value);
-    return `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
-}
-
-function formatMessageTime(ts) {
-    return new Date(ts).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-}
-
-function formatAxisTime(ts, interval) {
-    const d = new Date(ts);
-    if (interval === "1d" || interval === "1w") {
-        return d.toLocaleDateString([], { month: "short", day: "numeric" });
-    }
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
 
 function stripMarkdown(text = "") {
     return text.replace(/[#>*`_[\]\(\)-]/g, "").replace(/\n+/g, " ").trim();
@@ -182,19 +298,30 @@ function shouldShowMarketChart(text = "") {
     const hasSymbol = !!extractSymbolFromText(text);
     const priceIntent = /(price|chart|analy[sz]e|analysis|trend|support|resistance|ohlc|candles?|technical|market overview|market today)/i.test(
         text
-    );
+    ) || /(سعر|الأسعار|مخطط|رسم بياني|تحليل|حلل|اتجاه|ترند|دعم|مقاومة|شموع|الشموع|تقني|تحليل فني|نظرة عامة على السوق|السوق اليوم)/i.test(text);
+
     const genericMarket = /(crypto market|market overview|market today|analy[sz]e the market|overall market)/i.test(
         text
-    );
-    return (priceIntent && hasSymbol) || genericMarket;
+    ) || /(سوق الكريبتو|سوق العملات الرقمية|نظرة عامة على السوق|السوق اليوم|تحليل السوق|حلل السوق|تحليل السوق بالكامل|نظرة عامة على السوق بالكامل)/i.test(text);
+
+    return ((priceIntent && hasSymbol) || genericMarket);
 }
 
-function createWelcomeMessage() {
-    return {
-        id: uid(),
-        role: "assistant",
-        createdAt: Date.now(),
-        content: `
+const content = [
+    `## مرحبًا بك في CryptoPilot
+
+اسألني عن:
+
+- **أسعار العملات الرقمية المباشرة**
+- **تحليل السوق**
+- **تحليل المخططات / بيانات OHLC**
+- **RSI، MACD، EMA، SMA، Bollinger Bands**
+- **مصطلحات ومفاهيم العملات الرقمية**
+- **إرشادات استثمارية مع مراعاة المخاطر**
+- **تحليل صور مخططات الكريبتو أو ملفات CSV و JSON والنصوص**
+
+> أجيب فقط على الأسئلة المتعلقة بـ **سوق العملات الرقمية**.`,
+    `
 ## Welcome to CryptoPilot
 
 Ask me about:
@@ -208,7 +335,15 @@ Ask me about:
 - **Uploaded crypto chart screenshots, CSV, JSON, or text files**
 
 > I only answer questions related to the **crypto market**.
-    `.trim(),
+    `
+]
+
+function createWelcomeMessage() {
+    return {
+        id: uid(),
+        role: "assistant",
+        createdAt: Date.now(),
+        content: localStorage.getItem("i18nextLng") === "ar" ? content[0].trim() : content[1].trim(),
     };
 }
 
@@ -314,7 +449,22 @@ function buildPrompt({ recentMessages, userText, marketContext, attachments }) {
         )
         : "No live market data injected for this turn.";
 
-    return `
+    const ret = localStorage.getItem("i18nextLng") === "ar" ?
+        `${ARSYSTEMPROMPT}
+بيانات السوق المباشرة:
+${marketBlock}
+
+المرفقات:
+${summarizeAttachments(attachments)}
+
+المحادثة الأخيرة:
+${recentChat || "لا يوجد سياق سابق."}
+
+طلب المستخدم:
+${userText || "يرجى تحليل المرفق المتعلق بالعملات الرقمية."}
+
+يرجى الرد باستخدام Markdown احترافي وبأسلوب مختصر وواضح.
+`.trim() : `
 ${SYSTEM_PROMPT}
 
 LIVE MARKET CONTEXT:
@@ -331,6 +481,8 @@ ${userText || "Please analyze the uploaded crypto-related attachment."}
 
 Respond with professional, concise markdown.
   `.trim();
+
+    return ret;
 }
 
 function extractPuterText(result) {
@@ -348,51 +500,6 @@ function extractPuterText(result) {
         return result.content.map((item) => item?.text || "").join("\n");
     }
     return "No response received.";
-}
-
-/* ================================
-   Required tool functions
-================================ */
-
-/** 1) Binance market data */
-async function getBinanceMarketData(symbol = "BTCUSDT") {
-    const res = await fetch(`${BINANCE_BASE}/ticker/24hr?symbol=${symbol}`);
-    if (!res.ok) throw new Error("Failed to fetch Binance market data.");
-    const data = await res.json();
-
-    return {
-        symbol: data.symbol,
-        price: Number(data.lastPrice),
-        priceChangePercent: Number(data.priceChangePercent),
-        high: Number(data.highPrice),
-        low: Number(data.lowPrice),
-        open: Number(data.openPrice),
-        prevClose: Number(data.prevClosePrice),
-        bid: Number(data.bidPrice),
-        ask: Number(data.askPrice),
-        volume: Number(data.volume),
-        quoteVolume: Number(data.quoteVolume),
-    };
-}
-
-/** 2) Binance OHLC */
-async function getBinanceOHLC(symbol = "BTCUSDT", interval = "1h", limit = 120) {
-    const res = await fetch(
-        `${BINANCE_BASE}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    );
-    if (!res.ok) throw new Error("Failed to fetch Binance OHLC data.");
-    const data = await res.json();
-
-    return data.map((item) => ({
-        openTime: item[0],
-        open: Number(item[1]),
-        high: Number(item[2]),
-        low: Number(item[3]),
-        close: Number(item[4]),
-        volume: Number(item[5]),
-        closeTime: item[6],
-        label: formatAxisTime(item[0], interval),
-    }));
 }
 
 /** helper: indicators from OHLC candles */
@@ -446,20 +553,6 @@ function calculateIndicatorsFromCandles(candles = []) {
 async function calculateIndicators(symbol = "BTCUSDT", interval = "1h") {
     const candles = await getBinanceOHLC(symbol, interval, getIntervalLimit(interval));
     return calculateIndicatorsFromCandles(candles);
-}
-
-/** 4) Free sentiment API */
-async function getMarketSentiment() {
-    const res = await fetch("https://api.alternative.me/fng/?limit=1");
-    if (!res.ok) throw new Error("Failed to fetch sentiment.");
-    const data = await res.json();
-    const item = data?.data?.[0];
-
-    return {
-        value: Number(item?.value),
-        classification: item?.value_classification || "Unknown",
-        timestamp: item?.timestamp,
-    };
 }
 
 async function getMarketToolPack(symbol = "BTCUSDT", interval = "1h") {
@@ -617,10 +710,11 @@ function MarkdownMessage({ content }) {
 }
 
 function LoadingBubble() {
+    const { t } = useTranslation();
     return (
         <div className="flex items-center gap-2 text-slate-300">
             <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-            <span className="text-sm">Analyzing crypto market data...</span>
+            <span className="text-sm">{t("aiChat.analyzing")}</span>
         </div>
     );
 }
@@ -700,9 +794,9 @@ function StatCard({ label, value, tone = "default" }) {
 }
 
 function MarketChartCard({ messageId, chart, onChangeInterval }) {
+    const { t } = useTranslation();
     const positive = Number(chart?.market?.priceChangePercent || 0) >= 0;
     const stroke = positive ? "#34d399" : "#f87171";
-    const fill = positive ? "rgba(52, 211, 153, 0.18)" : "rgba(248, 113, 113, 0.18)";
     const gradientId = `area-gradient-${messageId}`;
 
     return (
@@ -786,7 +880,7 @@ function MarketChartCard({ messageId, chart, onChangeInterval }) {
                 {chart.loading ? (
                     <div className="flex h-full items-center justify-center text-slate-300">
                         <Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-400" />
-                        Updating chart...
+                        {t("aiChat.updatingChart")}
                     </div>
                 ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -843,6 +937,7 @@ function MarketChartCard({ messageId, chart, onChangeInterval }) {
 }
 
 export default function CryptoChatPage() {
+    const { t, i18n } = useTranslation();
     const [chats, setChats] = useState(() => loadChatsFromStorage());
     const [activeChatId, setActiveChatId] = useState(() => loadChatsFromStorage()[0]?.id);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -913,7 +1008,7 @@ export default function CryptoChatPage() {
     };
 
     const deleteChat = (chatId) => {
-        const ok = window.confirm("Delete this chat?");
+        const ok = window.confirm(t("aiChat.deleteChat"));
         if (!ok) return;
 
         const next = chats.filter((chat) => chat.id !== chatId);
@@ -1034,7 +1129,8 @@ export default function CryptoChatPage() {
             const prepared = await Promise.all(files.map(prepareAttachment));
             setComposerAttachments((prev) => [...prev, ...prepared]);
         } catch (err) {
-            setComposerError("Failed to read uploaded file(s).");
+            console.log(err)
+            setComposerError(t("aiChat.uploadingError"));
         }
     };
 
@@ -1052,7 +1148,7 @@ export default function CryptoChatPage() {
         if (!SpeechRecognition) return;
 
         const recognition = new SpeechRecognition();
-        recognition.lang = "en-US";
+        recognition.lang = i18n.language === "ar" ? "ar-SY" : "en-US";
         recognition.interimResults = true;
         recognition.continuous = true;
 
@@ -1132,6 +1228,7 @@ export default function CryptoChatPage() {
             setIsRecording(true);
             startOptionalSpeechRecognition();
         } catch (err) {
+            console.log(err)
             setComposerError("Microphone access denied or unavailable.");
         }
     };
@@ -1264,6 +1361,10 @@ export default function CryptoChatPage() {
         }
     };
 
+    useEffect(() => {
+        createNewChat();
+    }, [i18n.language])
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
             <div className="flex h-screen">
@@ -1289,13 +1390,12 @@ export default function CryptoChatPage() {
                                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
                             >
                                 <Plus className="h-4 w-4" />
-                                New Chat
+                                {t("aiChat.newChat")}
                             </button>
                         </div>
 
                         <div className="flex-1 space-y-2 overflow-y-auto p-3">
                             {chats.map((chat) => {
-                                const lastMessage = chat.messages?.[chat.messages.length - 1];
                                 const active = chat.id === activeChat?.id;
 
                                 return (
@@ -1318,9 +1418,6 @@ export default function CryptoChatPage() {
                                             <div className="truncate text-sm font-medium text-slate-100">
                                                 {chat.title}
                                             </div>
-                                            <div className="mt-1 truncate text-xs text-slate-400">
-                                                {stripMarkdown(lastMessage?.content || "No messages")}
-                                            </div>
                                         </button>
 
                                         <button
@@ -1334,51 +1431,27 @@ export default function CryptoChatPage() {
                             })}
                         </div>
 
-                        <div className="border-t border-slate-700/50 p-4">
-                            <div className="rounded-2xl border border-slate-700/50 bg-slate-950/40 p-3">
-                                <div className="flex items-center gap-2 text-sm text-slate-200">
-                                    <Sparkles className="h-4 w-4 text-blue-400" />
-                                    <span>Crypto-only mode</span>
-                                </div>
-                                <p className="mt-2 text-xs leading-6 text-slate-400">
-                                    Powered by Puter.js + Binance + technical indicators + Fear & Greed.
-                                </p>
-                            </div>
-                        </div>
                     </div>
                 </aside>
 
                 {/* Main */}
                 <main className="flex min-w-0 flex-1 flex-col">
                     {/* Header */}
-                    <div className="sticky top-0 z-20 border-b border-slate-700/50 bg-slate-950/60 backdrop-blur-xl">
+                    <div className="sticky top-0 z-20 backdrop-blur-xl">
                         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6">
                             <div className="flex items-center gap-3">
                                 <button
-                                    className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-2 text-slate-200 md:hidden"
+                                    className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-2 text-slate-200 lg:hidden"
                                     onClick={() => setSidebarOpen(true)}
                                 >
                                     <Menu className="h-5 w-5" />
                                 </button>
-
-                                <div>
-                                    <div className="text-sm font-semibold text-slate-100">
-                                        Crypto Market Assistant
-                                    </div>
-                                    <div className="text-xs text-slate-400">
-                                        Live market data · charting · indicators · sentiment
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="hidden rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400 sm:block">
-                                Live tools enabled
                             </div>
                         </div>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto pt-4">
                         <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
                             <div className="space-y-6">
                                 {(activeChat?.messages || []).map((message) => {
@@ -1412,7 +1485,7 @@ export default function CryptoChatPage() {
                                                                 {isUser ? (
                                                                     <>
                                                                         <User className="h-3.5 w-3.5" />
-                                                                        You
+                                                                        {t("aiChat.you")}
                                                                     </>
                                                                 ) : (
                                                                     <>
@@ -1463,15 +1536,15 @@ export default function CryptoChatPage() {
                                     <div className="mx-auto mt-6 max-w-4xl">
                                         <div className="mb-4 text-center">
                                             <h2 className="text-2xl font-semibold text-white">
-                                                Ask anything about the crypto market
+                                                {t("aiChat.askCrypto")}
                                             </h2>
                                             <p className="mt-2 text-sm text-slate-400">
-                                                Prices, trend analysis, indicators, crypto terms, sentiment, or file/image analysis.
+                                                {t("aiChat.pp")}
                                             </p>
                                         </div>
 
                                         <div className="grid gap-3 md:grid-cols-2">
-                                            {SUGGESTIONS.map((item) => (
+                                            {(i18n.language === "ar" ? ARSUGGESTIONS : SUGGESTIONS).map((item) => (
                                                 <button
                                                     key={item}
                                                     onClick={() => handleSend(item)}
@@ -1493,7 +1566,7 @@ export default function CryptoChatPage() {
                     </div>
 
                     {/* Composer */}
-                    <div className="sticky bottom-0 z-20 border-t border-slate-700/50 bg-slate-950/70 backdrop-blur-xl">
+                    <div className="sticky bottom-0 z-20">
                         <div className="mx-auto w-full max-w-5xl px-4 py-4 md:px-6">
                             {!!composerAttachments.length && (
                                 <div className="mb-3 flex flex-wrap gap-2">
@@ -1529,7 +1602,7 @@ export default function CryptoChatPage() {
 
                             {isRecording && (
                                 <div className="mb-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
-                                    Recording voice... click the stop button when finished.
+                                    {t("aiChat.recording")}
                                 </div>
                             )}
 
@@ -1540,7 +1613,7 @@ export default function CryptoChatPage() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleTextareaKeyDown}
-                                    placeholder="Ask about BTC price, analyze ETH market, explain RSI, or upload a crypto chart..."
+                                    placeholder={t("aiChat.askPlaceholder")}
                                     className="w-full resize-none bg-transparent px-4 py-4 text-sm text-white outline-none placeholder:text-slate-500"
                                 />
 
@@ -1561,7 +1634,7 @@ export default function CryptoChatPage() {
                                         <button
                                             onClick={() => fileInputRef.current?.click()}
                                             className="rounded-xl border border-slate-700 bg-slate-900/70 p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
-                                            title="Upload file"
+                                            title={t("aiChat.uploadFile")}
                                         >
                                             <Paperclip className="h-4 w-4" />
                                         </button>
@@ -1574,7 +1647,7 @@ export default function CryptoChatPage() {
                                                     ? "border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20"
                                                     : "border-slate-700 bg-slate-900/70 text-slate-300 hover:bg-slate-800 hover:text-white"
                                             )}
-                                            title={isRecording ? "Stop recording" : "Record voice"}
+                                            title={isRecording ? t("aiChat.stopRecording") : t("aiChat.startRecording")}
                                         >
                                             {isRecording ? (
                                                 <Square className="h-4 w-4" />
@@ -1599,14 +1672,10 @@ export default function CryptoChatPage() {
                                         ) : (
                                             <Send className="h-4 w-4" />
                                         )}
-                                        Send
+                                        {t("aiChat.send")}
                                     </button>
                                 </div>
                             </div>
-
-                            <p className="mt-2 text-center text-xs text-slate-500">
-                                Crypto-only assistant • Live Binance data • Educational guidance, not guaranteed financial outcomes
-                            </p>
                         </div>
                     </div>
                 </main>

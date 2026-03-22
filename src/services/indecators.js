@@ -512,12 +512,6 @@ async function analyzeCoinBinance({
             donchianWidth20: last(donchianWidth20), // 19
             linRegSlope20: last(LRSLOPE20),         // 20
         },
-
-        notes: [
-            "All indicators are computed from Binance klines (OHLCV).",
-            "VWAP here is cumulative over the returned candles, not exchange session VWAP.",
-            "Liquidity classification is heuristic; tune thresholds to your needs.",
-        ],
     };
 
     return response;

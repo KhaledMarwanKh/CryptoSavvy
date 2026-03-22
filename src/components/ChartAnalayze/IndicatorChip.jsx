@@ -1,6 +1,4 @@
-function cn(...xs) {
-    return xs.filter(Boolean).join(" ");
-}
+import { cn } from "../../utils/concators";
 
 export default function IndicatorChip({ title, value, hint }) {
     return (

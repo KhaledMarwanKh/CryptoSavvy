@@ -1,5 +1,20 @@
 {
+    "navbar": {
+        "tabs": {
+            "dashboard": "Dashboard",
+            "news": "News",
+            "aiChat": "AI Chat",
+            "aiAnalyze": "AI Analyze",
+            "about": "About",
+            "currency": "Currency Market",
+            "contact": "Contact",
+            "logout": "Logout",
+            "menu": "Menu",
+            "login": "Login"
+        }
+    },
     "dashboard": {
+        "q": "bitcoin OR ethereum OR crypto OR blockchain",
         "sidebBar": {
             "latestNews": "Latest News",
             "readStory": "Read Full Story"
@@ -62,15 +77,19 @@
         "create": " Create new account",
         "errorMessags": {
             "m1": "Please enter your email address.",
+            "m4": "Please enter a valid email address.",
             "m2": "Please enter your password.",
             "m3": "Password must be at least 8 characters"
         },
-        "title": "Welcome to the smart analysis platform"
+        "title": "Welcome to the smart analysis platform",
+        "success": "Login Successfully",
+        "error": "Something goes wrong"
     },
     "register": {
         "errorMessages": {
             "m1": "Please enter your Name.",
             "m2": "Please enter your email address.",
+            "m7": "Please enter a valid email address.",
             "m3": "Please enter your password.",
             "m4": "Please enter confirm password.",
             "m5": "Password must be at least 8 characters",
@@ -86,13 +105,15 @@
         },
         "create": "Create Account",
         "haveAcc": " Already have an account?",
-        "login": "Login"
+        "login": "Login",
+        "sent": "Verification Code is sent to "
     },
     "verification": {
         "errorMessages": {
             "m1": "Please enter your email address.",
             "m2": "Please enter code"
         },
+        "success": "Verification Success",
         "ver": "Verification",
         "verA": "Verify Your Account",
         "enterCode": "Enter your email and the verification code sent to you.",
@@ -125,7 +146,9 @@
             "s1": "Password has been changed successfully"
         },
         "signIn": "Sign In",
-        "remPass": "Remember your password?"
+        "remPass": "Remember your password?",
+        "title": "Reset Password",
+        "subTitle": " Enter your email and choose a new secure password."
     },
     "about": {
         "feature_1": {
@@ -210,6 +233,7 @@
         "social": "Social",
         "form": {
             "send": "Send a message",
+            "sending": "Sending...",
             "fill": "Fill out the form and we’ll reply to your email.",
             "inputs": {
                 "in1": {
@@ -246,7 +270,9 @@
             "from": "From",
             "to": "To",
             "sortBy": "Sort By"
-        }
+        },
+        "reset": "Reset All",
+        "apply": "Apply Filters"
     },
     "coinDetails": {
         "labels": {
@@ -265,6 +291,309 @@
             "price": "Price",
             "amount": "Amount",
             "total": "Total"
+        },
+        "bids": "Bids",
+        "asks": "Asks"
+    },
+    "profile": {
+        "errorMessages": {
+            "m1": "Image size must be less than 5MB.",
+            "m2": "Please upload a valid image file.",
+            "m3": "Please fill in all password fields."
+        },
+        "successMessages": {
+            "s1": "Profile image uploaded successfully.",
+            "s2": "Settings updated successfully.",
+            "s3": "Password changed successfully.",
+            "s4": "Profile image removed."
+        },
+        "as": "Account Settings",
+        "pp": "Profile Page",
+        "manage": "Manage your profile information, security settings, and notifications in one place.",
+        "upload": "Upload New Image",
+        "remove": "Remove Image",
+        "support": "Supported formats: JPG, PNG, WEBP — Max 5MB",
+        "pi": "Personal Information",
+        "uy": "Update your basic account details.",
+        "save": "Save Profile",
+        "config": "Configurations",
+        "cy": "Control your security and notification preferences.",
+        "toggleItems": {
+            "item_1": {
+                "title": "Two-Step Verification",
+                "desc": "Add an extra layer of security to your account."
+            },
+            "item_2": {
+                "title": "Notification Activation",
+                "desc": "Receive email and app notifications for account activity."
+            }
+        },
+        "saveP": "Save Settings",
+        "changeP": "Change Password",
+        "uyp": "Update your password to keep your account secure.",
+        "cup": "Current Password",
+        "np": "New Password",
+        "cp": "Confirm Password",
+        "up": "Update Password"
+    },
+    "analyzeSection": {
+        "common": {
+            "na": "—"
+        },
+        "classification": {
+            "title": "Classification",
+            "subtitle": "High-level state (readable signals)",
+            "trend": "Trend",
+            "strength": "Strength",
+            "volatility": "Volatility",
+            "liquidity": "Liquidity",
+            "momentum": "Momentum",
+            "spread": "Spread",
+            "bestBid": "Best bid",
+            "bestAsk": "Best ask",
+            "orderBookImbalance": "Order Book Imbalance",
+            "bidHeavy": "Bid-heavy",
+            "askHeavy": "Ask-heavy",
+            "bidNotional": "Bid notional",
+            "askNotional": "Ask notional"
+        },
+        "last24h": {
+            "title": "Last 24h",
+            "subtitle": "Liquidity & range context",
+            "change": "Change",
+            "trades": "Trades",
+            "highLow": "High / Low",
+            "volume": "Volume (Quote / Base)"
+        },
+        "quickRead": {
+            "title": "Quick read",
+            "subtitle": "Interpretation of the most important indicators",
+            "rsi": "RSI (14)",
+            "adx": "ADX (14)",
+            "macdHistogram": "MACD Histogram",
+            "linearReg": "Linear Reg Slope (20)",
+            "rsiHint": "0–100: below 30 oversold, above 70 overbought.",
+            "adxHint": "Trend strength measure (not direction): 25+ often indicates trend.",
+            "macdLine": "line",
+            "macdSignal": "signal"
+        },
+        "indicators": {
+            "title": "Indicators",
+            "trendAverages": "Trend & Averages",
+            "momentum": "Momentum",
+            "volatility": "Volatility",
+            "bandsVolume": "Bands & Volume"
+        },
+        "indicatorTiles": {
+            "sma20": {
+                "name": "SMA 20",
+                "hint": "Short-term average"
+            },
+            "sma50": {
+                "name": "SMA 50",
+                "hint": "Medium-term average"
+            },
+            "ema20": {
+                "name": "EMA 20",
+                "hint": "Faster average (more weight to recent)"
+            },
+            "ema50": {
+                "name": "EMA 50",
+                "hint": "Smoother medium average"
+            },
+            "adx": {
+                "name": "ADX 14",
+                "hint": "Trend strength (0–50+)"
+            },
+            "di": {
+                "name": "+DI / -DI (14)",
+                "hint": "Directional movement"
+            },
+            "rsi": {
+                "name": "RSI 14"
+            },
+            "stochastic": {
+                "name": "Stochastic %K (14)"
+            },
+            "williamsR": {
+                "name": "Williams %R (14)"
+            },
+            "roc": {
+                "name": "ROC (12)",
+                "hint": "Rate of change"
+            },
+            "macd": {
+                "name": "MACD (Line / Signal / Hist)",
+                "hint": "Momentum + crossovers"
+            },
+            "atr": {
+                "name": "ATR (14)",
+                "hint": "Average True Range"
+            },
+            "realizedVol": {
+                "name": "Realized Vol (20)",
+                "hint": "20-period realized volatility"
+            },
+            "donchian": {
+                "name": "Donchian Width (20)",
+                "hint": "Breakout range width"
+            },
+            "vwap": {
+                "name": "VWAP",
+                "hint": "Volume-weighted average price"
+            },
+            "bollingerUpper": {
+                "name": "Bollinger Upper",
+                "hint": "Upper band (20, 2σ)"
+            },
+            "bollingerLower": {
+                "name": "Bollinger Lower",
+                "hint": "Lower band (20, 2σ)"
+            },
+            "bollingerWidth": {
+                "name": "Bollinger Width",
+                "hint": "Band width (relative)"
+            },
+            "bollingerPctB": {
+                "name": "Bollinger %B",
+                "hint": "Where price sits within bands"
+            },
+            "obv": {
+                "name": "OBV",
+                "hint": "On-balance volume"
+            },
+            "bollingerMid": {
+                "name": "Bollinger Mid (SMA20)",
+                "hint": "Middle band"
+            }
+        },
+        "states": {
+            "overbought": "Overbought",
+            "oversold": "Oversold",
+            "neutral": "Neutral",
+            "trending": "Trending",
+            "developing": "Developing",
+            "weakTrend": "Weak trend",
+            "bullishMomentum": "Bullish momentum",
+            "bearishMomentum": "Bearish momentum",
+            "flat": "Flat",
+            "upwardBias": "Upward bias",
+            "downwardBias": "Downward bias",
+            "bullish": "Bullish",
+            "bearish": "Bearish",
+            "positive": "Positive",
+            "negative": "Negative",
+            "abovePrice": "Above price",
+            "belowPrice": "Below price",
+            "aboveVWAP": "Above VWAP",
+            "belowVWAP": "Below VWAP",
+            "accumulation": "Accumulation",
+            "distribution": "Distribution"
+        },
+        "scale": {
+            "lower": "Lower",
+            "mid": "Mid",
+            "upper": "Upper"
+        }
+    },
+    "aiChat": {
+        "newChat": "New Chat",
+        "deleteChat": "Delete this chat?",
+        "you": "You",
+        "assistant": "CryptoPilot",
+        "welcomeTitle": "Welcome to CryptoPilot",
+        "askCrypto": "Ask anything about the crypto market",
+        "askPlaceholder": "Ask about BTC price, analyze ETH market, explain RSI, or upload a crypto chart...",
+        "send": "Send",
+        "uploadingError": "Failed to read uploaded file(s).",
+        "recording": "Recording voice... click the stop button when finished.",
+        "stopRecording": "Stop recording",
+        "startRecording": "Record voice",
+        "uploadFile": "Upload file",
+        "analyzing": "Analyzing crypto market data...",
+        "updatingChart": "Updating chart...",
+        "footer": "Crypto-only assistant • Live Binance data • Educational guidance, not guaranteed financial outcomes",
+        "pp": "Prices, trend analysis, indicators, crypto terms, sentiment, or file/image analysis."
+    },
+    "currency": {
+        "modes": {
+            "globalServices": "Global Currencies",
+            "sypServices": "SYP"
+        },
+        "errors": {
+            "sameCurrency": "Base and target currencies are the same. Choose different currencies to view a chart.",
+            "chartFailed": "Failed to load chart data.",
+            "tableFailed": "Failed to load latest rates."
+        },
+        "chart": {
+            "title": "Trend",
+            "current": "Current:",
+            "change": "Change:",
+            "noData": "No chart data available.",
+            "loading": "Loading chart…"
+        },
+        "currency": {
+            "base": "Base currency",
+            "target": "Target currency"
+        },
+        "converter": {
+            "title": "Converter",
+            "convert": "Convert",
+            "amount": "Amount",
+            "placeholder": "0.00",
+            "swap": "Swap",
+            "swapTitle": "Swap currencies",
+            "receive": "You receive",
+            "rate": "Rate:"
+        },
+        "table": {
+            "title": "Latest rates",
+            "subtitle": "against other currencies",
+            "loading": "Loading…",
+            "currenciesCount": "currencies",
+            "columns": {
+                "currency": "Currency",
+                "rate": "Rate",
+                "meaning": "Meaning"
+            },
+            "noRates": "No rates available."
+        },
+        "mobileCard": {
+            "currency": "Currency",
+            "rate": "Rate"
+        }
+    },
+    "sypServices": {
+        "converter": {
+            "title": "Currency Converter",
+            "amountLabel": "Amount",
+            "amountPlaceholder": "Enter amount",
+            "currencyLabel": "Currency",
+            "resultLabel": "Result",
+            "emptyResult": "--",
+            "currencySuffix": {
+                "SYP_TO": "currency",
+                "TO_SYP": "SYP"
+            }
+        },
+        "table": {
+            "title": "Latest rates",
+            "loading": "Loading…",
+            "currenciesCount": "{{count}} currencies",
+            "mobile": {
+                "buy": "Buy :",
+                "sell": "Sell :"
+            },
+            "desktop": {
+                "headers": {
+                    "currency": "Currency",
+                    "name": "Name",
+                    "buy": "Buy (SYP)",
+                    "sell": "Sell (SYP)",
+                    "change": "Change"
+                }
+            },
+            "empty": "No rates available."
         }
     }
 }

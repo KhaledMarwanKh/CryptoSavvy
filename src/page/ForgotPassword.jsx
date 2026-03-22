@@ -4,8 +4,10 @@ import axiosInst from "../libs/axiosInst";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { isValidEmail } from "../utils/validators";
+import { useTranslation } from "react-i18next"
 
 export default function ForgotPassword() {
+    const { i18n, t } = useTranslation();
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
@@ -17,13 +19,13 @@ export default function ForgotPassword() {
         setLoading(true);
 
         if (email.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your email address." });
+            setMessage({ type: "error", text: t("login.errorMessags.m1") });
             setLoading(false);
             return;
         }
 
         if (!isValidEmail(email.trim())) {
-            setMessage({ type: "error", text: "Please enter a vaild email address." });
+            setMessage({ type: "error", text: t("login.errorMessags.m4") });
             setLoading(false);
             return;
         }
@@ -33,7 +35,7 @@ export default function ForgotPassword() {
         try {
             await axiosInst.post(apiURL + "/forget-password", { email });
 
-            toast.success(`A Verification Code is sent to ${email}`);
+            toast.success(`${t("register.sent")}${email}`);
 
             setTimeout(() => {
                 navigate('/auth/verify-code');
@@ -45,7 +47,7 @@ export default function ForgotPassword() {
             if (error instanceof AxiosError) {
                 setMessage({
                     type: "error",
-                    text: error?.response?.data?.message ?? "Something goes wrong",
+                    text: error?.response?.data?.message ?? t("login.error"),
                 });
             }
         }
@@ -60,10 +62,10 @@ export default function ForgotPassword() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-white tracking-wide">
-                        Forgot Password
+                        {t("forgotPassword.title")}
                     </h1>
                     <p className="text-slate-400 mt-2 text-sm">
-                        Enter your email and we will send you a reset code.
+                        {t("forgotPassword.titleSec")}
                     </p>
                 </div>
 
@@ -83,9 +85,10 @@ export default function ForgotPassword() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Email Address
+                            {t("login.labels.email")}
                         </label>
                         <input
+                            dir="ltr"
                             type="email"
                             placeholder="example@email.com"
                             value={email}
@@ -102,7 +105,7 @@ export default function ForgotPassword() {
                         {
                             loading ? (
                                 <span className="loading loading-spinner"></span>
-                            ) : "Send Code"
+                            ) : t("forgotPassword.send")
                         }
                     </button>
                 </form>
@@ -110,12 +113,12 @@ export default function ForgotPassword() {
                 {/* Footer */}
                 <div className="mt-8 text-center">
                     <p className="text-sm text-slate-400">
-                        Back to{" "}
+                        {t("forgotPassword.backTO")}{" "}
                         <a
                             onClick={() => navigate("/auth/login")}
                             className="text-blue-600 hover:underline font-semibold transition cursor-pointer"
                         >
-                            Sign In
+                            {t("forgotPassword.sign")}
                         </a>
                     </p>
                 </div>

@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useRef,
   useState
@@ -9,11 +10,14 @@ import {
   CandlestickSeries,
   CrosshairMode
 } from "lightweight-charts";
+import { toast } from "react-toastify"
 import { useNavigate, useParams } from "react-router";
 import chartHandler from "../libs/ChartDataHandler";
 import socket from "../libs/socket";
 import analyzeCoinBinance from "../services/indecators";
 import MarketCard from "../components/CoinDetails/AnalyzeSection";
+import { INTERVALS } from "../data/constants";
+import { useTranslation } from "react-i18next"
 
 const mockCoin = {
   logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029",
@@ -29,8 +33,8 @@ const mockCoin = {
 };
 
 function CoinDetails() {
+  const { i18n, t } = useTranslation();
   const { coinId } = useParams();
-
   const navigate = useNavigate();
 
   const chartRef = useRef(null);
@@ -53,7 +57,7 @@ function CoinDetails() {
         bids: [{}]
       }
     ]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [indecatorsData, setIndecatorsData] = useState({
     meta: {
 
@@ -64,6 +68,11 @@ function CoinDetails() {
     market: {},
     indicators: {}
   })
+  const [isAddedToWatchlist, setIsAddedToWatchlist] = useState(false);
+
+  const update = useCallback(async (flag) => {
+    setIsAddedToWatchlist(flag);
+  }, [])
 
   const updateSeries = (data,
     currentMode) => {
@@ -144,6 +153,63 @@ function CoinDetails() {
   const onDisconnect = () => {
     console.log("disconnected")
   }
+
+  const onAddToWatchlist = () => {
+    let watchlist = localStorage.watchlist;
+
+    if (watchlist) {
+      watchlist = JSON.parse(watchlist);
+    } else {
+      watchlist = {
+        list: []
+      };
+    }
+
+    watchlist.list.push({
+      symbol: coinId,
+      baseSymbol: coin.baseSymbol
+    });
+
+    localStorage.setItem("watchlist", JSON.stringify(watchlist));
+
+    toast.success(`Coin ${coinId} added to watchlist`);
+
+    setIsAddedToWatchlist(true);
+  }
+
+  const removeFromWatchlist = () => {
+    const { watchlist } = localStorage;
+
+    if (watchlist) {
+      let list = JSON.parse(watchlist)?.list;
+
+      list = list?.filter(coin => coin.symbol !== coinId);
+
+      localStorage.setItem("watchlist", JSON.stringify(
+        {
+          list
+        }
+      ))
+    }
+
+    setIsAddedToWatchlist(false);
+  }
+
+  useEffect(() => {
+
+    const { watchlist } = localStorage;
+
+    if (watchlist) {
+      const list = JSON.parse(watchlist).list ?? [];
+
+      update(Boolean(list?.filter(coin => coin.symbol === coinId)));
+
+      return;
+    }
+
+    update(false);
+
+  }, [coinId, update])
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -246,7 +312,6 @@ function CoinDetails() {
     return (
       <div className="h-screen text-slate-200 flex items-center justify-center flex-col gap-2 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <span className="loading loading-spinner"></span>
-        Loading...
       </div>
     )
   }
@@ -274,7 +339,7 @@ function CoinDetails() {
                 </span>
               </div>
               <div className="text-slate-400 text-sm">
-                Price
+                {t("coinDetails.labels.price")}
               </div>
               <div className="text-2xl font-bold">
                 ${coin?.price?.toLocaleString()}
@@ -283,19 +348,23 @@ function CoinDetails() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <Stat label="24h Change" value={`${coin?.changePercent}%`} positive={coin.change24h >= 0} />
-            <Stat label="24h High" value={`$${coin?.high24h?.toLocaleString()}`} />
-            <Stat label="24h Low" value={`$${coin?.low24h?.toLocaleString()}`} />
-            <Stat label="Volume" value={`$${(coin?.volume / 1e9)?.toFixed(2)}B`} />
-            <Stat label="Market Cap" value={`$${(coin?.marketCap / 1e9)?.toFixed(2)}B`} />
+            <Stat label={t("coinDetails.labels.change")} value={`${coin?.changePercent}%`} positive={coin.change24h >= 0} />
+            <Stat label={t("coinDetails.labels.high")} value={`$${coin?.high24h?.toLocaleString()}`} />
+            <Stat label={t("coinDetails.labels.low")} value={`$${coin?.low24h?.toLocaleString()}`} />
+            <Stat label={t("coinDetails.labels.volume")} value={`$${(coin?.volume / 1e9)?.toFixed(2)}B`} />
+            <Stat label={t("coinDetails.labels.market")} value={`$${(coin?.marketCap / 1e9)?.toFixed(2)}B`} />
           </div>
 
           <div className="flex gap-2">
-            <button className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">
-              Trade
+            <button onClick={() => {
+              window.location.href = `https://www.binance.com/en/trade/${coinId}?_from=markets&type=spot`
+            }} className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">
+              {t("coinDetails.trade")}
             </button>
-            <button className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800">
-              + Watchlist
+            <button onClick={isAddedToWatchlist ? onAddToWatchlist : removeFromWatchlist} className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800">
+              {
+                isAddedToWatchlist ? t("coinDetails.watch") : "-" + t("coinDetails.watch").slice(1)
+              }
             </button>
           </div>
         </div>
@@ -319,8 +388,8 @@ function CoinDetails() {
               </ToggleButton>
             </div>
 
-            <div className="flex gap-2">
-              {["1m", "5m", "15m", "1h"].map((tf) => (
+            <div className={`flex flex-wrap gap-2 ${i18n.language === "ar" ? "flex-row-reverse" : ""}`}>
+              {INTERVALS.map((tf) => (
                 <ToggleButton
                   key={tf}
                   active={interval === tf}
@@ -332,10 +401,10 @@ function CoinDetails() {
             </div>
 
             <button
-              onClick={() => navigate(`/coin/analyze-chart/${coinId}`)}
+              onClick={() => navigate(`/ coin / analyze - chart / ${coinId}`)}
               className="px-3 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Analyse
+              {t("coinDetails.analyze")}
             </button>
           </div>
 
@@ -348,7 +417,7 @@ function CoinDetails() {
           {/* -------- Order Book -------- */}
           <div className="lg:col-span-2 bg-slate-900/70 border border-slate-700/50 backdrop-blur-xl shadow-md rounded-xl p-4">
             <h3 className="text-sm text-slate-300 mb-3">
-              Order Book
+              {t("coinDetails.book.title")}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -356,15 +425,15 @@ function CoinDetails() {
               {/* -------- Asks -------- */}
               <div>
                 <div className="text-xs text-red-400 mb-2">
-                  Asks
+                  {t("coinDetails.asks")}
                 </div>
 
                 <table className="w-full">
                   <thead className="text-slate-400 border-b border-slate-700/50">
                     <tr>
-                      <th className="py-1 text-left">Price</th>
-                      <th className="py-1 text-right">Amount</th>
-                      <th className="py-1 text-right">Total</th>
+                      <th className="py-1">{t("coinDetails.book.price")}</th>
+                      <th className="py-1">{t("coinDetails.book.amount")}</th>
+                      <th className="py-1">{t("coinDetails.book.total")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -391,15 +460,15 @@ function CoinDetails() {
               {/* -------- Bids -------- */}
               <div>
                 <div className="text-xs text-emerald-400 mb-2">
-                  Bids
+                  {t("coinDetails.bids")}
                 </div>
 
                 <table className="w-full">
                   <thead className="text-slate-400 border-b border-slate-700/50">
                     <tr>
-                      <th className="py-1 text-left">Price</th>
-                      <th className="py-1 text-right">Amount</th>
-                      <th className="py-1 text-right">Total</th>
+                      <th className="py-1">{t("coinDetails.book.price")}</th>
+                      <th className="py-1">{t("coinDetails.book.amount")}</th>
+                      <th className="py-1">{t("coinDetails.book.total")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -466,16 +535,4 @@ function ToggleButton({
     </button>
   );
 }
-
-function IndicatorRow({
-  label, value
-}) {
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-slate-400">{label}</span>
-      <span className="text-slate-200 font-medium">{value}</span>
-    </div>
-  );
-}
-
 export default CoinDetails;

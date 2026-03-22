@@ -5,8 +5,10 @@ import axiosInst from "../libs/axiosInst";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { isValidEmail } from "../utils/validators";
+import { useTranslation } from "react-i18next"
 
 function Register() {
+    const { i18n, t } = useTranslation()
     const navigate = useNavigate();
 
     const [authData, setAuthData] = useState({
@@ -25,44 +27,44 @@ function Register() {
         setIsLoading(true);
 
         if (authData.name.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your Name." });
+            setMessage({ type: "error", text: t("register.errorMessags.m1") });
             setIsLoading(false);
             return;
         }
 
         if (authData.email.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your email address." });
+            setMessage({ type: "error", text: t("register.errorMessages.m2") });
             setIsLoading(false);
             return;
         }
 
 
         if (!isValidEmail(authData.email.trim())) {
-            setMessage({ type: "error", text: "Please enter a valid email address." });
+            setMessage({ type: "error", text: t("register.errorMessages.m7") });
             setIsLoading(false);
             return;
         }
 
         if (authData.password.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your password." });
+            setMessage({ type: "error", text: t("register.errorMessages.m3") });
             setIsLoading(false);
             return;
         }
 
         if (authData.passwordConfirm.trim() === "") {
-            setMessage({ type: "error", text: "Please enter confirm password." });
+            setMessage({ type: "error", text: t("register.errorMessages.m4") });
             setIsLoading(false);
             return;
         }
 
         if (authData.password.length < 8) {
-            setMessage({ type: "error", text: "Password must be at least 8 characters" });
+            setMessage({ type: "error", text: t("register.errorMessages.m5") });
             setIsLoading(false);
             return;
         }
 
         if (authData.password !== authData.passwordConfirm) {
-            setMessage({ type: "error", text: "Unmatching passwords." });
+            setMessage({ type: "error", text: t("register.errorMessages.m6") });
             setIsLoading(false);
             return;
         }
@@ -73,7 +75,7 @@ function Register() {
 
             await axiosInst.post(apiURL + "/register", authData);
 
-            toast.success(`A Verification Code is sent to ${authData.email}`);
+            toast.success(`${t("register.sent")}${authData.email}`);
 
             setTimeout(() => {
                 navigate("/auth/verify-code");
@@ -85,7 +87,7 @@ function Register() {
             if (error instanceof AxiosError) {
                 setMessage({
                     type: "error",
-                    text: error?.response?.data?.message ?? "Something goes wrong",
+                    text: error?.response?.data?.message ?? t("login.error"),
                 });
             }
         }
@@ -100,9 +102,9 @@ function Register() {
                 {/* Title */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-blue-600">
-                        Create New Account
+                        {t("register.title")}
                     </h1>
-                    <p className="text-slate-400 mt-2 text-sm">Join CryptoSavvy today</p>
+                    <p className="text-slate-400 mt-2 text-sm">{t("register.greet")}</p>
                 </div>
 
                 {/* Message */}
@@ -122,9 +124,9 @@ function Register() {
                     {/* Full Name */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Full Name
+                            {t("register.labels.name")}
                         </label>
-                        <div className="relative">
+                        <div dir="ltr" className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                             <input
                                 type="text"
@@ -143,9 +145,9 @@ function Register() {
                     {/* Email */}
                     <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-2">
-                            Email
+                            {t("register.labels.email")}
                         </label>
-                        <div className="relative">
+                        <div dir="ltr" className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                             <input
                                 type="email"
@@ -164,9 +166,9 @@ function Register() {
                     {/* Password */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Password
+                            {t("register.labels.password")}
                         </label>
-                        <div className="relative">
+                        <div dir="ltr" className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                             <input
                                 type="password"
@@ -185,9 +187,9 @@ function Register() {
                     {/* Confirm Password */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Confirm Password
+                            {t("register.labels.confirm")}
                         </label>
-                        <div className="relative">
+                        <div dir="ltr" className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                             <input
                                 type="password"
@@ -202,7 +204,7 @@ function Register() {
                             />
                         </div>
                         <p className="text-xs text-slate-500 mt-2">
-                            Must be at least 8 characters.
+                            {t("register.errorMessages.m5")}
                         </p>
                     </div>
 
@@ -215,7 +217,7 @@ function Register() {
                         {
                             isLoading ? (
                                 <span className="loading loading-spinner"></span>
-                            ) : "Create Account"
+                            ) : t("register.create")
                         }
                     </button>
 
@@ -223,9 +225,9 @@ function Register() {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-gray-500 mt-6">
-                    Already have an account?{" "}
+                    {t("register.haveAcc")}{" "}
                     <a onClick={() => navigate("/auth/login")} className="text-blue-600 font-semibold hover:underline cursor-pointer">
-                        Login
+                        {t("register.login")}
                     </a>
                 </p>
             </div>

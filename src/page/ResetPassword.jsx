@@ -4,8 +4,10 @@ import axiosInst from "../libs/axiosInst";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { isValidEmail } from "../utils/validators";
+import { useTranslation } from "react-i18next"
 
 export default function ResetPassword() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -28,31 +30,31 @@ export default function ResetPassword() {
         setLoading(true);
 
         if (form.email.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your email address." });
+            setMessage({ type: "error", text: t("resetPassword.errorMessages.m1") });
             setLoading(false);
             return;
         }
 
         if (!isValidEmail(form.email.trim())) {
-            setMessage({ type: "error", text: "Please enter a valid email address." });
+            setMessage({ type: "error", text: t("login.errorMessags.m4") });
             setLoading(false);
             return;
         }
 
         if (form.password.trim() === "") {
-            setMessage({ type: "error", text: "Please enter your password." });
+            setMessage({ type: "error", text: t("resetPassword.errorMessages.m2") });
             setLoading(false);
             return;
         }
 
         if (form.password.length < 8) {
-            setMessage({ type: "error", text: "Password must be at least 8 characters" });
+            setMessage({ type: "error", text: t("resetPassword.errorMessages.m3") });
             setLoading(false);
             return;
         }
 
         if (form.passwordConfirm.trim() === "") {
-            setMessage({ type: "error", text: "Please enter confirm password." });
+            setMessage({ type: "error", text: t("resetPassword.errorMessages.m4") });
             setLoading(false);
             return;
         }
@@ -66,13 +68,13 @@ export default function ResetPassword() {
                 navigate("/auth/login");
             }, 2000);
 
-            toast.success("Password has been changed successfully");
+            toast.success(t("resetPassword.successMessages.s1"));
 
         } catch (error) {
             if (error instanceof AxiosError) {
                 setMessage({
                     type: "error",
-                    text: error?.response?.data?.message ?? "Something goes wrong",
+                    text: error?.response?.data?.message ?? t("login.error"),
                 });
             }
         }
@@ -86,10 +88,10 @@ export default function ResetPassword() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-white tracking-wide">
-                        Reset Password
+                        {t("resetPassword.title")}
                     </h1>
                     <p className="text-slate-400 mt-2 text-sm">
-                        Enter your email and choose a new secure password.
+                        {t("resetPassword.subTitle")}
                     </p>
                 </div>
 
@@ -110,9 +112,10 @@ export default function ResetPassword() {
                     {/* Email */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Email Address
+                            {t("register.labels.email")}
                         </label>
                         <input
+                            dir="ltr"
                             type="email"
                             name="email"
                             placeholder="example@email.com"
@@ -125,30 +128,32 @@ export default function ResetPassword() {
                     {/* Password */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            New Password
+                            {t("register.labels.password")}
                         </label>
                         <input
+                            dir="ltr"
                             type="password"
                             name="password"
-                            placeholder="Enter new password"
+                            placeholder="*********"
                             value={form.password}
                             onChange={handleChange}
                             className="w-full rounded-xl bg-white border border-slate-700 px-4 py-3 text-gray-700 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                         />
                         <p className="text-xs text-slate-500 mt-2">
-                            Must be at least 8 characters.
+                            {t("resetPassword.errorMessages.m3")}
                         </p>
                     </div>
 
                     {/* Confirm Password */}
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                            Confirm Password
+                            {t("register.labels.confirm")}
                         </label>
                         <input
+                            dir="ltr"
                             type="password"
                             name="passwordConfirm"
-                            placeholder="Re-enter password"
+                            placeholder="*********"
                             value={form.passwordConfirm}
                             onChange={handleChange}
                             className="w-full rounded-xl bg-white border border-slate-700 px-4 py-3 text-gray-700 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
@@ -163,19 +168,19 @@ export default function ResetPassword() {
                     >
                         {loading ? (
                             <span className="loading loading-spinner"></span>
-                        ) : "Reset Password"}
+                        ) : t("resetPassword.title")}
                     </button>
                 </form>
 
                 {/* Footer */}
                 <div className="mt-8 text-center">
                     <p className="text-sm text-slate-500">
-                        Remember your password?{" "}
+                        {t("resetPassword.remPass")}{" "}
                         <a
                             onClick={() => navigate("/auth/login")}
                             className="text-blue-600 hover:underline cursor-pointer font-semibold transition"
                         >
-                            Sign In
+                            {t("resetPassword.signIn")}
                         </a>
                     </p>
                 </div>

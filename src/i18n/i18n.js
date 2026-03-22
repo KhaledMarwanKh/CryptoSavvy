@@ -32,7 +32,7 @@ i18n
 // Optional: handle RTL/LTR automatically
 const setDocumentDir = (lng) => {
     document.documentElement.lang = lng;
-    document.documentElement.dir = "ltr";
+    document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
 };
 
 setDocumentDir(i18n.language);

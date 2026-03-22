@@ -5,8 +5,11 @@ import axiosInst from "../libs/axiosInst";
 import { toast } from "react-toastify";
 import { isValidEmail } from "../utils/validators";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next"
 
 function Login() {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
 
   const [authData, setAuthData] = useState({
@@ -23,25 +26,25 @@ function Login() {
     setIsLoading(true);
 
     if (authData.email.trim() === "") {
-      setMessage({ type: "error", text: "Please enter your email address." });
+      setMessage({ type: "error", text: t("login.errorMessags.m1") });
       setIsLoading(false);
       return;
     }
 
     if (!isValidEmail(authData.email.trim())) {
-      setMessage({ type: "error", text: "Please enter a valid email address" });
+      setMessage({ type: "error", text: t("login.errorMessags.m4") });
       setIsLoading(false);
       return;
     }
 
     if (authData.password.trim() === "") {
-      setMessage({ type: "error", text: "Please enter your password." });
+      setMessage({ type: "error", text: t("login.errorMessags.m2") });
       setIsLoading(false);
       return;
     }
 
     if (authData.password.length < 8) {
-      setMessage({ type: "error", text: "Password must be at least 8 characters" });
+      setMessage({ type: "error", text: t("login.errorMessags.m3") });
       setIsLoading(false);
       return;
     }
@@ -51,9 +54,11 @@ function Login() {
     const apiURL = import.meta.env.VITE_API_URL + "/api/user"
 
     try {
-      await axiosInst.post(apiURL + "/login", authData);
+      const response = (await axiosInst.post(apiURL + "/login", authData)).data;
 
-      toast.success("Login Successfully");
+      console.log(response)
+
+      toast.success(t("login.success"));
 
       setTimeout(() => {
         navigate("/");
@@ -61,11 +66,13 @@ function Login() {
 
       localStorage.setItem("isAuth", true);
 
+      localStorage.setItem("userToken", response.token);
+
     } catch (error) {
       if (error instanceof AxiosError) {
         setMessage({
           type: "error",
-          text: error?.response?.data?.message ?? "Something goes wrong",
+          text: error?.response?.data?.message ?? t("login.error"),
         });
       }
     }
@@ -83,7 +90,7 @@ function Login() {
             <span className="text-white">Crypto</span>Savvy
           </h1>
           <p className="text-slate-400 mt-2 text-sm">
-            Welcome to the smart analysis platform
+            {t("login.title")}
           </p>
         </div>
 
@@ -104,9 +111,9 @@ function Login() {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Email
+              {t("login.labels.email")}
             </label>
-            <div className="flex items-center bg-slate-950/60 border border-slate-700 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+            <div dir="ltr" className="flex items-center bg-slate-950/60 border border-slate-700 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
               <Mail className="w-5 h-5" />
               <input
                 type="email"
@@ -123,9 +130,9 @@ function Login() {
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Password
+              {t("login.labels.password")}
             </label>
-            <div className="flex items-center bg-slate-950/60 border border-slate-700 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+            <div dir="ltr" className="flex items-center bg-slate-950/60 border border-slate-700 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
               <Lock className="w-5 h-5" />
               <input
                 type="password"
@@ -137,7 +144,7 @@ function Login() {
                 className="w-full pl-3 outline-none bg-transparent text-sm text-gray-700"
               />
             </div>
-            <p className="text-[0.7rem] text-slate-400 text-right mt-3" >Forgot Your Password ?  <span className="text-blue-600 font-bold cursor-pointer active:text-slate-300 hover:underline" onClick={() => navigate("/auth/forgot-password")}>Click Here</span></p>
+            <p className="text-[0.7rem] text-slate-400 text-right mt-3" >{t("login.forgot")}  <span className="text-blue-600 font-bold cursor-pointer active:text-slate-300 hover:underline" onClick={() => navigate("/auth/forgot-password")}>{t("login.click")}</span></p>
           </div>
 
           {/* Button */}
@@ -149,16 +156,16 @@ function Login() {
             {
               isLoading ? (
                 <span className="loading loading-spinner"></span>
-              ) : "Login"
+              ) : t("login.login")
             }
           </button>
         </form>
 
         {/* Footer */}
         <p className="text-center text-sm text-slate-400 mt-6">
-          Don't have an account?{" "}
+          {t("login.haveAccount")}{" "}
           <a onClick={() => navigate("/auth/register")} className="text-blue-600 font-semibold hover:underline cursor-pointer">
-            Create new account
+            {t("login.create")}
           </a>
         </p>
       </div>

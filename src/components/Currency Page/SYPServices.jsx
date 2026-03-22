@@ -1,16 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { ArrowRightLeft, DollarSignIcon, Table2, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRightLeft, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import axiosInst from "../../libs/axiosInst";
-
-function formatCompactNumber(n) {
-    if (n == null || Number.isNaN(n)) return "—";
-    // Keep it readable for both small and large rates
-    if (n >= 1000) return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n);
-    if (n >= 1) return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(n);
-    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 6 }).format(n);
-}
+import { formatCompactNumber } from "../../utils/formattor";
+import { useTranslation } from "react-i18next"
 
 export default function SypCurrency() {
+    const { i18n, t } = useTranslation();
     const [loadingTable, setLoadingTable] = useState(false);
     const [amount, setAmount] = useState("");
     const [currency, setCurrency] = useState("USD");
@@ -66,7 +61,7 @@ export default function SypCurrency() {
             <div className="bg-slate-900/70 border border-slate-700/50 backdrop-blur-xl rounded-xl p-6 shadow-md mb-6">
 
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">Currency Converter</h2>
+                    <h2 className="text-xl font-semibold">{t("sypServices.converter.title")}</h2>
 
                     <button
                         onClick={swapMode}
@@ -80,19 +75,19 @@ export default function SypCurrency() {
 
                     {/* Amount */}
                     <div>
-                        <label className="text-slate-300 text-sm">Amount</label>
+                        <label className="text-slate-300 text-sm">{t("sypServices.converter.amountLabel")}</label>
                         <input
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount"
+                            placeholder={t("sypServices.converter.amountPlaceholder")}
                             className="w-full mt-1 bg-slate-950/60 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
 
                     {/* Currency */}
                     <div>
-                        <label className="text-slate-300 text-sm">Currency</label>
+                        <label className="text-slate-300 text-sm">{t("sypServices.converter.currencyLabel")}</label>
                         <select
                             value={currency}
                             onChange={(e) => setCurrency(e.target.value)}
@@ -108,7 +103,7 @@ export default function SypCurrency() {
 
                     {/* Result */}
                     <div>
-                        <label className="text-slate-300 text-sm">Result</label>
+                        <label className="text-slate-300 text-sm">{t("sypServices.converter.resultLabel")}</label>
                         <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg p-2.5 font-semibold">
                             {result || "--"}
                             <span className="ml-2 text-slate-400 text-sm">
@@ -132,11 +127,11 @@ export default function SypCurrency() {
                     <div className="flex items-center gap-2">
                         <Table2 className="h-5 w-5 text-blue-600" />
                         <div>
-                            <div className="text-lg font-semibold">Latest rates</div>
+                            <div className="text-lg font-semibold">{t("sypServices.table.title")}</div>
                         </div>
                     </div>
                     <div className="text-sm text-slate-400">
-                        {loadingTable ? "Loading…" : `${currencyData?.length} currencies`}
+                        {loadingTable ? t("sypServices.table.loading") : `${currencyData?.length} ${t("sypServices.table.currenciesCount")}`}
                     </div>
                 </div>
 
@@ -167,10 +162,10 @@ export default function SypCurrency() {
                             </div>
                             <div className="mt-2 text-xs text-slate-400">
                                 <p>
-                                    <span className="text-sm text-slate-200">Buy : </span> {r.buy} SYP
+                                    <span className="text-sm text-slate-200">{t("sypServices.table.mobile.buy")} : </span> {r.buy} SYP
                                 </p>
                                 <p>
-                                    <span className="text-sm text-slate-200">Sell : </span> {r.sell} SYP
+                                    <span className="text-sm text-slate-200">{t("sypServices.table.mobile.sell")} : </span> {r.sell} SYP
                                 </p>
                             </div>
                         </div>
@@ -184,11 +179,11 @@ export default function SypCurrency() {
                             <table className="min-w-full">
                                 <thead className="sticky top-0 bg-slate-900/80 backdrop-blur-xl">
                                     <tr className="text-left text-sm text-slate-300">
-                                        <th className="px-4 py-3 font-medium">Currency</th>
-                                        <th className="px-4 py-3 font-medium">Name</th>
-                                        <th className="px-4 py-3 font-medium">Buy (SYP)</th>
-                                        <th className="px-4 py-3 font-medium">Sell (SYP)</th>
-                                        <th className="px-4 py-3 font-medium">Change</th>
+                                        <th className="px-4 py-3 text-center font-medium">{t("sypServices.table.desktop.headers.currency")}</th>
+                                        <th className="px-4 py-3 text-center font-medium">{t("sypServices.table.desktop.headers.name")}</th>
+                                        <th className="px-4 py-3 text-center font-medium">{t("sypServices.table.desktop.headers.buy")}</th>
+                                        <th className="px-4 py-3 text-center font-medium">{t("sypServices.table.desktop.headers.sell")}</th>
+                                        <th className="px-4 py-3 text-center font-medium">{t("sypServices.table.desktop.headers.change")}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -216,8 +211,8 @@ export default function SypCurrency() {
                                     ))}
                                     {!loadingTable && currencyData?.length === 0 ? (
                                         <tr>
-                                            <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={3}>
-                                                No rates available.
+                                            <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={5}>
+                                                {t("sypServices.table.empty")}
                                             </td>
                                         </tr>
                                     ) : null}

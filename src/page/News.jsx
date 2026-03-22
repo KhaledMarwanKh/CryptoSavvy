@@ -11,8 +11,10 @@ import {
     Clock
 } from 'lucide-react';
 import newsHandler from '../libs/NewsHandler';
+import { useTranslation } from 'react-i18next';
 
 const News = () => {
+    const { t, i18n } = useTranslation();
     // State Management
     const [searchQuery, setSearchQuery] = useState("bitcoin OR ethereum OR crypto OR blockchain");
     const [showFilters, setShowFilters] = useState(false);
@@ -62,17 +64,24 @@ const News = () => {
         setIsLoading(true);
 
         const params = {
+            apikey: import.meta.env.VITE_GNEWS_API,
             lang: "en",
-            topic: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
+            q: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
             max: 20,
             sortBy: activeFilters.sortBy,
-            page: currentPage,
-            from: activeFilters.dateFrom ? new Date(activeFilters.dateFrom).toISOString() : "",
-            to: activeFilters.dateTo ? new Date(activeFilters.dateTo).toISOString() : ""
+            page: currentPage
+        }
+
+        if (activeFilters.dateFrom) {
+            params.from = new Date(activeFilters.dateFrom).toISOString()
+        }
+
+        if (activeFilters.dateTo) {
+            params.to = new Date(activeFilters.dateTo).toISOString()
         }
 
         newsHandler.getNews(params).then((res) => {
-            setTotalNumber(res?.count);
+            setTotalNumber(res?.totalArticles);
             setFilteredNews(res?.articles);
             setIsLoading(false);
         })
@@ -94,7 +103,7 @@ const News = () => {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
                                     <input
                                         type="text"
-                                        placeholder="Search for topics, news, or trends..."
+                                        placeholder={t("news.search")}
                                         onKeyDown={(e) => {
                                             if (e.code === "Enter") {
                                                 setSearchQuery(e.target.value)
@@ -108,7 +117,7 @@ const News = () => {
                                     className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 border border-slate-700 rounded-xl text-slate-200 hover:font-bold transition-all"
                                 >
                                     <Filter className="w-5 h-5" />
-                                    <span className="hidden sm:inline">Filters</span>
+                                    <span className="hidden sm:inline">{t("news.filter")}</span>
                                 </button>
                             </div>
                         </div>
@@ -116,9 +125,9 @@ const News = () => {
                         {/* Pagination Controls */}
                         <div className="flex items-center justify-between border-t border-slate-800/50 pt-4">
                             <div className="text-sm text-slate-400">
-                                Showing <span className="text-slate-200">{totalNumber ?? 0}</span> results
+                                {t("news.showing")} <span className="text-slate-200">{totalNumber ?? 0}</span> {t("news.results")}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-2 ${i18n.language === "ar" ? "flex-row-reverse" : ""}`}>
                                 <button
                                     disabled={currentPage === 1}
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -205,15 +214,15 @@ const News = () => {
                                 <div className="w-20 h-20 bg-slate-900/50 rounded-full flex items-center justify-center mb-6 border border-slate-800">
                                     <Search className="text-slate-600 w-10 h-10" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-slate-200">No results found</h2>
+                                <h2 className="text-2xl font-bold text-slate-200">{t("news.NotFound.no")}</h2>
                                 <p className="text-slate-500 mt-2 max-w-sm">
-                                    We couldn't find any news articles matching your search or filters. Try adjusting your criteria.
+                                    {t("news.NotFound.weCant")}
                                 </p>
                                 <button
                                     onClick={handleResetFilters}
                                     className="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-medium"
                                 >
-                                    Clear All Filters
+                                    {t("news.NotFound.clear")}
                                 </button>
                             </div>
                         )}
@@ -228,7 +237,7 @@ const News = () => {
                         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Filter className="text-blue-500 w-5 h-5" />
-                                <h2 className="text-xl font-bold">Filter</h2>
+                                <h2 className="text-xl font-bold">{t("news.filter")}</h2>
                             </div>
                             <button
                                 onClick={() => setShowFilters(false)}
@@ -242,11 +251,11 @@ const News = () => {
                             {/* Date Filter */}
                             <div className="space-y-3">
                                 <label className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" /> Date Range
+                                    <Calendar className="w-4 h-4" /> {t("news.filterDialog.range")}
                                 </label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 ml-1">From</span>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 ml-1">{t("news.filterDialog.from")}</span>
                                         <input
                                             type="date"
                                             value={filters.dateFrom}
@@ -255,7 +264,7 @@ const News = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 ml-1">To</span>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 ml-1">{t("news.filterDialog.to")}</span>
                                         <input
                                             type="date"
                                             value={filters.dateTo}
@@ -269,7 +278,7 @@ const News = () => {
                             {/* Sort By Filter */}
                             <div className="space-y-3">
                                 <label className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                                    <SortAsc className="w-4 h-4" /> Sort By
+                                    <SortAsc className="w-4 h-4" /> {t("news.filterDialog.sortBy")}
                                 </label>
                                 <div className="flex gap-2">
                                     {['publishedAt', 'Relevance'].map((option) => (
@@ -293,27 +302,18 @@ const News = () => {
                                 onClick={handleResetFilters}
                                 className="flex-1 py-2.5 border border-slate-700 text-slate-400 rounded-xl hover:bg-slate-800 transition-colors font-medium text-sm"
                             >
-                                Reset All
+                                {t("news.reset")}
                             </button>
                             <button
                                 onClick={handleApplyFilters}
                                 className="flex-2 px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/20 font-bold text-sm"
                             >
-                                Apply Filters
+                                {t("news.apply")}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* Footer */}
-            <footer className="mt-20 border-t border-slate-800 py-10">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-slate-500 text-sm">
-                        © 2024 NexusNews Global Media. Built for excellence in journalism.
-                    </p>
-                </div>
-            </footer>
         </div>
     );
 };

@@ -1,89 +1,55 @@
-const COINGECKO_BASE = 'https://api.coingecko.com/api/v3'
-const CRYPTOCOMPARE_BASE = 'https://min-api.cryptocompare.com/data/v2'
-// https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=1000&page=1&sparkline=true
-// https://api.coingecko.com/api/v3/global
+import { BINANCE_BASE } from "../data/constants";
+import { formatAxisTime } from "../utils/formattor";
 
-const coingeckoHeaders = {
-    accept: 'application/json',
-    ...(import.meta.env.VITE_COINGECKO_API_KEY
-        ? { 'x-cg-demo-api-key': import.meta.env.VITE_COINGECKO_API_KEY }
-        : {}),
+export async function getBinanceMarketData(symbol = "BTCUSDT") {
+    const res = await fetch(`${BINANCE_BASE}/ticker/24hr?symbol=${symbol}`);
+    if (!res.ok) throw new Error("Failed to fetch Binance market data.");
+    const data = await res.json();
+
+    return {
+        symbol: data.symbol,
+        price: Number(data.lastPrice),
+        priceChangePercent: Number(data.priceChangePercent),
+        high: Number(data.highPrice),
+        low: Number(data.lowPrice),
+        open: Number(data.openPrice),
+        prevClose: Number(data.prevClosePrice),
+        bid: Number(data.bidPrice),
+        ask: Number(data.askPrice),
+        volume: Number(data.volume),
+        quoteVolume: Number(data.quoteVolume),
+    };
 }
 
-const cryptoCompareHeaders = {
-    accept: 'application/json',
-    ...(import.meta.env.VITE_CRYPTOCOMPARE_API_KEY
-        ? { authorization: `Apikey ${import.meta.env.VITE_CRYPTOCOMPARE_API_KEY}` }
-        : {}),
+/** 2) Binance OHLC */
+export async function getBinanceOHLC(symbol = "BTCUSDT", interval = "1h", limit = 120) {
+    const res = await fetch(
+        `${BINANCE_BASE}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch Binance OHLC data.");
+    const data = await res.json();
+
+    return data.map((item) => ({
+        openTime: item[0],
+        open: Number(item[1]),
+        high: Number(item[2]),
+        low: Number(item[3]),
+        close: Number(item[4]),
+        volume: Number(item[5]),
+        closeTime: item[6],
+        label: formatAxisTime(item[0], interval),
+    }));
 }
 
-async function fetchJson(url, options = {}) {
-    const response = await fetch(url, options)
-    if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`)
-    }
-    return response.json()
-}
+export async function getMarketSentiment() {
+    const res = await fetch("https://api.alternative.me/fng/?limit=1");
+    if (!res.ok) throw new Error("Failed to fetch sentiment.");
+    const data = await res.json();
+    const item = data?.data?.[0];
 
-export const RANGE_TO_DAYS = {
-    '1M': 30,
-    '3M': 90,
-    '1Y': 365,
-}
-
-export async function getGlobalData() {
-    const data = await fetchJson(`${COINGECKO_BASE}/global`, {
-        headers: coingeckoHeaders,
-    })
-    return data.data
-}
-
-export async function getGlobalMarketChart(range = '1M') {
-    const days = RANGE_TO_DAYS[range] ?? 30
-
-    return fetchJson(
-        `${COINGECKO_BASE}/global?vs_currency=usd&days=${days}`,
-        {
-            headers: coingeckoHeaders,
-        }
-    )
-}
-
-export async function getMarkets() {
-    const params = new URLSearchParams({
-        vs_currency: 'usd',
-        order: 'market_cap_desc',
-        per_page: '100',
-        page: '1',
-        sparkline: 'true',
-        price_change_percentage: '24h',
-    })
-
-    return fetchJson(`${COINGECKO_BASE}/coins/markets?${params.toString()}`, {
-        headers: coingeckoHeaders,
-    })
-}
-
-export async function searchAssets(query) {
-    if (!query.trim()) return []
-
-    const data = await fetchJson(
-        `${COINGECKO_BASE}/search?query=${encodeURIComponent(query)}`,
-        {
-            headers: coingeckoHeaders,
-        }
-    )
-
-    return data.coins?.slice(0, 6) ?? []
-}
-
-export async function getBreakingNews() {
-    const data = await fetchJson(
-        `${CRYPTOCOMPARE_BASE}/news/?lang=EN&categories=BTC,ETH,Blockchain,Regulation`,
-        {
-            headers: cryptoCompareHeaders,
-        }
-    )
-
-    return data?.Data?.[0] ?? null
+    return {
+        value: Number(item?.value),
+        classification: item?.value_classification || "Unknown",
+        timestamp: item?.timestamp,
+    };
 }

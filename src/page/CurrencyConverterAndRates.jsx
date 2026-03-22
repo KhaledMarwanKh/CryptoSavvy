@@ -19,8 +19,10 @@ import { formatCompactNumber, formatDateISO } from "../utils/formattor";
 import CurrencySelect from "../components/Currency Page/CurrencySelect";
 import CustomTooltip from "../components/Currency Page/CustomTooltip";
 import { CURRENCIES } from "../data/data";
+import { useTranslation } from "react-i18next"
 
 function CurrencyConverterAndRates() {
+    const { t } = useTranslation();
     const [currentMode, setMode] = useState("Global Services");
     const [base, setBase] = useState("USD");
     const [target, setTarget] = useState("EUR");
@@ -60,7 +62,7 @@ function CurrencyConverterAndRates() {
         if (base === target) {
             setTimeseries([]);
             setLatestTargetRate(1);
-            setError("Base and target currencies are the same. Choose different currencies to view a chart.");
+            setError(t("currency.errors.sameCurrency"));
             return;
         }
 
@@ -101,7 +103,7 @@ function CurrencyConverterAndRates() {
             setLatestTargetRate(rows.length ? rows[rows.length - 1].rate : null);
         } catch (e) {
             if (e?.name !== "AbortError") {
-                setError(e?.message || "Failed to load chart data.");
+                setError(e?.message || t("currency.errors.chartFailed"));
                 setTimeseries([]);
                 setLatestTargetRate(null);
             }
@@ -136,7 +138,7 @@ function CurrencyConverterAndRates() {
             if (typeof tRate === "number") setLatestTargetRate(tRate);
         } catch (e) {
             if (e?.name !== "AbortError") {
-                setError(e?.message || "Failed to load latest rates.");
+                setError(e?.message || t("currency.errors.tableFailed"));
                 setLatestRates([]);
             }
         } finally {
@@ -181,7 +183,7 @@ function CurrencyConverterAndRates() {
                 {
                     ["Global Services", "SYP Services"].map(mode => (
                         <button onClick={() => setMode(mode)} className={`px-3 py-2 rounded-lg ${mode === currentMode ? "bg-blue-600 font-semibold" : "bg-slate-700"} transition-all duration-500`} >
-                            {mode}
+                            {mode === "Global Services" ? t("currency.modes.globalServices") : t("currency.modes.sypServices")}
                         </button>
                     ))
                 }
@@ -213,17 +215,17 @@ function CurrencyConverterAndRates() {
                                     <div className="lg:col-span-2">
                                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                                             <div className="flex flex-col gap-1">
-                                                <div className="text-sm text-slate-400">Trend</div>
+                                                <div className="text-sm text-slate-400">{t("currency.chart.title")}</div>
                                                 <div className="text-lg font-semibold">
-                                                    1 {base} → {target}
+                                                    <span dir="ltr">1 {base} → {target}</span>
                                                 </div>
                                                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-                                                    <span className="text-slate-400">Current:</span>
+                                                    <span className="text-slate-400">{t("currency.chart.current")}:</span>
                                                     <span className="font-semibold">
                                                         {currentRate == null ? "—" : formatCompactNumber(currentRate?.toFixed(2))}
                                                     </span>
                                                     <span className="text-slate-400">·</span>
-                                                    <span className="text-slate-400">Change:</span>
+                                                    <span className="text-slate-400">{t("currency.chart.change")}:</span>
                                                     {changePct == null ? (
                                                         <span className="text-slate-400">—</span>
                                                     ) : (
@@ -245,13 +247,13 @@ function CurrencyConverterAndRates() {
 
                                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                             <CurrencySelect
-                                                label="Base currency"
+                                                label={t("currency.currency.base")}
                                                 value={base}
                                                 onChange={setBase}
                                                 options={CURRENCIES}
                                             />
                                             <CurrencySelect
-                                                label="Target currency"
+                                                label={t("currency.currency.target")}
                                                 value={target}
                                                 onChange={setTarget}
                                                 options={CURRENCIES}
@@ -261,7 +263,7 @@ function CurrencyConverterAndRates() {
                                         <div className="mt-4 h-64 w-full overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-950/60">
                                             {loadingChart ? (
                                                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                                                    Loading chart…
+                                                    {t("currency.chart.loading")}
                                                 </div>
                                             ) : timeseries?.length ? (
                                                 <ResponsiveContainer width="100%" height="100%">
@@ -303,7 +305,7 @@ function CurrencyConverterAndRates() {
                                                 </ResponsiveContainer>
                                             ) : (
                                                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                                                    No chart data available.
+                                                    {t("currency.chart.noData")}
                                                 </div>
                                             )}
                                         </div>
@@ -312,17 +314,17 @@ function CurrencyConverterAndRates() {
                                     {/* Converter */}
                                     <div className="lg:col-span-1">
                                         <div className="rounded-2xl border border-slate-700/50 bg-slate-950/60 p-4">
-                                            <div className="mb-1 text-sm text-slate-400">Converter</div>
-                                            <div className="text-lg font-semibold">Convert {base} → {target}</div>
+                                            <div className="mb-1 text-sm text-slate-400">{t("currency.converter.title")}</div>
+                                            <div className="text-lg font-semibold">{t("currency.converter.convert")} <span className="block">{base} → {target}</span></div>
 
                                             <div className="mt-4 space-y-3">
                                                 <label className="block">
-                                                    <div className="mb-2 text-sm font-medium text-slate-300">Amount ({base})</div>
+                                                    <div className="mb-2 text-sm font-medium text-slate-300">{t("currency.converter.amount")} ({base})</div>
                                                     <div className="relative">
                                                         <input
                                                             value={amount}
                                                             onChange={(e) => setAmount(e.target.value)}
-                                                            inputMode="decimal"
+                                                            inputMode={t("currency.converter.placeholder")}
                                                             placeholder="0.00"
                                                             className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
                                                         />
@@ -335,10 +337,10 @@ function CurrencyConverterAndRates() {
                                                         "inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700/50",
                                                         "bg-blue-600 text-white font-bold px-3 py-2 hover:text-slate-200 transition hover:bg-slate-900",
                                                     ].join(" ")}
-                                                    title="Swap currencies"
+                                                    title={t("currency.converter.currencies")}
                                                 >
                                                     <ArrowRightLeft className="h-4 w-4 text-slate-300" />
-                                                    Swap
+                                                    {t("currency.converter.swap")}
                                                 </button>
 
                                                 <div
@@ -346,13 +348,13 @@ function CurrencyConverterAndRates() {
                                                         "rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4",
                                                     ].join(" ")}
                                                 >
-                                                    <div className="text-sm text-slate-300">You receive</div>
-                                                    <div className="mt-1 text-2xl font-semibold text-emerald-400">
+                                                    <div className="text-sm text-slate-300">{t("currency.converter.receive")}</div>
+                                                    <div dir="ltr" className="mt-1 text-2xl font-semibold text-emerald-400">
                                                         {converted == null ? "—" : `${formatCompactNumber(converted)} ${target}`}
                                                     </div>
                                                     <div className="mt-2 text-xs text-slate-400">
-                                                        Rate:{" "}
-                                                        <span className="text-slate-200">
+                                                        {t("currency.converter.rate")}:{" "}
+                                                        <span dir="ltr" className="text-slate-200">
                                                             1 {base} = {latestTargetRate == null ? "—" : formatCompactNumber(latestTargetRate?.toFixed(2))} {target}
                                                         </span>
                                                     </div>
@@ -374,15 +376,15 @@ function CurrencyConverterAndRates() {
                                     <div className="flex items-center gap-2">
                                         <Table2 className="h-5 w-5 text-blue-600" />
                                         <div>
-                                            <div className="text-lg font-semibold">Latest rates</div>
+                                            <div className="text-lg font-semibold">{t("currency.table.title")}</div>
                                             <div className="text-sm text-slate-400">
-                                                1 {base} against other currencies
+                                                1 {base} {t("currency.table.subtitle")}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="text-sm text-slate-400">
-                                        {loadingTable ? "Loading…" : `${latestRates.length} currencies`}
+                                        {loadingTable ? t("currency.table.loading") : `${latestRates.length} ${t("currency.table.currenciesCount")}`}
                                     </div>
                                 </div>
 
@@ -395,20 +397,22 @@ function CurrencyConverterAndRates() {
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
-                                                    <div className="text-sm text-slate-400">Currency</div>
+                                                    <div className="text-sm text-slate-400">{t("currency.mobileCard.currency")}</div>
                                                     <div className="text-lg font-semibold">{r.currency}</div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-sm text-slate-400">Rate</div>
+                                                    <div className="text-sm text-slate-400">{t("currency.mobileCard.rate")}</div>
                                                     <div className="text-lg font-semibold">
                                                         {formatCompactNumber(r.rate)}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="mt-3 text-xs text-slate-400">
-                                                1 {base} ={" "}
-                                                <span className="text-slate-200">{formatCompactNumber(r.rate)}</span>{" "}
-                                                {r.currency}
+                                                <span dir="ltr">
+                                                    1 {base} ={" "}
+                                                    <span className="text-slate-200">{formatCompactNumber(r.rate)}</span>{" "}
+                                                    {r.currency}
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
@@ -421,9 +425,9 @@ function CurrencyConverterAndRates() {
                                             <table className="min-w-full">
                                                 <thead className="sticky top-0 bg-slate-900/80 backdrop-blur-xl">
                                                     <tr className="text-left text-sm text-slate-300">
-                                                        <th className="px-4 py-3 font-medium">Currency</th>
-                                                        <th className="px-4 py-3 font-medium">Rate</th>
-                                                        <th className="px-4 py-3 font-medium">Meaning</th>
+                                                        <th className="px-4 py-3 text-center font-medium">{t("currency.table.columns.currency")}</th>
+                                                        <th className="px-4 py-3 text-center font-medium">{t("currency.table.columns.rate")}</th>
+                                                        <th className="px-4 py-3 text-center font-medium">{t("currency.table.columns.meaning")}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-700/50">
@@ -436,14 +440,14 @@ function CurrencyConverterAndRates() {
                                                                 {formatCompactNumber(r.rate)}
                                                             </td>
                                                             <td className="px-4 py-3 text-sm text-slate-400">
-                                                                1 {base} = {formatCompactNumber(r.rate)} {r.currency}
+                                                                <span dir="ltr"> 1 {base} = {formatCompactNumber(r.rate)} {r.currency}</span>
                                                             </td>
                                                         </tr>
                                                     ))}
                                                     {!loadingTable && latestRates.length === 0 ? (
                                                         <tr>
                                                             <td className="px-4 py-6 text-center text-sm text-slate-400" colSpan={3}>
-                                                                No rates available.
+                                                                {t("currency.table.noRates")}
                                                             </td>
                                                         </tr>
                                                     ) : null}

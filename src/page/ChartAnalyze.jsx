@@ -28,15 +28,13 @@ import { drawingTools, handleDownloadChartImage } from "../assets/assets";
 import { BiDownload } from "react-icons/bi";
 import socket from "../libs/socket"
 import chartHandler from "../libs/ChartDataHandler"
-import { INTERVALS } from "../data/data";
+import { INTERVALS } from "../data/constants";
 import SegButton from "../components/ChartAnalayze/SegButton";
+import { cn } from "../utils/concators";
+import { useTranslation } from "react-i18next";
 
 const BINANCE_REST = "https://api.binance.com";
 const BINANCE_WS = "wss://stream.binance.com:9443/ws";
-
-function cn(...xs) {
-    return xs.filter(Boolean).join(" ");
-}
 
 function num(n, digits = 2) {
     if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
@@ -59,6 +57,7 @@ function mapCandlesToArea(candles) {
 }
 
 export default function ChartAnalyze() {
+    const { i18n, t } = useTranslation();
     const { coinId } = useParams();
 
     const [interval, setInterval] = useState("1m");
@@ -442,32 +441,9 @@ export default function ChartAnalyze() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4">
-                {/* Header */}
-                <div
-                    className={cn(
-                        "rounded-2xl border border-slate-700/50 bg-slate-900/70 shadow-md backdrop-blur-xl",
-                        "p-4 sm:p-5"
-                    )}
-                >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <div className="text-slate-300 text-xs">Crypto Chart Analyze</div>
-                                <div className="flex items-baseline gap-3 flex-wrap">
-                                    <h1 className="text-slate-100 text-xl sm:text-2xl font-semibold">
-                                        Bitcoin <span className="text-slate-400">(BTC/USDT)</span>
-                                    </h1>
-                                    <div className="text-slate-100 text-lg font-semibold tabular-nums">{priceText}</div>
-                                    {changeText}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Main layout: responsive toolbar + chart */}
                 <div className="mt-4 grid grid-cols-1 gap-3">
-
 
                     {/* Controls + Chart */}
                     <div className="flex flex-col gap-3">
@@ -479,10 +455,10 @@ export default function ChartAnalyze() {
                             )}
                         >
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div className="flex flex-wrap gap-2">
+                                <div className={`flex flex-wrap ${i18n.language === "ar" ? "flex-row-reverse" : ""} gap-2`}>
                                     {INTERVALS.map((i) => (
-                                        <SegButton key={i.key} active={interval === i.key} onClick={() => setInterval(i.key)}>
-                                            {i.label}
+                                        <SegButton key={i} active={interval === i} onClick={() => setInterval(i)}>
+                                            {i}
                                         </SegButton>
                                     ))}
                                 </div>

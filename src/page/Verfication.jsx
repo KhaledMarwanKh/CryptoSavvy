@@ -4,8 +4,10 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { AxiosError } from "axios";
 import { isValidEmail } from "../utils/validators";
+import { useTranslation } from "react-i18next"
 
 function Verfication() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -29,19 +31,19 @@ function Verfication() {
     const { mode } = localStorage;
 
     if (!form.email) {
-      setMessage({ type: "error", text: "Email Required" });
+      setMessage({ type: "error", text: t("verification.errorMessages.m1") });
       setLoading(false);
       return;
     }
 
     if (!isValidEmail(form.email.trim())) {
-      setMessage({ type: "error", text: "Enter a valid email address" });
+      setMessage({ type: "error", text: t("login.errorMessags.m4") });
       setLoading(false);
       return;
     }
 
     if (!form.code) {
-      setMessage({ type: "error", text: "Code Required" });
+      setMessage({ type: "error", text: t("verification.errorMessages.m2") });
       setLoading(false);
       return;
     }
@@ -51,13 +53,15 @@ function Verfication() {
     if (mode === "verify-signup") {
 
       try {
-        await axiosInst.post(apiURL + "/verify-singnup", form);
+        const response = (await axiosInst.post(apiURL + "/verify-singnup", form)).data;
 
-        location.href = "/";
+        navigate("/");
 
-        toast.success("Signup verified Successfully");
+        toast.success(t("verification.success"));
 
         localStorage.setItem("isAuth", true);
+
+        localStorage.setItem("userToken", response.token);
 
         localStorage.removeItem("mode");
 
@@ -65,7 +69,7 @@ function Verfication() {
         if (error instanceof AxiosError) {
           setMessage({
             type: "error",
-            text: error?.response?.data?.message ?? "Something goes wrong",
+            text: error?.response?.data?.message ?? t("login.error"),
           });
         }
       }
@@ -79,7 +83,7 @@ function Verfication() {
           navigate("/auth/reset-password");
         }, 1000)
 
-        toast.success("Code verified successfully");
+        toast.success(t("verification.success"));
 
         localStorage.removeItem("mode");
 
@@ -87,7 +91,7 @@ function Verfication() {
         if (error instanceof AxiosError) {
           setMessage({
             type: "error",
-            text: error?.response?.data?.message ?? "Something goes wrong",
+            text: error?.response?.data?.message ?? t("login.error"),
           });
         }
       }
@@ -101,14 +105,14 @@ function Verfication() {
   const handleResend = async () => {
     const apiURL = import.meta.env.VITE_API_URL + "/api/user"
 
-    if (!form.email) {
-      setMessage({ type: "error", text: "Email Required" });
+    if (form.email.trim() === "") {
+      setMessage({ type: "error", text: t("login.errorMessags.m1") });
       setLoading(false);
       return;
     }
 
     if (!isValidEmail(form.email.trim())) {
-      setMessage({ type: "error", text: "Enter a valid email address" });
+      setMessage({ type: "error", text: t("login.errorMessags.m4") });
       setLoading(false);
       return;
     }
@@ -116,7 +120,7 @@ function Verfication() {
     try {
       await axiosInst.post(apiURL + "/forgot-password", { email: form.email });
 
-      toast.success(`A Verification Code is sent to ${form.email}`);
+      toast.success(`${t("register.sent")} ${form.email}`);
 
       setTimeout(() => {
         navigate('/auth/verify-code');
@@ -128,7 +132,7 @@ function Verfication() {
       if (error instanceof AxiosError) {
         setMessage({
           type: "error",
-          text: error?.response?.data?.message ?? "Something goes wrong",
+          text: error?.response?.data?.message ?? t("login.error"),
         });
       }
     }
@@ -145,17 +149,17 @@ function Verfication() {
           {
             localStorage.getItem("mode") === "verify-signup" ? (
               <h1 className="text-2xl font-bold text-white tracking-wide">
-                Verify Your Account
+                {t("verification.verA")}
               </h1>
             ) : (
               <h1 className="text-2xl font-bold text-white tracking-wide">
-                Verification
+                {t("verification.ver")}
               </h1>
             )
           }
 
           <p className="text-slate-400 mt-2 text-sm">
-            Enter your email and the verification code sent to you.
+            {t("verification.enterCode")}
           </p>
         </div>
 
@@ -176,9 +180,10 @@ function Verfication() {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Email
+              {t("login.labels.email")}
             </label>
             <input
+              dir="ltr"
               type="email"
               name="email"
               placeholder="example@email.com"
@@ -191,19 +196,20 @@ function Verfication() {
           {/* Code */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Verification Code
+              {t("verification.verCode")}
             </label>
             <input
+              dir="ltr"
               type="text"
               name="code"
-              placeholder="Enter code (e.g. 123456)"
+              placeholder="(e.g. 123456)"
               value={form.code}
               onChange={handleChange}
               maxLength={6}
               className="w-full rounded-xl bg-white border border-slate-700 px-4 py-3 text-gray-700 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             />
             <p className="text-xs text-slate-500 mt-2 text-center">
-              Code should be 6 digits.
+              {t("verification.error")}
             </p>
           </div>
 
@@ -213,7 +219,7 @@ function Verfication() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-2.5 rounded-md font-semibold shadow-md"
           >
-            {loading ? "Verifying..." : "Verify"}
+            {loading ? t("verification.verLoad") : t("verification.verL")}
           </button>
 
           <button
@@ -222,14 +228,14 @@ function Verfication() {
             onClick={handleResend}
             className="w-full border hover:bg-blue-600 hover:text-white duration-400 border-blue-600 transition text-white/60 py-2.5 rounded-md font-semibold shadow-md"
           >
-            Resend Code
+            {t("verification.resend")}
           </button>
         </form>
 
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-500">
-            Didn’t receive the email? Check your spam folder.
+            {t("verification.foot")}
           </p>
         </div>
       </div>

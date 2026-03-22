@@ -19,11 +19,18 @@ import AiAnalyze from './page/AiAnalyze'
 import CurrencyConverterAndRates from './page/CurrencyConverterAndRates'
 import Notification from './page/Notification'
 import RootNotFound from './Error/RootNotFound'
-import { ToastContainer } from 'react-toastify'
+import { toast, ToastContainer } from 'react-toastify'
 import NavBar from './components/NavBar'
 
-
 const App = () => {
+
+  const navigate = () => {
+    toast.error("You are not authorized to access this page ,please login first and try again");
+    return (
+      <Navigate to={"/auth/login"} />
+    )
+  }
+
   return (
     <BrowserRouter>
 
@@ -33,21 +40,21 @@ const App = () => {
           <Routes>
             <Route index element={<Dashboard />} />
             <Route path="/coin/info/:coinId" element={<CoinDetails />} />
-            <Route path='/coin/analyze-chart/:coinId' element={<ChartAnalyze />} />
+            <Route path='/coin/analyze-chart/:coinId' element={localStorage.isAuth ? <ChartAnalyze /> : navigate()} />
             <Route path='/news' element={<News />} />
             <Route path='/auth/login' element={<Login />} />
             <Route path='/auth/register' element={<Register />} />
             <Route path='/auth/verify-code' element={<Verfication />} />
             <Route path='/auth/forgot-password' element={<ForgotPassword />} />
             <Route path='/auth/reset-password' element={<ResetPassword />} />
-            <Route path='/auth/profile' element={<Profile />} />
+            <Route path='/auth/profile' element={localStorage.isAuth ? <Profile /> : navigate()} />
             <Route path='/about' element={<About />} />
             <Route path='/contact' element={<Contact />} />
-            <Route path='/ai/chat' element={<AiChat />} />
-            <Route path='/ai/analyze' element={<AiAnalyze />} />
+            <Route path='/ai/chat' element={localStorage.isAuth ? <AiChat /> : navigate()} />
+            <Route path='/ai/analyze' element={localStorage.isAuth ? <AiAnalyze /> : navigate()} />
             <Route path='/currency-market' element={<CurrencyConverterAndRates />} />
             <Route path='/notification' element={<Notification />} />
-            <Route path='*' element={<RootNotFound />} />
+            <Route path='*' element={localStorage.isAuth ? <RootNotFound /> : navigate()} />
           </Routes>
         </main>
 

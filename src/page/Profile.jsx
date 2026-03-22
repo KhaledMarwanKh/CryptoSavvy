@@ -1,7 +1,9 @@
+"use-client"
+
 import React, { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify"
 import axiosInst from "../libs/axiosInst";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 
 const AlertMessage = ({ type, message }) => {
   const styles =
@@ -17,6 +19,7 @@ const AlertMessage = ({ type, message }) => {
 };
 
 const ToggleItem = ({ title, description, enabled, onToggle }) => {
+  const { i18n } = useTranslation();
   return (
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-700/50 bg-slate-950/40 p-4">
       <div className="min-w-0">
@@ -33,7 +36,7 @@ const ToggleItem = ({ title, description, enabled, onToggle }) => {
           }`}
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ${enabled ? "translate-x-6" : "translate-x-1"
+          className={`inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ${enabled ? `${i18n.language === "en" ? "translate-x-6" : "-translate-x-6"}` : `${i18n.language === "en" ? "translate-x-1" : "-translate-x-1"}`
             }`}
         />
       </button>
@@ -54,6 +57,7 @@ const getInitials = (name) => {
 };
 
 export default function Profile() {
+  const { t } = useTranslation();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
@@ -86,7 +90,7 @@ export default function Profile() {
     if (!file.type.startsWith("image/")) {
       setProfileMessage({
         type: "error",
-        message: "Please upload a valid image file.",
+        message: t("profile.errorMessages.m2"),
       });
       input.value = "";
       return;
@@ -95,7 +99,7 @@ export default function Profile() {
     if (file.size > 5 * 1024 * 1024) {
       setProfileMessage({
         type: "error",
-        message: "Image size must be less than 5MB.",
+        message: t("profile.errorMessages.m1"),
       });
       input.value = "";
       return;
@@ -111,7 +115,7 @@ export default function Profile() {
 
       setProfileMessage({
         type: "success",
-        message: "Profile image uploaded successfully.",
+        message: t("profile.successMessages.s1"),
       });
     };
 
@@ -127,7 +131,7 @@ export default function Profile() {
     if (!trimmedName) {
       setProfileMessage({
         type: "error",
-        message: "Name is required.",
+        message: t("register.errorMessages.m1"),
       });
       return;
     }
@@ -138,7 +142,11 @@ export default function Profile() {
     }));
 
     try {
-      axiosInst.get("/api/user/get-profile").then(() => {
+      axiosInst.post("/api/user/update-profile", {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("userToken")}`
+        }
+      }).then(() => {
         setProfile((prev) => ({
           ...prev,
           name: trimmedName,
@@ -148,7 +156,7 @@ export default function Profile() {
       if (error instanceof AxiosError) {
         setProfileMessage({
           type: "error",
-          message: error?.response?.data?.message ?? "Something goes wrong",
+          message: error?.response?.data?.message ?? t("login.error"),
         });
       }
     }
@@ -157,7 +165,7 @@ export default function Profile() {
   const handleSettingsSave = () => {
     setSettingsMessage({
       type: "success",
-      message: "Settings updated successfully.",
+      message: t("profile.successMessages.s2"),
     });
 
     // Replace this with your API call
@@ -166,14 +174,22 @@ export default function Profile() {
 
   const getProfile = () => {
     try {
-      axiosInst.get("/api/user/get-profile").then(res => {
+      axiosInst.get("/api/user/get-profile", {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("userToken")}`
+        }
+      }).then(res => {
         console.log(res);
         setProfile(res);
       })
 
     } catch (error) {
-      toast.error("something goes wrong");
-      console.log(error);
+      if (error instanceof AxiosError) {
+        setProfileMessage({
+          type: "error",
+          message: error?.response?.data?.message ?? t("login.error"),
+        });
+      }
     }
   }
 
@@ -185,7 +201,7 @@ export default function Profile() {
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordMessage({
         type: "error",
-        message: "Please fill in all password fields.",
+        message: t("profile.errorMessages.m3"),
       });
       return;
     }
@@ -193,7 +209,7 @@ export default function Profile() {
     if (newPassword.length < 8) {
       setPasswordMessage({
         type: "error",
-        message: "New password must be at least 8 characters long.",
+        message: t("register.errorMessages.m5"),
       });
       return;
     }
@@ -201,22 +217,14 @@ export default function Profile() {
     if (newPassword !== confirmPassword) {
       setPasswordMessage({
         type: "error",
-        message: "New password and confirm password do not match.",
-      });
-      return;
-    }
-
-    if (currentPassword === newPassword) {
-      setPasswordMessage({
-        type: "error",
-        message: "New password must be different from current password.",
+        message: t("register.errorMessages.m6"),
       });
       return;
     }
 
     setPasswordMessage({
       type: "success",
-      message: "Password changed successfully.",
+      message: t("profile.successMessages.s3"),
     });
 
     setPasswords({
@@ -237,7 +245,7 @@ export default function Profile() {
 
     setProfileMessage({
       type: "success",
-      message: "Profile image removed.",
+      message: t("profile.successMessages.s4"),
     });
   };
 
@@ -254,16 +262,15 @@ export default function Profile() {
         <div className="overflow-hidden rounded-3xl border border-slate-700/50 bg-slate-900/70 shadow-md backdrop-blur-xl">
           <div className="border-b border-slate-700/50 px-6 py-6 sm:px-8">
             <span className="inline-flex rounded-full bg-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600">
-              Account Settings
+              {t("profile.as")}
             </span>
 
             <h1 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-              Profile Page
+              {t("profile.pp")}
             </h1>
 
             <p className="mt-2 max-w-2xl text-slate-400">
-              Manage your profile information, security settings, and
-              notifications in one place.
+              {t("profile.manage")}
             </p>
           </div>
 
@@ -320,7 +327,7 @@ export default function Profile() {
                     />
 
                     <h2 className="mt-5 text-xl font-semibold text-white">
-                      {profile.name || "Your Name"}
+                      {profile.name || t("register.labels.name")}
                     </h2>
 
                     <p className="mt-1 break-all text-sm text-slate-400">
@@ -333,7 +340,7 @@ export default function Profile() {
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
                       >
-                        Upload New Image
+                        {t("profile.upload")}
                       </button>
 
                       <button
@@ -341,12 +348,12 @@ export default function Profile() {
                         onClick={removeImage}
                         className="w-full rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
                       >
-                        Remove Image
+                        {t("profile.remove")}
                       </button>
                     </div>
 
                     <p className="mt-4 text-xs text-slate-400">
-                      Supported formats: JPG, PNG, WEBP — Max 5MB
+                      {t("profile.support")}
                     </p>
                   </div>
                 </div>
@@ -359,10 +366,10 @@ export default function Profile() {
               <section className="rounded-3xl border border-slate-700/50 bg-slate-950/40 p-6">
                 <div>
                   <h3 className="text-xl font-semibold text-white">
-                    Personal Information
+                    {t("profile.pi")}
                   </h3>
                   <p className="mt-1 text-sm text-slate-400">
-                    Update your basic account details.
+                    {t("profile.uy")}
                   </p>
                 </div>
 
@@ -381,9 +388,9 @@ export default function Profile() {
                 >
                   <div>
                     <label className="text-sm font-medium text-slate-300">
-                      Full Name
+                      {t("register.labels.name")}
                     </label>
-                    <div className="mt-2 rounded-xl border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
+                    <div className="mt-2 rounded-xl bg-white border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
                       <input
                         type="text"
                         value={profile.name}
@@ -393,20 +400,20 @@ export default function Profile() {
                             name: e.target.value,
                           }))
                         }
-                        placeholder="Enter your full name"
                         autoComplete="name"
-                        className="w-full bg-slate-950/60 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                        className="w-full text-sm bg-transparent text-slate-700 placeholder:text-gray-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-slate-300">
-                      Email Address
+                      {t("register.labels.email")}
                     </label>
-                    <div className="mt-2 rounded-xl border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
+                    <div className="mt-2 rounded-xl bg-white border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
                       <input
                         type="email"
+                        disabled
                         value={profile.email}
                         onChange={(e) =>
                           setProfile((prev) => ({
@@ -414,9 +421,8 @@ export default function Profile() {
                             email: e.target.value,
                           }))
                         }
-                        placeholder="Enter your email"
                         autoComplete="email"
-                        className="w-full bg-slate-950/60 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                        className="w-full text-sm bg-transparent text-slate-700 placeholder:text-gray-400 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -426,7 +432,7 @@ export default function Profile() {
                       type="submit"
                       className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto"
                     >
-                      Save Profile
+                      {t("profile.save")}
                     </button>
                   </div>
                 </form>
@@ -436,10 +442,10 @@ export default function Profile() {
               <section className="rounded-3xl border border-slate-700/50 bg-slate-950/40 p-6">
                 <div>
                   <h3 className="text-xl font-semibold text-white">
-                    Configurations
+                    {t("profile.config")}
                   </h3>
                   <p className="mt-1 text-sm text-slate-400">
-                    Control your security and notification preferences.
+                    {t("profile.cy")}
                   </p>
                 </div>
 
@@ -454,8 +460,8 @@ export default function Profile() {
 
                 <div className="mt-6 space-y-4">
                   <ToggleItem
-                    title="Two-Step Verification"
-                    description="Add an extra layer of security to your account."
+                    title={t("profile.toggleItems.item_1.title")}
+                    description={t("profile.toggleItems.item_1.desc")}
                     enabled={settings.twoStepVerification}
                     onToggle={() =>
                       setSettings((prev) => ({
@@ -466,8 +472,8 @@ export default function Profile() {
                   />
 
                   <ToggleItem
-                    title="Notification Activation"
-                    description="Receive email and app notifications for account activity."
+                    title={t("profile.toggleItems.item_2.title")}
+                    description={t("profile.toggleItems.item_2.desc")}
                     enabled={settings.notifications}
                     onToggle={() =>
                       setSettings((prev) => ({
@@ -484,7 +490,7 @@ export default function Profile() {
                     onClick={handleSettingsSave}
                     className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto"
                   >
-                    Save Settings
+                    {t("profile.saveP")}
                   </button>
                 </div>
               </section>
@@ -493,10 +499,10 @@ export default function Profile() {
               <section className="rounded-3xl border border-slate-700/50 bg-slate-950/40 p-6">
                 <div>
                   <h3 className="text-xl font-semibold text-white">
-                    Change Password
+                    {t("profile.changeP")}
                   </h3>
                   <p className="mt-1 text-sm text-slate-400">
-                    Update your password to keep your account secure.
+                    {t("profile.uyp")}
                   </p>
                 </div>
 
@@ -515,9 +521,8 @@ export default function Profile() {
                 >
                   <div>
                     <label className="text-sm font-medium text-slate-300">
-                      Current Password
-                    </label>
-                    <div className="mt-2 rounded-xl border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
+                      {t("profile.cup")}                    </label>
+                    <div className="mt-2 rounded-xl bg-white border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
                       <input
                         type="password"
                         value={passwords.currentPassword}
@@ -527,18 +532,18 @@ export default function Profile() {
                             currentPassword: e.target.value,
                           }))
                         }
-                        placeholder="Current password"
+                        placeholder={t("profile.cup")}
                         autoComplete="current-password"
-                        className="w-full bg-slate-950/60 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                        className="w-full text-sm bg-transparent text-slate-700 placeholder:text-gray-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-slate-300">
-                      New Password
+                      {t("profile.np")}
                     </label>
-                    <div className="mt-2 rounded-xl border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
+                    <div className="mt-2 rounded-xl bg-white border border-slate-700 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
                       <input
                         type="password"
                         value={passwords.newPassword}
@@ -548,18 +553,18 @@ export default function Profile() {
                             newPassword: e.target.value,
                           }))
                         }
-                        placeholder="New password"
+                        placeholder={t("profile.np")}
                         autoComplete="new-password"
-                        className="w-full bg-slate-950/60 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                        className="w-full text-sm bg-transparent text-slate-700 placeholder:text-gray-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-slate-300">
-                      Confirm Password
+                      {t("profile.cp")}
                     </label>
-                    <div className="mt-2 rounded-xl border border-slate-70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
+                    <div className="mt-2 rounded-xl bg-white border border-slate-70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-blue-500">
                       <input
                         type="password"
                         value={passwords.confirmPassword}
@@ -569,9 +574,9 @@ export default function Profile() {
                             confirmPassword: e.target.value,
                           }))
                         }
-                        placeholder="Confirm password"
+                        placeholder={t("profile.cp")}
                         autoComplete="new-password"
-                        className="w-full bg-slate-950/60 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                        className="w-full text-sm bg-transparent text-slate-700 placeholder:text-gray-400 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -581,7 +586,7 @@ export default function Profile() {
                       type="submit"
                       className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto"
                     >
-                      Update Password
+                      {t("profile.up")}
                     </button>
                   </div>
                 </form>

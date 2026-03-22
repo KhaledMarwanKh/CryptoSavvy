@@ -8,8 +8,10 @@ import {
     AlertTriangle,
     CheckCircle2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next"
 
 export default function Contact() {
+    const { t, i18n } = useTranslation();
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -26,14 +28,14 @@ export default function Contact() {
 
     const errors = useMemo(() => {
         const e = {};
-        if (!form.name.trim()) e.name = "Name is required.";
-        if (!form.email.trim()) e.email = "Email is required.";
+        if (!form.name.trim()) e.name = t("contactUs.errorMessages.m1");
+        if (!form.email.trim()) e.email = t("contactUs.errorMessages.m2");
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-            e.email = "Enter a valid email address.";
-        if (!form.subject.trim()) e.subject = "Subject is required.";
-        if (!form.message.trim()) e.message = "Message is required.";
+            e.email = t("contactUs.errorMessages.m3");
+        if (!form.subject.trim()) e.subject = t("contactUs.errorMessages.m4");
+        if (!form.message.trim()) e.message = t("contactUs.errorMessages.m5");
         return e;
-    }, [form]);
+    }, [form, t, i18n.language]);
 
     const hasErrors = Object.keys(errors).length > 0;
 
@@ -49,7 +51,7 @@ export default function Contact() {
         if (hasErrors) {
             setStatus({
                 type: "error",
-                message: "Please fix the highlighted fields and try again.",
+                message: t("contactUs.errorMessages.m6"),
             });
             return;
         }
@@ -61,13 +63,13 @@ export default function Contact() {
 
             setStatus({
                 type: "success",
-                message: "Your message has been sent. We’ll get back to you soon.",
+                message: t("contactUs.successMessages"),
             });
             setForm({ name: "", email: "", subject: "", message: "" });
         } catch {
             setStatus({
                 type: "error",
-                message: "Something went wrong while sending your message. Please try again.",
+                message: t("contactUs.errorMessages.m7"),
             });
         } finally {
             setIsSubmitting(false);
@@ -116,47 +118,32 @@ export default function Contact() {
                             "shadow-md backdrop-blur-xl",
                         ].join(" ")}
                     >
-                        <div className="mb-4">
-                            <div className="text-lg font-semibold">Get in touch</div>
-                            <div className="mt-1 text-sm text-slate-400">
-                                Prefer email or phone? Use any method below.
-                            </div>
-                        </div>
 
                         <div className="space-y-3">
                             <InfoRow
                                 icon={<Mail className="h-4 w-4 text-blue-600" />}
-                                title="Email"
+                                title={t("contactUs.infoRows.r1.title")}
                                 value="support@example.com"
-                                hint="We typically respond within 1–2 business days."
+                                hint={t("contactUs.infoRows.r1.hint")}
                             />
                             <InfoRow
                                 icon={<Phone className="h-4 w-4 text-blue-600" />}
-                                title="Phone"
+                                title={t("contactUs.infoRows.r2.title")}
                                 value="+9639319391391"
-                                hint="Mon–Fri, 9:00–17:00"
+                                hint={t("contactUs.infoRows.r2.hint")}
                             />
                             <InfoRow
                                 icon={<MapPin className="h-4 w-4 text-blue-600" />}
-                                title="Address"
-                                value="Homes"
-                                hint="Visits by appointment only."
+                                title={t("contactUs.infoRows.r3.title")}
+                                value={t("contactUs.infoRows.r3.value")}
+                                hint={t("contactUs.infoRows.r3.hint")}
                             />
                             <InfoRow
                                 icon={<Clock className="h-4 w-4 text-blue-600" />}
-                                title="Hours"
-                                value="Mon–Fri: 9:00–17:00"
-                                hint="Closed on weekends and holidays."
+                                title={t("contactUs.infoRows.r4.title")}
+                                value={t("contactUs.infoRows.r2.hint")}
+                                hint={t("contactUs.infoRows.r4.hint")}
                             />
-                        </div>
-
-                        <div className="mt-6 rounded-2xl border border-slate-700/50 bg-slate-950/60 p-4">
-                            <div className="text-sm font-medium text-slate-300">Social</div>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                <SocialPill label="X / Twitter" />
-                                <SocialPill label="LinkedIn" />
-                                <SocialPill label="GitHub" />
-                            </div>
                         </div>
                     </div>
 
@@ -170,60 +157,60 @@ export default function Contact() {
                     >
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                                <div className="text-lg font-semibold">Send a message</div>
+                                <div className="text-lg font-semibold">{t("contactUs.form.send")}</div>
                                 <div className="mt-1 text-sm text-slate-400">
-                                    Fill out the form and we’ll reply to your email.
+                                    {t("contactUs.form.fill")}
                                 </div>
                             </div>
                         </div>
 
                         <form onSubmit={onSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <Field label="Name" error={errors.name}>
+                                <Field label={t("contactUs.form.inputs.in1.label")} error={errors.name}>
                                     <input
                                         value={form.name}
                                         onChange={update("name")}
                                         className={[
-                                            "w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left",
+                                            "w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 ",
                                         ].join(" ")}
-                                        placeholder="Your name"
+                                        placeholder={t("contactUs.form.inputs.in1.placeholder")}
                                         autoComplete="name"
                                     />
                                 </Field>
 
-                                <Field label="Email" error={errors.email}>
+                                <Field label={t("contactUs.form.inputs.in2.label")} error={errors.email}>
                                     <input
                                         value={form.email}
                                         onChange={update("email")}
-                                        className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
+                                        className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 "
                                         placeholder="you@domain.com"
                                         autoComplete="email"
                                     />
                                 </Field>
                             </div>
 
-                            <Field label="Subject" error={errors.subject}>
+                            <Field label={t("contactUs.form.inputs.in3.label")} error={errors.subject}>
                                 <input
                                     value={form.subject}
                                     onChange={update("subject")}
-                                    className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
-                                    placeholder="How can we help?"
+                                    className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 "
+                                    placeholder={t("contactUs.form.inputs.in3.placeholder")}
                                 />
                             </Field>
 
-                            <Field label="Message" error={errors.message}>
+                            <Field label={t("contactUs.form.inputs.in4.label")} error={errors.message}>
                                 <textarea
                                     value={form.message}
                                     onChange={update("message")}
                                     rows={6}
-                                    className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-left"
-                                    placeholder="Tell us a bit more about what you need…"
+                                    className="w-full p-2 text-gray-400 bg-slate-950/60 border border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 "
+                                    placeholder={t("contactUs.form.inputs.in1.placeholder")}
                                 />
                             </Field>
 
                             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="text-xs text-slate-400">
-                                    By sending this message, you agree to be contacted at the provided email.
+                                    {t("contactUs.form.agree")}
                                 </div>
 
                                 <button
@@ -236,7 +223,7 @@ export default function Contact() {
                                     ].join(" ")}
                                 >
                                     <Send className="h-4 w-4" />
-                                    {isSubmitting ? "Sending…" : "Send message"}
+                                    {isSubmitting ? t("contactUs.form.sending") : t("contactUs.form.send")}
                                 </button>
                             </div>
                         </form>
