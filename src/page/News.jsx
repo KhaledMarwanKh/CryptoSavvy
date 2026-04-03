@@ -64,9 +64,9 @@ const News = () => {
         setIsLoading(true);
 
         const params = {
-            apikey: import.meta.env.VITE_GNEWS_API,
+            // apikey: import.meta.env.VITE_GNEWS_API,
             lang: "en",
-            q: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
+            topic: searchQuery ? searchQuery : "bitcoin OR ethereum OR crypto OR blockchain",
             max: 20,
             sortBy: activeFilters.sortBy,
             page: currentPage
@@ -81,7 +81,8 @@ const News = () => {
         }
 
         newsHandler.getNews(params).then((res) => {
-            setTotalNumber(res?.totalArticles);
+            // setTotalNumber(res?.totalArticles);
+            setTotalNumber(res.count);
             setFilteredNews(res?.articles);
             setIsLoading(false);
         })
@@ -175,7 +176,7 @@ const News = () => {
                                             />
                                             <div className="absolute top-4 left-4">
                                                 <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-semibold rounded-full shadow-lg">
-                                                    {news.source.name}
+                                                    {news?.source}
                                                 </span>
                                             </div>
                                         </div>

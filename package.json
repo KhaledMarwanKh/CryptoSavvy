@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.13.5",
     "axios-cookiejar-support": "^6.0.5",
+    "events": "^3.3.0",
     "i18next": "^25.8.14",
     "i18next-browser-languagedetector": "^8.2.1",
     "interactive-lw-charts-tools": "^1.0.2",
@@ -42,7 +43,8 @@
     "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.3",
     "technicalindicators": "^3.1.0",
-    "tough-cookie": "^6.0.0"
+    "tough-cookie": "^6.0.0",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import SypCurrency from "../components/Currency Page/SYPServices";
 import axiosInst from "../libs/axiosInst";
-import { formatCompactNumber, formatDateISO } from "../utils/formattor";
+import { formatCompactNumber } from "../utils/formattor";
 import CurrencySelect from "../components/Currency Page/CurrencySelect";
 import CustomTooltip from "../components/Currency Page/CustomTooltip";
 import { CURRENCIES } from "../data/data";
@@ -38,8 +38,6 @@ function CurrencyConverterAndRates() {
 
     const abortRef = useRef({ chart: null, table: null });
 
-    const intervalDays = 30;
-
     const converted = useMemo(() => {
         const n = Number(amount);
         if (!Number.isFinite(n) || latestTargetRate == null) return null;
@@ -57,60 +55,6 @@ function CurrencyConverterAndRates() {
         if (startRate == null || currentRate == null || startRate === 0) return null;
         return ((currentRate - startRate) / startRate) * 100;
     }, [startRate, currentRate]);
-
-    const fetchTimeseries = async () => {
-        if (base === target) {
-            setTimeseries([]);
-            setLatestTargetRate(1);
-            setError(t("currency.errors.sameCurrency"));
-            return;
-        }
-
-        setError("");
-        setLoadingChart(true);
-
-        abortRef.current.chart?.abort?.();
-        const controller = new AbortController();
-        abortRef.current.chart = controller;
-
-        try {
-            const end = new Date();
-            const start = new Date();
-            start.setDate(end.getDate() - intervalDays);
-
-            const startISO = formatDateISO(start);
-            const endISO = formatDateISO(end);
-
-            // Frankfurter time series: /YYYY-MM-DD..YYYY-MM-DD?from=USD&to=EUR
-            const url = `https://api.frankfurter.app/${startISO}..${endISO}?from=${encodeURIComponent(
-                base
-            )}&to=${encodeURIComponent(target)}`;
-
-            const res = await fetch(url, { signal: controller.signal });
-            if (!res.ok) throw new Error(`Chart request failed (${res.status})`);
-            const data = await res.json();
-
-            const ratesObj = data?.rates ?? {};
-            const rows = Object.keys(ratesObj)
-                .sort()
-                .map((date) => ({
-                    date,
-                    rate: ratesObj[date]?.[target] ?? null,
-                }))
-                .filter((r) => r.rate != null);
-
-            setTimeseries(rows);
-            setLatestTargetRate(rows.length ? rows[rows.length - 1].rate : null);
-        } catch (e) {
-            if (e?.name !== "AbortError") {
-                setError(e?.message || t("currency.errors.chartFailed"));
-                setTimeseries([]);
-                setLatestTargetRate(null);
-            }
-        } finally {
-            setLoadingChart(false);
-        }
-    };
 
     const fetchLatestTable = async () => {
         setLoadingTable(true);
@@ -147,22 +91,38 @@ function CurrencyConverterAndRates() {
     };
 
     const covert = async () => {
-        const apiURL = "/api/currency/convert";
+        setLoadingChart(true);
 
-        const response = (await axiosInst.get(apiURL, {
-            params: {
-                from: base,
-                to: target,
-                amount: Number.parseFloat(amount)
+        try {
+            const apiURL = "/api/currency/convert";
+
+            const response = (await axiosInst.get(apiURL, {
+                params: {
+                    from: base,
+                    to: target,
+                    amount: Number.parseFloat(amount)
+                }
+            })).data
+
+            const rows = Object.keys(response.history).sort().map(date => ({
+                rate: response.history[date][target] ?? null,
+                date
+            })).filter(r => r.rate !== null);
+
+            setTimeseries(rows);
+            setLatestTargetRate(response.rate);
+        } catch (e) {
+            if (e?.name !== "AxiosError") {
+                setError(e?.response?.data?.message || t("currency.errors.chartFailed"));
+                setTimeseries([]);
+                setLatestTargetRate(null);
             }
-        })).data
+        }
 
-        console.log(response);
-
+        setLoadingChart(false);
     }
 
     useEffect(() => {
-        fetchTimeseries();
         covert();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [base, target]);
@@ -433,13 +393,13 @@ function CurrencyConverterAndRates() {
                                                 <tbody className="divide-y divide-slate-700/50">
                                                     {latestRates.map((r) => (
                                                         <tr key={r.currency} className="hover:bg-slate-900/40">
-                                                            <td className="px-4 py-3">
+                                                            <td className="px-4 py-3 text-center">
                                                                 <div className="font-semibold text-slate-100">{r.currency}</div>
                                                             </td>
-                                                            <td className="px-4 py-3 font-semibold text-slate-100">
+                                                            <td className="px-4 py-3 text-center font-semibold text-slate-100">
                                                                 {formatCompactNumber(r.rate)}
                                                             </td>
-                                                            <td className="px-4 py-3 text-sm text-slate-400">
+                                                            <td className="px-4 py-3 text-center text-sm text-slate-400">
                                                                 <span dir="ltr"> 1 {base} = {formatCompactNumber(r.rate)} {r.currency}</span>
                                                             </td>
                                                         </tr>

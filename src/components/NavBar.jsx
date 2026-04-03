@@ -34,11 +34,6 @@ function NavBar() {
 
     const isActive = (pathname) => location.pathname === pathname;
 
-    const handleNaviagtion = (route) => {
-        navigate(route);
-        setSidebarOpen(false);
-        window.scrollTo(0, 0);
-    }
 
     const navigationRoutes = [
         {
@@ -109,6 +104,18 @@ function NavBar() {
         navigate("/");
     }
 
+    const handleNavigation = (route) => {
+        if (["/auth/profile", "/ai/analyze", "/ai/chat", "/notification"].includes(route) && !localStorage.userToken) {
+            toast.error(i18n.language === "ar" ? "غير مصرح لك بالدخول الى هذه الصفحة" : "You are not authorized to access this page");
+            setSidebarOpen(false);
+            return;
+        }
+
+        navigate(route);
+        setSidebarOpen(false);
+        window.scrollTo(0, 0);
+    }
+
     const handleLanguageChange = (lng) => {
         i18n.changeLanguage(lng.key);
         setActiveLanguage(lng.key);
@@ -148,7 +155,7 @@ function NavBar() {
                 <div className="hidden md:flex items-center gap-4">
                     {
                         navigationRoutes.slice(0, 4).map(nav => (
-                            <NavLink onClick={() => handleNaviagtion(nav.route)} key={nav.name} className={`text-slate-200 p-2 rounded-lg w-[100px] text-center ${isActive(nav.route) ? "text-white font-bold bg-blue-600" : "bg-slate-600 hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
+                            <NavLink onClick={() => handleNavigation(nav.route)} key={nav.name} className={`text-slate-200 p-2 rounded-lg w-[100px] text-center ${isActive(nav.route) ? "text-white font-bold bg-blue-600" : "bg-slate-600 hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
                                 {nav.name}
                             </NavLink>
                         ))
@@ -174,7 +181,7 @@ function NavBar() {
                     }
 
                     {
-                        localStorage.isAuth ? (
+                        localStorage.userToken ? (
                             <>
                                 <button className="text-slate-300 hover:text-white transition relative">
                                     <Bell size={20} />
@@ -183,12 +190,12 @@ function NavBar() {
 
 
 
-                                <button onClick={() => navigate("/auth/profile")} className="text-slate-300 hover:text-white transition">
+                                <button onClick={() => handleNavigation("/auth/profile")} className="text-slate-300 hover:text-white transition">
                                     <User size={20} />
                                 </button>
                             </>
                         ) : (
-                            <button onClick={() => navigate("/auth/login")} className="px-3 py-2 rounded-lg bg-blue-600 text-slate-200 hover:text-white hover:font-semibold active:bg-slate-500 transition-all duration-100">
+                            <button onClick={() => handleNavigation("/auth/login")} className="px-3 py-2 rounded-lg bg-blue-600 text-slate-200 hover:text-white hover:font-semibold active:bg-slate-500 transition-all duration-100">
                                 {t("navbar.tabs.login")}
                             </button>
                         )
@@ -227,7 +234,7 @@ function NavBar() {
                     <div className="flex flex-col gap-4">
                         {
                             navigationRoutes.slice(0, 4).map(nav => (
-                                <NavLink onClick={() => handleNaviagtion(nav.route)} key={nav.name} className={`flex gap-2 items-center md:hidden w-full text-slate-200 py-3 px-3 rounded-lg cursor-pointer ${isActive(nav.route) ? "text-white bg-blue-600 font-bold" : "hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
+                                <NavLink onClick={() => handleNavigation(nav.route)} key={nav.name} className={`${["/auth/profile", "/ai/analyze", "/ai/chat", "/notification"].includes(nav.route) && localStorage.userToken ? "flex" : "hidden"} gap-2 items-center md:hidden w-full text-slate-200 py-3 px-3 rounded-lg cursor-pointer ${isActive(nav.route) ? "text-white bg-blue-600 font-bold" : "hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
                                     <nav.icon className="w-5 h-5" />
                                     {nav.name}
                                 </NavLink>
@@ -236,7 +243,7 @@ function NavBar() {
 
                         {
                             navigationRoutes.slice(4, 7).map(nav => (
-                                <NavLink onClick={() => handleNaviagtion(nav.route)} key={nav.name} className={`flex gap-2 items-center w-full text-slate-200 py-3 px-3 rounded-lg cursor-pointer ${isActive(nav.route) ? "text-white bg-blue-600 font-bold" : "hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
+                                <NavLink onClick={() => handleNavigation(nav.route)} key={nav.name} className={`${["/auth/profile", "/ai/analyze", "/ai/chat", "/notification"].includes(nav.route) && localStorage.userToken ? "flex" : "hidden"} gap-2 items-center w-full text-slate-200 py-3 px-3 rounded-lg cursor-pointer ${isActive(nav.route) ? "text-white bg-blue-600 font-bold" : "hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
                                     <nav.icon className="w-5 h-5" />
                                     {nav.name}
                                 </NavLink>
@@ -244,7 +251,7 @@ function NavBar() {
                         }
 
                         {
-                            localStorage.isAuth && navigationRoutes.slice(7).map(nav => (
+                            localStorage.userToken && navigationRoutes.slice(7).map(nav => (
                                 <NavLink onClick={handleLogout} key={nav.name} className={`flex gap-2 items-center w-full text-slate-200 py-3 px-3 rounded-lg cursor-pointer ${isActive(nav.route) ? "text-white bg-blue-600 font-bold" : "hover:bg-slate-800/40 hover:font-semibold transition-all duration-300"}`} to={nav.route} title={nav.name} >
                                     <nav.icon className="w-5 h-5" />
                                     {nav.name}

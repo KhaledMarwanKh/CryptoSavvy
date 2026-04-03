@@ -30,8 +30,6 @@ class ChartDataHandler {
 
             this.isChartDataArrived = true;
 
-            console.log(candles)
-
             return { candles };
 
         } catch (error) {

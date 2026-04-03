@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axiosInst from "../libs/axiosInst";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 const AlertMessage = ({ type, message }) => {
   const styles =
@@ -57,7 +58,7 @@ const getInitials = (name) => {
 };
 
 export default function Profile() {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
@@ -142,11 +143,12 @@ export default function Profile() {
     }));
 
     try {
-      axiosInst.post("/api/user/update-profile", {
+      axiosInst.post("/api/user/update-profile", { name: profile.name }, {
         headers: {
           authorization: `Bearer ${localStorage.getItem("userToken")}`
         }
       }).then(() => {
+        toast.success(i18n.language === "en" ? "Profile Updated Successfully" : "تم تحديث الملف الشخصي")
         setProfile((prev) => ({
           ...prev,
           name: trimmedName,
@@ -179,8 +181,7 @@ export default function Profile() {
           authorization: `Bearer ${localStorage.getItem("userToken")}`
         }
       }).then(res => {
-        console.log(res);
-        setProfile(res);
+        setProfile(res.data.data);
       })
 
     } catch (error) {

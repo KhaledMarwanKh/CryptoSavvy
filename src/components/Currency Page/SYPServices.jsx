@@ -189,19 +189,19 @@ export default function SypCurrency() {
                                 <tbody className="divide-y divide-slate-700/50">
                                     {currencyData?.map((r) => (
                                         <tr key={r.currency} className="hover:bg-slate-900/40">
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-3 text-center">
                                                 <div className="font-semibold text-slate-100">{r.currency}</div>
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-3 text-center">
                                                 <div className="font-semibold text-slate-100">{r.name}</div>
                                             </td>
-                                            <td className="px-4 py-3 font-semibold text-slate-100">
+                                            <td className="px-4 py-3 text-center font-semibold text-slate-100">
                                                 {formatCompactNumber(r.buy)}
                                             </td>
-                                            <td className="px-4 py-3 font-semibold text-slate-100">
+                                            <td className="px-4 py-3 text-center font-semibold text-slate-100">
                                                 {formatCompactNumber(r.sell)}
                                             </td>
-                                            <td className={`px-4 py-3 text-sm flex items-center gap-2 ${r.change[0] === "▲" ? "text-emerald-400" : "text-red-400"} `}>
+                                            <td className={`px-4 py-3 text-center text-sm flex items-center gap-2 ${r.change[0] === "▲" ? "text-emerald-400" : "text-red-400"} `}>
                                                 {
                                                     r.change[0] === "▲" ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />
                                                 }
