@@ -1,0 +1,74 @@
+{
+  "auth": {
+    "name_required": "Name is required",
+    "name_length": "Name must be between 2 and 50 characters",
+    "email_required": "Email is required",
+    "email_invalid": "Must be a valid email address",
+    "password_required": "Password is required",
+    "password_min": "Password must be at least 8 characters long",
+    "password_number": "Password must contain at least one number",
+    "password_lowercase": "Password must contain at least one lowercase letter",
+    "password_uppercase": "Password must contain at least one uppercase letter",
+    "password_special": "Password must contain at least one special character (!@#$%^&*)",
+    "password_confirm_required": "Password confirmation is required",
+    "password_mismatch": "Password confirmation does not match password",
+    "signup_success": "Sign up successful! Verification code sent to your email",
+    "verification_code_sent": "Verification code sent to {{email}}",
+    "login_success": "Login successful",
+    "logout_success": "Logout successful",
+    "invalid_credentials": "Invalid email or password",
+    "user_not_found": "User not found",
+    "user_already_exists": "This email is already registered",
+    "account_not_verified": "Account not verified yet. Please verify with the code sent to your email",
+    "verification_code_expired": "Verification code expired. Please request a new one",
+    "verification_code_invalid": "Invalid verification code",
+    "verification_success": "Account verified successfully",
+    "forgot_password_success": "Password reset link sent to your email",
+    "reset_password_success": "Password reset successful",
+    "reset_link_expired": "Password reset link expired. Please request a new one",
+    "reset_link_invalid": "Invalid password reset link"
+  },
+  "crypto": {
+    "invalid_symbol": "Invalid currency symbol: {{symbol}}",
+    "data_fetch_error": "Error fetching data",
+    "no_data_available": "Data not available at the moment",
+    "invalid_range": "Invalid date range"
+  },
+  "currency": {
+    "conversion_success": "Currency conversion successful",
+    "invalid_currency": "Invalid currency: {{currency}}",
+    "conversion_error": "Error converting currency"
+  },
+  "ai": {
+    "analysis_success": "Analysis completed successfully",
+    "invalid_input": "Invalid input",
+    "analysis_error": "Error performing analysis",
+    "processing": "Processing..."
+  },
+  "news": {
+    "fetch_success": "News fetched successfully",
+    "fetch_error": "Error fetching news",
+    "no_news": "No news available"
+  },
+  "errors": {
+    "invalid_token": "Invalid token. Please log in again!",
+    "token_expired": "Your token has expired. Please log in again!",
+    "unauthorized": "You are not authorized to access this resource",
+    "forbidden": "Access forbidden",
+    "not_found": "Resource not found",
+    "bad_request": "Bad request",
+    "server_error": "Something went wrong on the server. Please try again later",
+    "duplicate_field": "Duplicate field value: {{field}}. Please use another value",
+    "invalid_field": "Invalid field: {{field}}",
+    "validation_error": "Validation error: {{details}}",
+    "cast_error": "Invalid {{type}}: {{value}}"
+  },
+  "common": {
+    "success": "Success",
+    "error": "Error",
+    "loading": "Loading...",
+    "try_again": "Try again",
+    "please_wait": "Please wait...",
+    "welcome": "Welcome {{name}}"
+  }
+}

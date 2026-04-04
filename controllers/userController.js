@@ -56,7 +56,7 @@ const generatetoken = (id) =>
 
   res.status(200).json({
     status: 'success',
-    message: 'logout successfully'
+    message: req.t('auth.logout_success')
   });
 };
   exports.signup = catchasync(async (req, res, next) => {
@@ -96,7 +96,7 @@ text: `رمز تفعيل حسابك هو: ${verificationCode}. صالح لمدة
 
     res.status(201).json({
       status: "success",
-      message: `تم إرسال رمز التفعيل إلى البريد الإلكتروني ${newUser.email}`,
+      message: req.t('auth.verification_code_sent', { email: newUser.email }),
     });
 
   } catch (err) {
@@ -118,7 +118,7 @@ const { email } = req.body;
     resetCodeExpires: { $gt: Date.now() },
   });   
   if (!user) {
-    return next(new AppError("الرمز غير صحيح أو منتهي الصلاحية", 400));
+    return next(new AppError(req.t('auth.verification_code_invalid'), 400));
   } 
   user.resetCode = undefined;
   user.resetCodeExpires = undefined;  
@@ -131,7 +131,7 @@ exports.login = catchasync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new AppError("Please provide email and password", 400));
+    return next(new AppError(req.t('auth.email_required'), 400));
   }
 
   let user;
@@ -140,13 +140,13 @@ exports.login = catchasync(async (req, res, next) => {
   user = await userModel.findOne({email,activate:true}).select("+password");
   console.log(email)
   if (!user) {
-    return next(new AppError("Incorrect email or password", 401));
+    return next(new AppError(req.t('auth.invalid_credentials'), 401));
   }
   const correct = await user.correctpassword(password, user.password);
   
 
   if (!correct) {
-    return next(new AppError("Incorrect email or password", 401));
+    return next(new AppError(req.t('auth.invalid_credentials'), 401));
   }
 
   createSendToken(user, 200, res, { userType });
@@ -171,7 +171,7 @@ exports.updateProfile = catchasync(async (req, res, next) => {
 
 res.status(200).json({
   status:"success",
-  message :"updated data"
+  message: req.t('common.success')
 })
 });
 

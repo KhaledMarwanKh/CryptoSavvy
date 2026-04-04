@@ -129,7 +129,25 @@ io.on("connection", (socket) => {
   socket.on("pingServer", () => {
     socket.emit("pongServer", { time: Date.now() });
   });
+
+  // -------- AI Training Status --------
+  socket.on("trainAI", ({ symbol }) => {
+    console.log(`🧠 AI training requested for ${symbol}`);
+    // Will be handled by the main app
+    socket.emit("aiTrainingStarted", { symbol, status: "pending" });
+  });
+
+  // -------- AI Prediction Status --------
+  socket.on("getPrediction", ({ symbol }) => {
+    console.log(`🔮 AI prediction requested for ${symbol}`);
+    socket.emit("predictionStarted", { symbol, status: "processing" });
+  });
 });
+
+// =====================
+// Export io for use in controllers
+// =====================
+module.exports = { server, io };
 
 // =====================
 // Crypto Socket Starter
@@ -141,4 +159,6 @@ startCryptoSocket(io, userSubscriptions);
 // =====================
 server.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
+  console.log(`📡 Socket.IO connected at ws://localhost:${port}`);
+  console.log(`🧠 AI Service expected at ${process.env.AI_SERVICE_URL}`);
 });

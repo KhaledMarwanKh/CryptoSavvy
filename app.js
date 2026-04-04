@@ -30,8 +30,10 @@ const userRoute = require("./routes/userRoute");
 const cryptoHistoryRoute = require("./routes/cryptoRoute");
 const newsRoute = require("./routes/newsRoute");
 const currencyRoute = require("./routes/currencyRoutes");
+const aiRoute = require("./routes/aiRoute");
 const { startAutoFetch } = require("./services/sypService");
-const {connectDb} =require('./config/mongodb')
+const {connectDb} =require('./config/mongodb');
+const i18nMiddleware = require('./middlewares/i18n');
 startAutoFetch()
 connectDb();
 // =====================
@@ -97,6 +99,7 @@ app.use(express.json());
 app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp({ whitelist: [] }));
+app.use(i18nMiddleware);
 
 // =====================
 // Routes
@@ -108,12 +111,13 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoute);
 app.use("/api/crypto", cryptoHistoryRoute);
 app.use("/api/news", newsRoute);
-app.use("/api/currency",currencyRoute)
+app.use("/api/currency", currencyRoute);
+app.use("/api/ai", aiRoute);
 // =====================
 // Unhandled Routes
 // =====================
 app.all("*", (req, res, next) => {
-  next(new appError(`can't find ${req.originalUrl} on this server!`, 404));
+  next(new appError(req.t('errors.not_found'), 404));
 });
 
 app.use(globalError);

@@ -1,28 +1,31 @@
 const AppError = require("../utils/appError");
 
-const handleCastError = (err) => {
-  const message = `Invalid ${err.path}: ${err.value}`;
+const handleCastError = (err, req) => {
+  const message = req.t('errors.cast_error', { 
+    type: err.path, 
+    value: err.value 
+  });
   return new AppError(message, 400);
 };
 
-const handleDuplicateError = (err) => {
+const handleDuplicateError = (err, req) => {
   const value = err.keyValue ? JSON.stringify(err.keyValue) : '';
-  const message = `Duplicate field value: ${value}. Please use another value!`;
+  const message = req.t('errors.duplicate_field', { field: value });
   return new AppError(message, 400);
 };
 
-const handleValidationError = (err) => {
+const handleValidationError = (err, req) => {
   const errors = Object.values(err.errors).map(el => el.message);
-  const message = `Invalid input data. ${errors.join('. ')}`;
+  const message = req.t('errors.validation_error', { details: errors.join('. ') });
   return new AppError(message, 400);
 };
 
-const handleJWTError = () => {
-  return new AppError('Invalid token. Please log in again!', 401);
+const handleJWTError = (req) => {
+  return new AppError(req.t('errors.invalid_token'), 401);
 };
 
-const handleJWTExpiredError = () => {
-  return new AppError('Your token has expired. Please log in again!', 401);
+const handleJWTExpiredError = (req) => {
+  return new AppError(req.t('errors.token_expired'), 401);
 };
 
 module.exports = (err, req, res, next) => {
@@ -43,11 +46,11 @@ module.exports = (err, req, res, next) => {
     error.message = err.message;
     error.name = err.name;
 
-    if (error.name === "CastError") error = handleCastError(error);
-    if (error.code === 11000) error = handleDuplicateError(error);
-    if (error.name === "ValidationError") error = handleValidationError(error);
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+    if (error.name === "CastError") error = handleCastError(error, req);
+    if (error.code === 11000) error = handleDuplicateError(error, req);
+    if (error.name === "ValidationError") error = handleValidationError(error, req);
+    if (error.name === "JsonWebTokenError") error = handleJWTError(req);
+    if (error.name === "TokenExpiredError") error = handleJWTExpiredError(req);
 
     if (error.isOperational) {
       return res.status(error.statusCode).json({
@@ -58,7 +61,7 @@ module.exports = (err, req, res, next) => {
       // Unexpected error
       return res.status(500).json({
         status: "error",
-        message: "Something went very wrong!",
+        message: req.t('errors.server_error'),
       });
     }
   }

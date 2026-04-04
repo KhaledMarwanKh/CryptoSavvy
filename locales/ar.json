@@ -1,0 +1,74 @@
+{
+  "auth": {
+    "name_required": "الاسم مطلوب",
+    "name_length": "الاسم يجب أن يكون بين 2 و 50 حرف",
+    "email_required": "البريد الإلكتروني مطلوب",
+    "email_invalid": "البريد الإلكتروني غير صحيح",
+    "password_required": "كلمة المرور مطلوبة",
+    "password_min": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "password_number": "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل",
+    "password_lowercase": "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل",
+    "password_uppercase": "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل",
+    "password_special": "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل (!@#$%^&*)",
+    "password_confirm_required": "تأكيد كلمة المرور مطلوب",
+    "password_mismatch": "تأكيد كلمة المرور غير متطابق",
+    "signup_success": "تم التسجيل بنجاح! تم إرسال رمز التفعيل إلى بريدك الإلكتروني",
+    "verification_code_sent": "تم إرسال رمز التفعيل إلى البريد الإلكتروني {{email}}",
+    "login_success": "تم تسجيل الدخول بنجاح",
+    "logout_success": "تم تسجيل الخروج بنجاح",
+    "invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "user_not_found": "المستخدم غير موجود",
+    "user_already_exists": "هذا البريد الإلكتروني مسجل بالفعل",
+    "account_not_verified": "الحساب غير مفعّل بعد. يرجى التحقق من رمز التفعيل",
+    "verification_code_expired": "انتهت صلاحية رمز التفعيل. يرجى طلب رمز جديد",
+    "verification_code_invalid": "رمز التفعيل غير صحيح",
+    "verification_success": "تم التحقق من الحساب بنجاح",
+    "forgot_password_success": "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
+    "reset_password_success": "تم إعادة تعيين كلمة المرور بنجاح",
+    "reset_link_expired": "انتهت صلاحية رابط إعادة التعيين. يرجى طلب واحد جديد",
+    "reset_link_invalid": "رابط إعادة التعيين غير صحيح"
+  },
+  "crypto": {
+    "invalid_symbol": "رمز العملة غير صحيح: {{symbol}}",
+    "data_fetch_error": "حدث خطأ أثناء جلب البيانات",
+    "no_data_available": "البيانات غير متاحة حالياً",
+    "invalid_range": "نطاق التاريخ غير صحيح"
+  },
+  "currency": {
+    "conversion_success": "تم تحويل العملة بنجاح",
+    "invalid_currency": "العملة غير صحيحة: {{currency}}",
+    "conversion_error": "حدث خطأ أثناء تحويل العملة"
+  },
+  "ai": {
+    "analysis_success": "تم إجراء التحليل بنجاح",
+    "invalid_input": "الإدخال غير صحيح",
+    "analysis_error": "حدث خطأ أثناء إجراء التحليل",
+    "processing": "جاري المعالجة..."
+  },
+  "news": {
+    "fetch_success": "تم جلب الأخبار بنجاح",
+    "fetch_error": "حدث خطأ أثناء جلب الأخبار",
+    "no_news": "لا توجد أخبار متاحة"
+  },
+  "errors": {
+    "invalid_token": "الرمز غير صحيح. يرجى تسجيل الدخول مرة أخرى",
+    "token_expired": "انتهت صلاحية الرمز. يرجى تسجيل الدخول مرة أخرى",
+    "unauthorized": "غير مصرح لك بالوصول إلى هذا المورد",
+    "forbidden": "ممنوع الوصول",
+    "not_found": "المورد غير موجود",
+    "bad_request": "طلب غير صالح",
+    "server_error": "حدث خطأ في الخادم. يرجى المحاولة لاحقاً",
+    "duplicate_field": "قيمة حقل مكررة: {{field}}. يرجى استخدام قيمة أخرى",
+    "invalid_field": "حقل غير صحيح: {{field}}",
+    "validation_error": "خطأ في التحقق من البيانات: {{details}}",
+    "cast_error": "{{type}} غير صحيح: {{value}}"
+  },
+  "common": {
+    "success": "نجح",
+    "error": "خطأ",
+    "loading": "جاري التحميل...",
+    "try_again": "حاول مرة أخرى",
+    "please_wait": "الرجاء الانتظار...",
+    "welcome": "مرحباً {{name}}"
+  }
+}

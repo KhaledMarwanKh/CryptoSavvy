@@ -3,6 +3,7 @@ const appError = require("../utils/appError");
 
 /**
  * Middleware to handle the result of the validation.
+ * يدعم الترجمة متعددة اللغات
  */
 const validate = (req, res, next) => {
     const errors = validationResult(req);
@@ -15,39 +16,45 @@ const validate = (req, res, next) => {
     return next(new appError(extractedErrors.join(". "), 400));
 };
 
+// Helper function لإنشاء validators بسهولة مع الترجمة
+const createValidator = (req, fieldName, validator) => {
+    // سيتم استدعاؤه بشكل ديناميكي
+    return validator;
+};
+
 // Auth Validations
 exports.signupValidator = [
     body("name")
         .notEmpty()
-        .withMessage("Name is required")
+        .withMessage((value, { req }) => req.t('auth.name_required'))
         .trim()
         .isLength({ min: 2, max: 50 })
-        .withMessage("Name must be between 2 and 50 characters"),
+        .withMessage((value, { req }) => req.t('auth.name_length')),
     body("email")
         .notEmpty()
-        .withMessage("Email is required")
+        .withMessage((value, { req }) => req.t('auth.email_required'))
         .isEmail()
-        .withMessage("Must be a valid email address")
+        .withMessage((value, { req }) => req.t('auth.email_invalid'))
         .normalizeEmail(),
     body("password")
         .notEmpty()
-        .withMessage("Password is required")
+        .withMessage((value, { req }) => req.t('auth.password_required'))
         .isLength({ min: 8 })
-        .withMessage("Password must be at least 8 characters long")
+        .withMessage((value, { req }) => req.t('auth.password_min'))
         .matches(/\d/)
-        .withMessage("Password must contain at least one number")
+        .withMessage((value, { req }) => req.t('auth.password_number'))
         .matches(/[a-z]/)
-        .withMessage("Password must contain at least one lowercase letter")
+        .withMessage((value, { req }) => req.t('auth.password_lowercase'))
         .matches(/[A-Z]/)
-        .withMessage("Password must contain at least one uppercase letter")
+        .withMessage((value, { req }) => req.t('auth.password_uppercase'))
         .matches(/[!@#$%^&*]/)
-        .withMessage("Password must contain at least one special character"),
+        .withMessage((value, { req }) => req.t('auth.password_special')),
     body("passwordConfirm")
         .notEmpty()
-        .withMessage("Password confirmation is required")
+        .withMessage((value, { req }) => req.t('auth.password_confirm_required'))
         .custom((value, { req }) => {
             if (value !== req.body.password) {
-                throw new Error("Password confirmation does not match password");
+                throw new Error(req.t('auth.password_mismatch'));
             }
             return true;
         }),
@@ -57,20 +64,22 @@ exports.signupValidator = [
 exports.loginValidator = [
     body("email")
         .notEmpty()
-        .withMessage("Email is required")
+        .withMessage((value, { req }) => req.t('auth.email_required'))
         .isEmail()
-        .withMessage("Must be a valid email address")
+        .withMessage((value, { req }) => req.t('auth.email_invalid'))
         .normalizeEmail(),
-    body("password").notEmpty().withMessage("Password is required"),
+    body("password")
+        .notEmpty()
+        .withMessage((value, { req }) => req.t('auth.password_required')),
     validate,
 ];
 
 exports.forgetPasswordValidator = [
     body("email")
         .notEmpty()
-        .withMessage("Email is required")
+        .withMessage((value, { req }) => req.t('auth.email_required'))
         .isEmail()
-        .withMessage("Must be a valid email address")
+        .withMessage((value, { req }) => req.t('auth.email_invalid'))
         .normalizeEmail(),
     validate,
 ];
@@ -78,21 +87,21 @@ exports.forgetPasswordValidator = [
 exports.resetPasswordValidator = [
     body("email")
         .notEmpty()
-        .withMessage("Email is required")
+        .withMessage((value, { req }) => req.t('auth.email_required'))
         .isEmail()
-        .withMessage("Must be a valid email address")
+        .withMessage((value, { req }) => req.t('auth.email_invalid'))
         .normalizeEmail(),
     body("password")
         .notEmpty()
-        .withMessage("Password is required")
+        .withMessage((value, { req }) => req.t('auth.password_required'))
         .isLength({ min: 8 })
-        .withMessage("Password must be at least 8 characters long"),
+        .withMessage((value, { req }) => req.t('auth.password_min')),
     body("passwordConfirm")
         .notEmpty()
-        .withMessage("Password confirmation is required")
+        .withMessage((value, { req }) => req.t('auth.password_confirm_required'))
         .custom((value, { req }) => {
             if (value !== req.body.password) {
-                throw new Error("Password confirmation does not match password");
+                throw new Error(req.t('auth.password_mismatch'));
             }
             return true;
         }),
@@ -103,18 +112,18 @@ exports.resetPasswordValidator = [
 exports.getCryptoHistoryValidator = [
     query("symbol")
         .notEmpty()
-        .withMessage("Symbol is required")
+        .withMessage((value, { req }) => req.t('crypto.invalid_symbol', { symbol: value }))
         .isString()
         .trim()
         .toUpperCase(),
     query("period")
         .optional()
         .matches(/^\d+[dwhm]$/)
-        .withMessage("Period must be a number followed by d, w, h, or m"),
+        .withMessage((value, { req }) => req.t('crypto.invalid_range')),
     query("interval")
         .optional()
         .matches(/^\d+[hmd]$/)
-        .withMessage("Interval must be a number followed by h, m, or d"),
+        .withMessage((value, { req }) => req.t('crypto.invalid_range')),
     validate,
 ];
 
@@ -122,7 +131,7 @@ exports.getCryptoHistoryValidator = [
 exports.predictValidator = [
     query("symbol")
         .notEmpty()
-        .withMessage("Symbol is required")
+        .withMessage((value, { req }) => req.t('crypto.invalid_symbol', { symbol: value }))
         .isString()
         .trim()
         .toUpperCase(),
@@ -133,6 +142,6 @@ exports.predictValidator = [
     query("candles")
         .optional()
         .isInt({ min: 100, max: 1000 })
-        .withMessage("Candles must be an integer between 100 and 1000"),
+        .withMessage((value, { req }) => req.t('ai.invalid_input')),
     validate,
 ];
