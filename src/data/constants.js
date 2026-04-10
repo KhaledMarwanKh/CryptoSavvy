@@ -1,7 +1,7 @@
 const STORAGE_KEY = "crypto-market-chat-history-v1";
 const DEFAULT_MODEL = "gpt-4o-mini"; // change if your Puter account uses another model
 const BINANCE_BASE = "https://data-api.binance.vision/api/v3";
-const INTERVALS = ["1m", "5m", "15m", "1h", "4h", "1d", "1w"];
+const INTERVALS = ["1m", "5m", "15m", "1h", "4h", "1d", "7d"];
 
 const SYMBOL_MAP = {
     bitcoin: "BTCUSDT",

@@ -29,22 +29,12 @@ function Dashboard() {
 
   const [search, setSearch] = useState("");
   const [artNum, setArtNum] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [page, setPage] = useState(1);
   const [cryptoList, setCryptoList] = useState([]);
   const [pageSize, setPageSize] = useState(4);
-  const [news, setNews] = useState({
-    title:
-      "Novo imposto sobre renda na Bolsa atrai investidor para ETFs de dividendos; veja o que gestoras e analistas projetam para 2026",
-    description:
-      "Com proventos de ações taxados, ETFs de dividendos ganham espaço no radar dos investidores. Gestores e analistas explicam se 2026 será o ano dos ETFs de renda e quais produtos podem se destacar.",
-    url: "https://einvestidor.estadao.com.br/investimentos/etfs-de-dividendos-2026-tributacao-renda-projecoes/",
-    publishedAt: "2025-12-03T08:30:41Z",
-    source: "Estadão E-Investidor",
-    image:
-      "https://einvestidor.estadao.com.br/wp-content/themes/e-investidor/assets/img/card-share-large-1200x631.jpg",
-  });
+  const [news, setNews] = useState([]);
   const [filters, setFilters] = useState({
     minVolume: 0,
     minMarketCap: 0,
@@ -111,9 +101,9 @@ function Dashboard() {
     setIsLoading(true);
     setShowFilter(false);
 
-    const minVolume = parseFloat(form.target.minVolume);
-    const minMarketCap = parseFloat(form.target.minMarketCap);
-    const minPrice = parseFloat(form.target.price);
+    const minVolume = parseFloat(form.target.minVolume) || 0;
+    const minMarketCap = parseFloat(form.target.minMarketCap) || 0;
+    const minPrice = parseFloat(form.target.price) || 0;
     const sortBy = form.target.sortBy;
     const sortOrder = form.target.sortOrder;
 
@@ -182,24 +172,47 @@ function Dashboard() {
   }, [pageSize, onConnect, onDisconnect, onData]);
 
   useEffect(() => {
+    let interval;
+
     const params = {
-      //   apikey: import.meta.env.VITE_GNEWS_API,
+      // apikey: import.meta.env.VITE_GNEWS_API,
       lang: "en",
       topic: "bitcoin OR ethereum OR crypto OR blockchain",
       max: 20,
     };
 
-    newsHandler.getNews(params).then((res) => {
-      setNews(res?.articles);
-    });
+    newsHandler
+      .getNews(params)
+      .then((res) => {
+        setNews(res?.articles ?? []);
+        setIsLoading(false);
+        const delay = 1000 * 60 * 1;
+        interval = setInterval(() => {
+          setArtNum((prev) => (prev + 1) % 20);
+        }, delay);
+      })
+      .catch((err) => {
+        console.log(err);
+        setNews([
+          {
+            title:
+              "Novo imposto sobre renda na Bolsa atrai investidor para ETFs de dividendos; veja o que gestoras e analistas projetam para 2026",
+            description:
+              "Com proventos de ações taxados, ETFs de dividendos ganham espaço no radar dos investidores. Gestores e analistas explicam se 2026 será o ano dos ETFs de renda e quais produtos podem se destacar.",
+            url: "https://einvestidor.estadao.com.br/investimentos/etfs-de-dividendos-2026-tributacao-renda-projecoes/",
+            publishedAt: "2025-12-03T08:30:41Z",
+            source: "Estadão E-Investidor",
+            image:
+              "https://einvestidor.estadao.com.br/wp-content/themes/e-investidor/assets/img/card-share-large-1200x631.jpg",
+          },
+        ]);
+      });
 
-    const delay = 1000 * 60 * 1;
-
-    const interval = setInterval(() => {
-      setArtNum((prev) => (prev + 1) % 20);
-    }, delay);
-
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [i18n.language]);
 
   return (
@@ -224,7 +237,7 @@ function Dashboard() {
               />
               <div className="absolute top-4 left-4">
                 <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-semibold rounded-full shadow-lg">
-                  {news[artNum]?.source}
+                  {news?.source?.name || news.source}
                 </span>
               </div>
             </div>
@@ -320,29 +333,49 @@ function Dashboard() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-700/50 text-slate-400">
               <tr>
-                <th className="p-3 text-left">#</th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
+                  #
+                </th>
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.coin")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.price")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.marketCap")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.voulme")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.change24h")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.high24h")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.low24h")}
                 </th>
-                <th className="p-3 text-left">
+                <th
+                  className={`p-3 ${i18n.language === "en" ? "text-left" : "text-right"}`}
+                >
                   {t("dashboard.tableSection.tableHeaders.circulatingSupply")}
                 </th>
               </tr>

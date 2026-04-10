@@ -128,6 +128,7 @@ function CoinDetails() {
 
     setCoin(meta);
     setOrderBook(orderBook);
+    updateChart(meta);
 
     setIsLoading(false);
   };
@@ -264,18 +265,27 @@ function CoinDetails() {
   useEffect(() => {
     chartHandler.setInterval(interval);
     chartHandler.setSymbol(coinId);
-    chartHandler.getChartData().then((res) => {
-      console.log(res.candles);
-      setCandles(res.candles);
-    });
+    chartHandler
+      .getChartData()
+      .then((res) => {
+        console.log(res.candles);
+        setCandles(res.candles);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     analyzeCoinBinance({
       symbol: coinId,
       limit: 1000,
       interval: interval,
       quoteDepth: 50,
-    }).then((res) => {
-      setIndecatorsData(res);
-    });
+    })
+      .then((res) => {
+        setIndecatorsData(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, [interval, coinId, mode]);
 
   useEffect(() => {
@@ -289,9 +299,26 @@ function CoinDetails() {
     };
   }, []);
 
-  useEffect(() => {
-    updateChart(coin);
-  }, [coin]);
+  // useEffect(() => {
+  //   const data = getSymbolData(coinId);
+  //   const orderBook = generateOrderBook(coinId);
+  //   setOrderBook(orderBook);
+  //   setCoin(data);
+  // }, [coinId]);
+
+  // useEffect(() => {
+  //   const candles = generateCandlesChartData(coinId, interval, 1000);
+  //   setCandles(candles);
+  //   analyzeCoinBinance({
+  //     symbol: coinId,
+  //     limit: 1000,
+  //     interval: interval,
+  //     quoteDepth: 50,
+  //   }).then((res) => {
+  //     setIndecatorsData(res);
+  //     setIsLoading(false);
+  //   });
+  // }, [interval, mode, coinId]);
 
   if (isLoading) {
     return (

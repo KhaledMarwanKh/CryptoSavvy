@@ -495,13 +495,12 @@ export function generateCandlesChartData(symbol, interval = "1m", count = 100) {
     );
 
     candles.push({
-      openTime,
+      time: openTime,
       open: roundByPrice(open, market.price),
       high: roundByPrice(high, market.price),
       low: roundByPrice(low, market.price),
       close: roundByPrice(close, market.price),
       volume: Number(volume.toFixed(2)),
-      closeTime: openTime + intervalMs - 1,
     });
 
     lastClose = close;
@@ -514,7 +513,7 @@ export function generateCandlesChartData(symbol, interval = "1m", count = 100) {
 // 3) Function to generate orderbook data
 // ==========================================
 
-export function generateOrderBook(symbol, levels = 20) {
+export function generateOrderBook(symbol, levels = 10) {
   const market = getSymbolData(symbol);
 
   if (!market) {
