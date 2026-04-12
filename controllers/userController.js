@@ -138,7 +138,7 @@ exports.login = catchasync(async (req, res, next) => {
   let userType;
 
   user = await userModel.findOne({email,activate:true}).select("+password");
-  console.log(email)
+  console.log(user)
   if (!user) {
     return next(new AppError(req.t('auth.invalid_credentials'), 401));
   }

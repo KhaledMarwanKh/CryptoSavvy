@@ -35,7 +35,17 @@ const generatetoken = (id) =>
 exports.authUser = catchasync(async (req, res, next) => {
 
   // getting token and check of it's there
-  const token = req.cookies.jwt;
+//  const token = req.cookies.jwt;
+let token;
+console.log(req.headers.authorization)
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+
+    token = req.headers.authorization.split(" ")[1];
+  }
+
   if (!token) {
 
     return next(

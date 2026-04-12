@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node app.js",
-    "start:nodemon": "nodemon app.js",
+    "start": "node server.js",
+    "start:nodemon": "nodemon server.js",
     "dev": "NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js",
     "postinstall": "npx playwright install chromium"
@@ -42,7 +42,8 @@
     "hpp": "^0.2.3",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.7.3",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.3.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "newsapi": "^2.4.1",
