@@ -19,7 +19,7 @@ import {
 import requestSchema from "../../AiModelRequestSchema.json";
 import responseSchema from "../../AiModekResponse.json";
 import colorSchema from "../../colorSchema.json";
-import axios from "axios";
+import axiosInst from "../libs/axiosInst";
 
 const defaultSymbol = requestSchema.symbol?.[0] ?? "BTCUSDT";
 const defaultInterval =
@@ -69,39 +69,6 @@ const emptyAnalysis = {
   },
   processing_time_seconds: null,
 };
-
-function getAiAnalyzeCopyPath(language) {
-  return language?.startsWith("ar") ? "/arAiAnalyze.json" : "/enAiAnalyze.json";
-}
-
-async function loadAiAnalyzeCopy(language) {
-  const paths = [getAiAnalyzeCopyPath(language), "/enAiAnalyze.json"];
-
-  for (const path of paths) {
-    try {
-      const response = await fetch(path);
-
-      if (!response.ok) {
-        throw new Error(`Failed to load ${path}`);
-      }
-
-      return await response.json();
-    } catch {
-      // Try the next locale file.
-    }
-  }
-
-  return null;
-}
-
-function interpolate(template, values) {
-  if (!template) return "";
-
-  return Object.entries(values).reduce(
-    (output, [key, value]) => output.replaceAll(`{${key}}`, String(value)),
-    template,
-  );
-}
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -290,14 +257,14 @@ function buildAnalysisResult({
   };
 }
 
-function formatRiskLabel(value, labels) {
-  if (!value) return labels?.awaitingAnalysis ?? "";
-  return labels?.[value] ?? value.replaceAll("_", " ");
+function formatRiskLabel(value) {
+  if (!value) return "Awaiting analysis";
+  return value.replaceAll("_", " ");
 }
 
-function formatSignalLabel(value, labels) {
-  if (!value) return labels?.awaitingAnalysis ?? "";
-  return labels?.[value] ?? value.replaceAll("_", " ");
+function formatSignalLabel(value) {
+  if (!value) return "Awaiting analysis";
+  return value.replaceAll("_", " ");
 }
 
 const AiAnalyze = () => {
@@ -312,7 +279,6 @@ const AiAnalyze = () => {
   const areaSeriesRef = useRef(null);
   const candleLinesRef = useRef([]);
   const areaLinesRef = useRef([]);
-  const authRedirectedRef = useRef(false);
 
   const [symbol, setSymbol] = useState(defaultSymbol);
   const [interval, setInterval] = useState(defaultInterval);
@@ -320,13 +286,9 @@ const AiAnalyze = () => {
   const [analysis, setAnalysis] = useState(emptyAnalysis);
   const [candlesData, setCandlesData] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [statusKey, setStatusKey] = useState("idle");
-  const [localeCopy, setLocaleCopy] = useState(null);
-
-  const text = localeCopy ?? {};
-  const statusMessage = text.status?.[statusKey] ?? "";
-  const responseStatusLabel =
-    text.response?.statusValues?.[analysis?.status] ?? "";
+  const [statusMessage, setStatusMessage] = useState(
+    "Pick a symbol, interval, and candle count to start the analysis.",
+  );
 
   const analysisReady = analysis?.status === "success";
   const riskLevel = analysisReady ? analysis?.prediction?.risk_level : null;
@@ -335,34 +297,20 @@ const AiAnalyze = () => {
   const riskBadgeClass = riskStyles[riskLevel]?.badge ?? neutralBadge;
   const signalBadgeClass = signalStyles[signalValue] ?? neutralBadge;
 
-  useEffect(() => {
-    let active = true;
-
-    loadAiAnalyzeCopy(i18n.language).then((copy) => {
-      if (active) {
-        setLocaleCopy(copy);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [i18n.language]);
-
   const summaryCards = useMemo(
     () => [
       {
-        label: text.summary?.currentPrice,
+        label: "Current Price",
         value: formatCurrency(analysis?.prediction?.current_price),
         className: "text-violet-300",
       },
       {
-        label: text.summary?.predictedPrice,
+        label: "Predicted Price",
         value: formatCurrency(analysis?.prediction?.predicted_price),
         style: { color: predictedPriceColor },
       },
       {
-        label: text.summary?.priceChange,
+        label: "Price Change",
         value: formatPercent(analysis?.prediction?.price_change_pct),
         className:
           analysis?.prediction?.price_change_pct >= 0
@@ -370,7 +318,7 @@ const AiAnalyze = () => {
             : "text-rose-300",
       },
       {
-        label: text.summary?.confidence,
+        label: "Confidence",
         value:
           analysis?.prediction?.confidence == null
             ? "—"
@@ -378,18 +326,17 @@ const AiAnalyze = () => {
         className: "text-cyan-300",
       },
     ],
-    [analysis, predictedPriceColor, text.summary],
+    [analysis, predictedPriceColor],
   );
 
   useEffect(() => {
-    if (authRedirectedRef.current) return;
-
-    if (localeCopy && localStorage.getItem("userToken") === null) {
-      authRedirectedRef.current = true;
+    if (localStorage.getItem("userToken") === null) {
       navigate("/auth/login");
-      toast.error(text.status?.loginRequired ?? "");
+      toast.error(
+        i18n.language === "ar" ? "عليك تسجيل دخول اولا" : "Please login first!",
+      );
     }
-  }, [localeCopy, navigate, text.status]);
+  }, [i18n.language, navigate]);
 
   useEffect(() => {
     const createMarketChart = (container, mode) => {
@@ -512,27 +459,22 @@ const AiAnalyze = () => {
       {
         price: analysis.prediction.current_price,
         color: "#a855f7",
-        title: text.levels?.currentPrice ?? "",
+        title: "Current Price",
       },
       {
         price: analysis.prediction.predicted_price,
         color: predictedPriceColor,
-        title: interpolate(text.levels?.predictedWithRisk, {
-          risk: formatRiskLabel(
-            analysis.prediction.risk_level,
-            text.riskLevels,
-          ),
-        }),
+        title: `Predicted Price • Risk ${analysis.prediction.risk_level}`,
       },
       {
         price: analysis.prediction.resistance,
         color: "#3b82f6",
-        title: text.levels?.resistance ?? "",
+        title: "Resistance",
       },
       {
         price: analysis.prediction.support,
         color: "#ec4899",
-        title: text.levels?.support ?? "",
+        title: "Support",
       },
     ];
 
@@ -575,18 +517,11 @@ const AiAnalyze = () => {
 
     candleChartRef.current?.timeScale().fitContent();
     areaChartRef.current?.timeScale().fitContent();
-  }, [
-    analysis,
-    analysisReady,
-    candlesData,
-    predictedPriceColor,
-    text.levels,
-    text.riskLevels,
-  ]);
+  }, [analysis, analysisReady, candlesData, predictedPriceColor]);
 
   async function runAnalysis() {
     setIsAnalyzing(true);
-    setStatusKey("loading");
+    setStatusMessage("Loading live candles and building the response...");
 
     const startedAt = performance.now();
 
@@ -608,12 +543,14 @@ const AiAnalyze = () => {
           close: item.close,
         }));
         marketData = liveMarket;
+        console.log("Binance");
       } catch {
         candles = generateFallbackCandles(symbol, interval, candlesUsed);
+        console.log("Mock");
       }
 
       if (!candles.length) {
-        throw new Error(text.errors?.noCandleData ?? "");
+        throw new Error("No candle data available.");
       }
 
       //API Calling
@@ -622,10 +559,12 @@ const AiAnalyze = () => {
 
       try {
         result = (
-          await axios.post(
-            import.meta.env.VITE_MODLE_API + "/predict/auto",
+          await axiosInst.post(
+            "/predict/auto",
             {
               interval,
+              symbol,
+              candles: candlesUsed,
             },
             {
               headers: {
@@ -652,7 +591,9 @@ const AiAnalyze = () => {
 
       setCandlesData(candles);
       setAnalysis(result);
-      setStatusKey("ready");
+      setStatusMessage(
+        "Analysis ready. Review the levels and chart annotations below.",
+      );
     } catch (error) {
       const fallbackCandles = generateFallbackCandles(
         symbol,
@@ -674,8 +615,14 @@ const AiAnalyze = () => {
 
       setCandlesData(fallbackCandles);
       setAnalysis(result);
-      setStatusKey("fallback");
-      toast.error(text.status?.liveDataUnavailable ?? "");
+      setStatusMessage(
+        "Live data was unavailable, so a fallback analysis was generated locally.",
+      );
+      toast.error(
+        i18n.language === "ar"
+          ? "تعذر جلب البيانات الحية"
+          : "Live market data could not be loaded.",
+      );
       console.error(error);
     } finally {
       setIsAnalyzing(false);
@@ -693,19 +640,19 @@ const AiAnalyze = () => {
           <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
-                {text.page?.badge ?? ""}
+                AI Analyze
                 <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.85)]" />
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">
-                  {text.page?.title ?? ""}
+                  Predict, inspect, and compare the next move before you commit.
                 </h1>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/50 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.controls?.symbol ?? ""}
+                    Symbol
                   </div>
                   <div className="mt-2 text-lg font-semibold text-white">
                     {symbol}
@@ -713,7 +660,7 @@ const AiAnalyze = () => {
                 </div>
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/50 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.controls?.interval ?? ""}
+                    Interval
                   </div>
                   <div className="mt-2 text-lg font-semibold text-white">
                     {interval}
@@ -721,7 +668,7 @@ const AiAnalyze = () => {
                 </div>
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/50 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.controls?.candles ?? ""}
+                    Candles
                   </div>
                   <div className="mt-2 text-lg font-semibold text-white">
                     {candlesUsed}
@@ -733,9 +680,7 @@ const AiAnalyze = () => {
             <div className="w-full max-w-xl rounded-3xl border border-slate-700/60 bg-slate-950/50 p-4 shadow-lg shadow-black/10">
               <div className="grid gap-4 sm:grid-cols-3">
                 <label className="space-y-2 text-sm">
-                  <span className="block text-slate-300">
-                    {text.controls?.symbol ?? ""}
-                  </span>
+                  <span className="block text-slate-300">Symbol</span>
                   <select
                     value={symbol}
                     onChange={(event) => setSymbol(event.target.value)}
@@ -750,9 +695,7 @@ const AiAnalyze = () => {
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="block text-slate-300">
-                    {text.controls?.interval ?? ""}
-                  </span>
+                  <span className="block text-slate-300">Interval</span>
                   <select
                     value={interval}
                     onChange={(event) => setInterval(event.target.value)}
@@ -767,9 +710,7 @@ const AiAnalyze = () => {
                 </label>
 
                 <label className="space-y-2 text-sm">
-                  <span className="block text-slate-300">
-                    {text.controls?.candles ?? ""}
-                  </span>
+                  <span className="block text-slate-300">Candles</span>
                   <select
                     value={candlesUsed}
                     onChange={(event) =>
@@ -789,12 +730,10 @@ const AiAnalyze = () => {
               <button
                 type="button"
                 onClick={runAnalysis}
-                disabled={isAnalyzing || !localeCopy}
+                disabled={isAnalyzing}
                 className={`mt-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl px-5 py-4 text-sm font-semibold text-white transition ${colorSchema.buttonColors.primary} ${colorSchema.buttonColors.hover} disabled:cursor-not-allowed disabled:opacity-70`}
               >
-                {isAnalyzing
-                  ? (text.controls?.analyzeButtonLoading ?? "")
-                  : (text.controls?.analyzeButtonIdle ?? "")}
+                {isAnalyzing ? "Analyzing..." : "Predict and Analyze"}
               </button>
 
               <div className="mt-3 rounded-2xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-slate-300">
@@ -805,7 +744,7 @@ const AiAnalyze = () => {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {summaryCards.slice(0, 4).map((card) => (
+          {summaryCards.map((card) => (
             <article
               key={card.label}
               className="rounded-3xl border border-slate-700/60 bg-slate-950/60 p-5 shadow-lg shadow-black/10"
@@ -829,24 +768,22 @@ const AiAnalyze = () => {
               <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white">
-                    {text.charts?.candlestick?.title ?? ""}
+                    Candlestick chart
                   </h2>
                   <p className="text-sm text-slate-400">
-                    {text.charts?.candlestick?.description ?? ""}
+                    Price action with the four requested horizontal levels.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   <span
                     className={`rounded-full border px-3 py-1 ${riskBadgeClass}`}
                   >
-                    {text.labels?.risk ?? ""}:{" "}
-                    {formatRiskLabel(riskLevel, text.riskLevels)}
+                    Risk: {formatRiskLabel(riskLevel)}
                   </span>
                   <span
                     className={`rounded-full border px-3 py-1 ${signalBadgeClass}`}
                   >
-                    {text.labels?.signal ?? ""}:{" "}
-                    {formatSignalLabel(signalValue, text.signals)}
+                    Signal: {formatSignalLabel(signalValue)}
                   </span>
                 </div>
               </div>
@@ -859,15 +796,13 @@ const AiAnalyze = () => {
             <article className="rounded-3xl border border-slate-700/60 bg-slate-950/65 p-4 shadow-xl shadow-black/10 md:p-5">
               <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-white">
-                    {text.charts?.area?.title ?? ""}
-                  </h2>
+                  <h2 className="text-xl font-bold text-white">Area chart</h2>
                   <p className="text-sm text-slate-400">
-                    {text.charts?.area?.description ?? ""}
+                    A smoother view of trend direction and forecast distance.
                   </p>
                 </div>
                 <div className="text-sm text-slate-300">
-                  {text.charts?.area?.predictedPricePrefix ?? ""}{" "}
+                  Predicted price:{" "}
                   <span className="font-semibold text-white">
                     {formatCurrency(analysis?.prediction?.predicted_price)}
                   </span>
@@ -884,19 +819,17 @@ const AiAnalyze = () => {
             <article className="rounded-3xl border border-slate-700/60 bg-slate-950/65 p-5 shadow-xl shadow-black/10">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-white">
-                    {text.response?.title ?? ""}
-                  </h2>
+                  <h2 className="text-xl font-bold text-white">AI response</h2>
                 </div>
                 <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs uppercase tracking-[0.25em] text-slate-300">
-                  {responseStatusLabel}
+                  {analysis?.status ?? "idle"}
                 </span>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.response?.currentPrice ?? ""}
+                    Current price
                   </div>
                   <div className="mt-2 text-lg font-semibold text-violet-300">
                     {formatCurrency(analysis?.prediction?.current_price)}
@@ -904,7 +837,7 @@ const AiAnalyze = () => {
                 </div>
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.response?.predictedPrice ?? ""}
+                    Predicted price
                   </div>
                   <div
                     className="mt-2 text-lg font-semibold"
@@ -915,7 +848,7 @@ const AiAnalyze = () => {
                 </div>
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.response?.support ?? ""}
+                    Support
                   </div>
                   <div className="mt-2 text-lg font-semibold text-pink-300">
                     {formatCurrency(analysis?.prediction?.support)}
@@ -923,7 +856,7 @@ const AiAnalyze = () => {
                 </div>
                 <div className="rounded-2xl border border-slate-700/60 bg-slate-950/60 p-4">
                   <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                    {text.response?.resistance ?? ""}
+                    Resistance
                   </div>
                   <div className="mt-2 text-lg font-semibold text-blue-300">
                     {formatCurrency(analysis?.prediction?.resistance)}
@@ -933,29 +866,23 @@ const AiAnalyze = () => {
 
               <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between rounded-2xl border border-slate-700/60 bg-slate-950/60 px-4 py-3">
-                  <span className="text-slate-300">
-                    {text.response?.signal ?? ""}
-                  </span>
+                  <span className="text-slate-300">Signal</span>
                   <span
                     className={`rounded-full border px-3 py-1 text-sm font-semibold ${signalBadgeClass}`}
                   >
-                    {formatSignalLabel(signalValue, text.signals)}
+                    {formatSignalLabel(signalValue)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-2xl border border-slate-700/60 bg-slate-950/60 px-4 py-3">
-                  <span className="text-slate-300">
-                    {text.response?.riskLevel ?? ""}
-                  </span>
+                  <span className="text-slate-300">Risk level</span>
                   <span
                     className={`rounded-full border px-3 py-1 text-sm font-semibold ${riskBadgeClass}`}
                   >
-                    {formatRiskLabel(riskLevel, text.riskLevels)}
+                    {formatRiskLabel(riskLevel)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-2xl border border-slate-700/60 bg-slate-950/60 px-4 py-3">
-                  <span className="text-slate-300">
-                    {text.response?.priceChange ?? ""}
-                  </span>
+                  <span className="text-slate-300">Price change</span>
                   <span
                     className={`font-semibold ${analysis?.prediction?.price_change_pct >= 0 ? "text-emerald-300" : "text-rose-300"}`}
                   >
@@ -963,9 +890,7 @@ const AiAnalyze = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-2xl border border-slate-700/60 bg-slate-950/60 px-4 py-3">
-                  <span className="text-slate-300">
-                    {text.response?.processingTime ?? ""}
-                  </span>
+                  <span className="text-slate-300">Processing time</span>
                   <span className="font-semibold text-cyan-300">
                     {safeNumber(analysis?.processing_time_seconds, 2)}s
                   </span>

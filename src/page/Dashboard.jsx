@@ -64,7 +64,17 @@ function Dashboard() {
       .slice((page - 1) * pageSize, page * pageSize);
 
     return filtered;
-  }, [cryptoList, search, filters, page, pageSize]);
+  }, [
+    cryptoList,
+    search,
+    filters.sortBy,
+    filters.minPrice,
+    filters.sortOrder,
+    filters.minMarketCap,
+    filters.minVolume,
+    page,
+    pageSize,
+  ]);
 
   // --- Calculations for Stat Cards ---
   const totalCoins = useMemo(() => {
@@ -91,14 +101,13 @@ function Dashboard() {
   const checkInput = (e) => {
     const regex = new RegExp(/[a-zA-Z]+/g);
     if (regex.test(e.target.value)) {
-      e.target.value = 0;
+      e.target.value = "";
     }
   };
 
   const applyFilters = (form) => {
     form.preventDefault();
 
-    setIsLoading(true);
     setShowFilter(false);
 
     const minVolume = parseFloat(form.target.minVolume) || 0;
@@ -114,8 +123,18 @@ function Dashboard() {
       sortBy,
       sortOrder,
     });
+  };
 
-    setIsLoading(false);
+  const resetFilters = () => {
+    setShowFilter(false);
+
+    setFilters({
+      minMarketCap: 0,
+      minPrice: 0,
+      minVolume: 0,
+      sortBy: "index",
+      sortOrder: "asc",
+    });
   };
 
   const onConnect = useCallback(() => {
@@ -126,30 +145,27 @@ function Dashboard() {
     console.log("Disconnected");
   }, []);
 
-  const onData = useCallback(
-    (data) => {
-      console.log("Data for dashboard");
+  const onData = useCallback((data) => {
+    console.log("Data for dashboard");
 
-      if (!data) {
-        console.table(data);
-        return;
-      }
+    if (!data) {
+      console.table(data);
+      return;
+    }
 
-      const newData = Object.values(data).map((value) => value.meta);
+    const newData = Object.values(data).map((value) => value.meta);
 
-      const newDataLength = newData.length;
+    const newDataLength = newData.length;
 
-      if (newDataLength === 8) {
-        socket.setSocketData(newData);
-        setCryptoList(newData);
-        setIsLoading(false);
-        return;
-      }
+    if (newDataLength === 8) {
+      socket.setSocketData(newData);
+      setCryptoList(newData);
+      setIsLoading(false);
+      return;
+    }
 
-      setCryptoList([]);
-    },
-    [pageSize],
-  );
+    setCryptoList([]);
+  }, []);
 
   useEffect(() => {
     socket.connect();
@@ -414,7 +430,7 @@ function Dashboard() {
                           : "text-red-400"
                       }`}
                     >
-                      {coin.change24h > 0 ? (
+                      {coin.changePercent > 0 ? (
                         <TrendingUp size={16} />
                       ) : (
                         <TrendingDown size={16} />
@@ -423,7 +439,7 @@ function Dashboard() {
                     </td>
                     <td className="p-3">${coin.high24h}</td>
                     <td className="p-3">${coin.low24h}</td>
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       {formatLargeNumbers(
                         coin.circulatingSupply,
                       )?.toLocaleString() ?? 0}
@@ -524,7 +540,7 @@ function Dashboard() {
 
       {/* ===== FILTER MODAL ===== */}
       {showFilter && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div className="fixed inset-0 mt-10 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-900 border border-slate-700 rounded p-6 w-full max-w-lg">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">
@@ -537,83 +553,168 @@ function Dashboard() {
             </div>
 
             <form onSubmit={applyFilters} className="space-y-4">
-              <input
-                onChange={checkInput}
-                name="minMarketCap"
-                type="number"
-                defaultValue={0}
-                placeholder={t(
-                  "dashboard.filterDialog.inputsPlaceholder.minMarketCap",
-                )}
-                className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
-              />
-              <input
-                onChange={checkInput}
-                name="minVolume"
-                type="number"
-                defaultValue={0}
-                placeholder={t(
-                  "dashboard.filterDialog.inputsPlaceholder.minVolume",
-                )}
-                className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
-              />
-              <input
-                onChange={checkInput}
-                name="minPrice"
-                type="number"
-                defaultValue={0}
-                placeholder={t(
-                  "dashboard.filterDialog.inputsPlaceholder.minPrice",
-                )}
-                className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
-              />
-              <select
-                name="sortBy"
-                className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
-              >
-                <option value="index">
-                  {t("dashboard.tableSection.tableHeaders.rank")}
-                </option>
-                <option value="marketCap">
-                  {t("dashboard.tableSection.tableHeaders.marketCap")}
-                </option>
-                <option value="volume">
-                  {t("dashboard.tableSection.tableHeaders.voulme")}
-                </option>
-                <option value="change24h">
-                  {t("dashboard.tableSection.tableHeaders.change24h")}
-                </option>
-                <option value="price">
-                  {t("dashboard.tableSection.tableHeaders.price")}
-                </option>
-                <option value="low24h">
-                  {t("dashboard.tableSection.tableHeaders.low24h")}
-                </option>
-                <option value="high24h">
-                  {t("dashboard.tableSection.tableHeaders.high24h")}
-                </option>
-                <option value="circulatingSupply">
-                  {t("dashboard.tableSection.tableHeaders.circulatingSupply")}
-                </option>
-              </select>
-              <select
-                name="sortOrder"
-                className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700"
-              >
-                <option value="desc">
-                  {t("dashboard.filterDialog.order.desc")}
-                </option>
-                <option value="asc">
-                  {t("dashboard.filterDialog.order.asc")}
-                </option>
-              </select>
+              <div>
+                <label
+                  htmlFor="minVolume"
+                  className="block mb-1 text-sm text-slate-400"
+                >
+                  {t("dashboard.filterDialog.inputsPlaceholder.minVolume")}
+                </label>
+                <input
+                  name="minMarketCap"
+                  value={filters.minMarketCap ? filters.minMarketCap : ""}
+                  type="number"
+                  placeholder={t(
+                    "dashboard.filterDialog.inputsPlaceholder.minMarketCap",
+                  )}
+                  onChange={(e) => {
+                    checkInput(e);
+                    setFilters((prev) => ({
+                      ...prev,
+                      minMarketCap: e.target.value
+                        ? parseFloat(e.target.value)
+                        : 0,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="minPrice"
+                  className="block mb-1 text-sm text-slate-400"
+                >
+                  {t("dashboard.filterDialog.inputsPlaceholder.minPrice")}
+                </label>
+                <input
+                  name="minVolume"
+                  value={filters.minVolume ? filters.minVolume : ""}
+                  type="number"
+                  placeholder={t(
+                    "dashboard.filterDialog.inputsPlaceholder.minVolume",
+                  )}
+                  onChange={(e) => {
+                    checkInput(e);
+                    setFilters((prev) => ({
+                      ...prev,
+                      minVolume: e.target.value
+                        ? parseFloat(e.target.value)
+                        : 0,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="minPrice"
+                  className="block mb-1 text-sm text-slate-400"
+                >
+                  {t("dashboard.filterDialog.inputsPlaceholder.minPrice")}
+                </label>
+                <input
+                  name="minPrice"
+                  value={filters.minPrice ? filters.minPrice : ""}
+                  type="number"
+                  placeholder={t(
+                    "dashboard.filterDialog.inputsPlaceholder.minPrice",
+                  )}
+                  onChange={(e) => {
+                    checkInput(e);
+                    setFilters((prev) => ({
+                      ...prev,
+                      minPrice: e.target.value ? parseFloat(e.target.value) : 0,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="sortBy"
+                  className="block mb-1 text-sm text-slate-400"
+                >
+                  {i18n.language === "en" ? "Sort By" : "ترتيب حسب"}
+                </label>
+                <select
+                  name="sortBy"
+                  value={filters.sortBy}
+                  onChange={(e) => {
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortBy: e.target.value,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="index">
+                    {t("dashboard.tableSection.tableHeaders.rank")}
+                  </option>
+                  <option value="marketCap">
+                    {t("dashboard.tableSection.tableHeaders.marketCap")}
+                  </option>
+                  <option value="volume">
+                    {t("dashboard.tableSection.tableHeaders.voulme")}
+                  </option>
+                  <option value="change24h">
+                    {t("dashboard.tableSection.tableHeaders.change24h")}
+                  </option>
+                  <option value="price">
+                    {t("dashboard.tableSection.tableHeaders.price")}
+                  </option>
+                  <option value="low24h">
+                    {t("dashboard.tableSection.tableHeaders.low24h")}
+                  </option>
+                  <option value="high24h">
+                    {t("dashboard.tableSection.tableHeaders.high24h")}
+                  </option>
+                  <option value="circulatingSupply">
+                    {t("dashboard.tableSection.tableHeaders.circulatingSupply")}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="sortOrder"
+                  className="block mb-1 text-sm text-slate-400"
+                >
+                  {i18n.language === "en" ? "Sort Order" : "ترتيب"}
+                </label>
+                <select
+                  name="sortOrder"
+                  value={filters.sortOrder}
+                  onChange={(e) => {
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortOrder: e.target.value,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="desc">
+                    {t("dashboard.filterDialog.order.desc")}
+                  </option>
+                  <option value="asc">
+                    {t("dashboard.filterDialog.order.asc")}
+                  </option>
+                </select>
+              </div>
 
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded"
-              >
-                {t("dashboard.filterDialog.applyFilters")}
-              </button>
+              <div className="flex justify-between gap-4">
+                <button
+                  onClick={applyFilters}
+                  className="bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-md"
+                >
+                  {t("dashboard.filterDialog.applyFilters")}
+                </button>
+
+                <button
+                  onClick={resetFilters}
+                  className="bg-slate-200 hover:bg-slate-700 text-slate-700 py-2 px-4 rounded-md"
+                >
+                  {t("dashboard.filterDialog.resetFilters")}
+                </button>
+              </div>
             </form>
           </div>
         </div>

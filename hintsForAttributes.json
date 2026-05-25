@@ -1,0 +1,8 @@
+{
+  "risk_level": {
+    "possibleValues": ["LOW", "MEDIUM", "HIGH"]
+  },
+  "signal": {
+    "possibleValues": ["STRONG_BUY", "BUY", "HOLD", "SELL", "STRONG_SELL"]
+  }
+}

@@ -462,7 +462,7 @@ function CoinDetails() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {/* -------- Asks -------- */}
               <div>
-                <div className="text-xs text-red-400 mb-2">
+                <div className="text-xs text-center text-red-400 mb-2">
                   {t("coinDetails.asks")}
                 </div>
 
@@ -500,7 +500,7 @@ function CoinDetails() {
 
               {/* -------- Bids -------- */}
               <div>
-                <div className="text-xs text-emerald-400 mb-2">
+                <div className="text-xs text-center text-emerald-400 mb-2">
                   {t("coinDetails.bids")}
                 </div>
 

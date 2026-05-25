@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "symbol": "BTCUSDT",
+  "interval": "1h",
+  "candles_used": 100,
+  "prediction": {
+    "current_price": 77526.06,
+    "predicted_price": 80122.205353,
+    "price_change_pct": 3.35,
+    "signal": "STRONG_BUY",
+    "confidence": 70,
+    "risk_level": "LOW",
+    "support": 76051.0,
+    "resistance": 77853.04,
+    "model_info": {}
+  },
+  "processing_time_seconds": 0.56
+}

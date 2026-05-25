@@ -1,0 +1,85 @@
+{
+  "page": {
+    "badge": "AI Analyze",
+    "title": "Predict, inspect, and compare the next move before you commit."
+  },
+  "controls": {
+    "symbol": "Symbol",
+    "interval": "Interval",
+    "candles": "Candles",
+    "analyzeButtonIdle": "Predict and Analyze",
+    "analyzeButtonLoading": "Analyzing..."
+  },
+  "status": {
+    "idle": "Pick a symbol, interval, and candle count to start the analysis.",
+    "loading": "Loading live candles and building the response...",
+    "ready": "Analysis ready. Review the levels and chart annotations below.",
+    "fallback": "Live data was unavailable, so a fallback analysis was generated locally.",
+    "loginRequired": "Please login first!",
+    "liveDataUnavailable": "Live market data could not be loaded."
+  },
+  "summary": {
+    "currentPrice": "Current Price",
+    "predictedPrice": "Predicted Price",
+    "priceChange": "Price Change",
+    "confidence": "Confidence"
+  },
+  "charts": {
+    "candlestick": {
+      "title": "Candlestick chart",
+      "description": "Price action with the four requested horizontal levels."
+    },
+    "area": {
+      "title": "Area chart",
+      "description": "A smoother view of trend direction and forecast distance.",
+      "predictedPricePrefix": "Predicted price:"
+    }
+  },
+  "response": {
+    "title": "AI response",
+    "statusIdle": "Idle",
+    "statusValues": {
+      "idle": "Idle",
+      "success": "Success",
+      "error": "Error"
+    },
+    "currentPrice": "Current price",
+    "predictedPrice": "Predicted price",
+    "support": "Support",
+    "resistance": "Resistance",
+    "signal": "Signal",
+    "riskLevel": "Risk level",
+    "priceChange": "Price change",
+    "processingTime": "Processing time"
+  },
+  "labels": {
+    "awaitingAnalysis": "Awaiting analysis",
+    "risk": "Risk",
+    "signal": "Signal"
+  },
+  "levels": {
+    "currentPrice": "Current Price",
+    "predictedPrice": "Predicted Price",
+    "resistance": "Resistance",
+    "support": "Support",
+    "predictedWithRisk": "Predicted Price • Risk {risk}"
+  },
+  "riskLevels": {
+    "LOW": "Low",
+    "MEDIUM": "Medium",
+    "HIGH": "High"
+  },
+  "signals": {
+    "STRONG_BUY": "Strong buy",
+    "BUY": "Buy",
+    "HOLD": "Hold",
+    "SELL": "Sell",
+    "STRONG_SELL": "Strong sell"
+  },
+  "model": {
+    "analysisBasis": "Live market candles with schema-driven local forecast"
+  },
+  "errors": {
+    "noCandleData": "No candle data available."
+  }
+}

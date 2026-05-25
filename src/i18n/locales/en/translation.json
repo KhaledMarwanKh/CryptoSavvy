@@ -62,7 +62,8 @@
       "order": {
         "desc": "Descending",
         "asc": "Ascending"
-      }
+      },
+      "resetFilters": "Reset"
     }
   },
   "login": {
