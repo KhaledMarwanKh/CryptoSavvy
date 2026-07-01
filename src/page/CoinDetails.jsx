@@ -13,18 +13,23 @@ import analyzeCoinBinance from "../services/indecators";
 import MarketCard from "../components/CoinDetails/AnalyzeSection";
 import { INTERVALS } from "../data/constants";
 import { useTranslation } from "react-i18next";
+import {
+  generateCandlesChartData,
+  generateOrderBook,
+  getSymbolData,
+} from "../data/mockData";
 
 const mockCoin = {
-  logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029",
-  index: 1,
-  symbol: "BTC",
-  baseSymbol: "USDT",
-  change24h: 2.41,
-  high24h: 68450,
-  low24h: 66220,
-  marketCap: 1345000000000,
-  volume: 38500000000,
-  price: 67520,
+  logo: "",
+  index: 0,
+  symbol: "--",
+  baseSymbol: "--",
+  change24h: 0.0,
+  high24h: 0.0,
+  low24h: 0.0,
+  marketCap: 0.0,
+  volume: 0.0,
+  price: 0.0,
 };
 
 function CoinDetails() {
@@ -306,19 +311,17 @@ function CoinDetails() {
   //   setCoin(data);
   // }, [coinId]);
 
-  // useEffect(() => {
-  //   const candles = generateCandlesChartData(coinId, interval, 1000);
-  //   setCandles(candles);
-  //   analyzeCoinBinance({
-  //     symbol: coinId,
-  //     limit: 1000,
-  //     interval: interval,
-  //     quoteDepth: 50,
-  //   }).then((res) => {
-  //     setIndecatorsData(res);
-  //     setIsLoading(false);
-  //   });
-  // }, [interval, mode, coinId]);
+  useEffect(() => {
+    analyzeCoinBinance({
+      symbol: coinId,
+      limit: 1000,
+      interval: interval,
+      quoteDepth: 50,
+    }).then((res) => {
+      setIndecatorsData(res);
+      setIsLoading(false);
+    });
+  }, [interval, mode, coinId]);
 
   if (isLoading) {
     return (

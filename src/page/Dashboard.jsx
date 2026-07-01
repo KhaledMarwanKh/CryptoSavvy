@@ -64,17 +64,7 @@ function Dashboard() {
       .slice((page - 1) * pageSize, page * pageSize);
 
     return filtered;
-  }, [
-    cryptoList,
-    search,
-    filters.sortBy,
-    filters.minPrice,
-    filters.sortOrder,
-    filters.minMarketCap,
-    filters.minVolume,
-    page,
-    pageSize,
-  ]);
+  }, [cryptoList, search, filters, page, pageSize]);
 
   // --- Calculations for Stat Cards ---
   const totalCoins = useMemo(() => {
@@ -110,20 +100,33 @@ function Dashboard() {
 
     setShowFilter(false);
 
-    const minVolume = parseFloat(form.target.minVolume) || 0;
-    const minMarketCap = parseFloat(form.target.minMarketCap) || 0;
-    const minPrice = parseFloat(form.target.price) || 0;
-    const sortBy = form.target.sortBy;
-    const sortOrder = form.target.sortOrder;
+    const minVolume = parseFloat(form?.target?.minVolume?.value) || 0;
+    const minMarketCap = parseFloat(form?.target?.minMarketCap?.value) || 0;
+    const minPrice = parseFloat(form?.target?.minPrice?.value) || 0;
+    const sortBy = form?.target?.sortBy?.value;
+    const sortOrder = form?.target?.sortOrder?.value;
 
-    setFilters({
+    console.log(1, {
+      sortBy,
+      sortOrder,
+      minVolume,
+      minMarketCap,
+      minPrice,
+    });
+
+    setFilters((prev) => ({
+      ...prev,
       minMarketCap,
       minPrice,
       minVolume,
       sortBy,
       sortOrder,
-    });
+    }));
   };
+
+  useEffect(() => {
+    console.log(filters);
+  }, [filters]);
 
   const resetFilters = () => {
     setShowFilter(false);
@@ -200,11 +203,11 @@ function Dashboard() {
     newsHandler
       .getNews(params)
       .then((res) => {
-        setNews(res?.articles ?? []);
+        setNews(res?.articles);
         setIsLoading(false);
         const delay = 1000 * 60 * 1;
         interval = setInterval(() => {
-          setArtNum((prev) => (prev + 1) % 20);
+          setArtNum((prev) => (prev + 1) % 2);
         }, delay);
       })
       .catch((err) => {
@@ -231,6 +234,10 @@ function Dashboard() {
     };
   }, [i18n.language]);
 
+  // useEffect(() => {
+  //   setCryptoList(cryptoMarketData);
+  // }, []);
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* ================= SIDEBAR ================= */}
@@ -253,7 +260,7 @@ function Dashboard() {
               />
               <div className="absolute top-4 left-4">
                 <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-semibold rounded-full shadow-lg">
-                  {news?.source?.name || news.source}
+                  {news[artNum]?.source}
                 </span>
               </div>
             </div>
@@ -439,7 +446,7 @@ function Dashboard() {
                     </td>
                     <td className="p-3">${coin.high24h}</td>
                     <td className="p-3">${coin.low24h}</td>
-                    <td className="p-3 text-center">
+                    <td className="p-3">
                       {formatLargeNumbers(
                         coin.circulatingSupply,
                       )?.toLocaleString() ?? 0}
@@ -562,20 +569,10 @@ function Dashboard() {
                 </label>
                 <input
                   name="minMarketCap"
-                  value={filters.minMarketCap ? filters.minMarketCap : ""}
                   type="number"
                   placeholder={t(
                     "dashboard.filterDialog.inputsPlaceholder.minMarketCap",
                   )}
-                  onChange={(e) => {
-                    checkInput(e);
-                    setFilters((prev) => ({
-                      ...prev,
-                      minMarketCap: e.target.value
-                        ? parseFloat(e.target.value)
-                        : 0,
-                    }));
-                  }}
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -588,20 +585,10 @@ function Dashboard() {
                 </label>
                 <input
                   name="minVolume"
-                  value={filters.minVolume ? filters.minVolume : ""}
                   type="number"
                   placeholder={t(
                     "dashboard.filterDialog.inputsPlaceholder.minVolume",
                   )}
-                  onChange={(e) => {
-                    checkInput(e);
-                    setFilters((prev) => ({
-                      ...prev,
-                      minVolume: e.target.value
-                        ? parseFloat(e.target.value)
-                        : 0,
-                    }));
-                  }}
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -614,18 +601,10 @@ function Dashboard() {
                 </label>
                 <input
                   name="minPrice"
-                  value={filters.minPrice ? filters.minPrice : ""}
                   type="number"
                   placeholder={t(
                     "dashboard.filterDialog.inputsPlaceholder.minPrice",
                   )}
-                  onChange={(e) => {
-                    checkInput(e);
-                    setFilters((prev) => ({
-                      ...prev,
-                      minPrice: e.target.value ? parseFloat(e.target.value) : 0,
-                    }));
-                  }}
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -638,13 +617,6 @@ function Dashboard() {
                 </label>
                 <select
                   name="sortBy"
-                  value={filters.sortBy}
-                  onChange={(e) => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      sortBy: e.target.value,
-                    }));
-                  }}
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="index">
@@ -682,13 +654,6 @@ function Dashboard() {
                 </label>
                 <select
                   name="sortOrder"
-                  value={filters.sortOrder}
-                  onChange={(e) => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      sortOrder: e.target.value,
-                    }));
-                  }}
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="desc">
@@ -702,7 +667,7 @@ function Dashboard() {
 
               <div className="flex justify-between gap-4">
                 <button
-                  onClick={applyFilters}
+                  type="submit"
                   className="bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-md"
                 >
                   {t("dashboard.filterDialog.applyFilters")}
@@ -710,6 +675,7 @@ function Dashboard() {
 
                 <button
                   onClick={resetFilters}
+                  type="reset"
                   className="bg-slate-200 hover:bg-slate-700 text-slate-700 py-2 px-4 rounded-md"
                 >
                   {t("dashboard.filterDialog.resetFilters")}

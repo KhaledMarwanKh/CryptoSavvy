@@ -182,7 +182,7 @@ const News = () => {
                     />
                     <div className="absolute top-4 left-4">
                       <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-semibold rounded-full shadow-lg">
-                        {news?.source?.name || news.source}
+                        {news.source}
                       </span>
                     </div>
                   </div>
