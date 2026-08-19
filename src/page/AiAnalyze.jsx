@@ -16,10 +16,75 @@ import {
   formatNumber,
   formatPercent,
 } from "../utils/formattor";
-import requestSchema from "../../AiModelRequestSchema.json";
-import responseSchema from "../../AiModekResponse.json";
-import colorSchema from "../../colorSchema.json";
 import axios from "axios";
+
+const colorSchema = {
+  background: {
+    pageGradient: ["from-slate-950", "via-slate-900", "to-slate-950"],
+    cardBackground: "bg-slate-900/70",
+    inputBackground: ["bg-slate-950/60", "bg-white"],
+    successBackground: "bg-emerald-500/10",
+    errorBackground: "bg-red-500/10",
+  },
+  textColors: {
+    primaryBrand: "text-blue-600",
+    secondaryText: "text-slate-400",
+    labelText: "text-slate-300",
+    inputText: "text-gray-700",
+    successText: "text-emerald-400",
+    errorText: "text-red-400",
+    buttonText: "text-white",
+  },
+  borderColors: {
+    cardBorder: "border-slate-700/50",
+    inputBorder: "border-slate-700",
+    successBorder: "border-emerald-500/30",
+    errorBorder: "border-red-500/30",
+  },
+  buttonColors: {
+    primary: "bg-blue-600",
+    hover: "hover:bg-blue-700",
+  },
+  effects: {
+    backdropBlur: "backdrop-blur-xl",
+    focusRing: "focus-within:ring-2 focus-within:ring-blue-500",
+    shadow: "shadow-md",
+  },
+};
+
+const responseSchema = {
+  status: "success",
+  symbol: "BTCUSDT",
+  interval: "1h",
+  candles_used: 100,
+  prediction: {
+    current_price: 77526.06,
+    predicted_price: 80122.205353,
+    price_change_pct: 3.35,
+    signal: "STRONG_BUY",
+    confidence: 70,
+    risk_level: "LOW",
+    support: 76051.0,
+    resistance: 77853.04,
+    model_info: {},
+  },
+  processing_time_seconds: 0.56,
+};
+
+const requestSchema = {
+  interval: ["1m", "5m", "15m", "30m", "1h", "4h", "1d"],
+  symbol: [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "ADAUSDT",
+    "XRPUSDT",
+    "BNBUSDT",
+    "DOGEUSDT",
+    "AVAXUSDT",
+  ],
+  candles: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+};
 
 const defaultSymbol = requestSchema.symbol?.[0] ?? "BTCUSDT";
 const defaultInterval =

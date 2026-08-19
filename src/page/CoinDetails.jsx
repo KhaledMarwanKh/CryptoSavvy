@@ -13,11 +13,6 @@ import analyzeCoinBinance from "../services/indecators";
 import MarketCard from "../components/CoinDetails/AnalyzeSection";
 import { INTERVALS } from "../data/constants";
 import { useTranslation } from "react-i18next";
-import {
-  generateCandlesChartData,
-  generateOrderBook,
-  getSymbolData,
-} from "../data/mockData";
 
 const mockCoin = {
   logo: "",
