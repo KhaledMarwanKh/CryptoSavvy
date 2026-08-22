@@ -1,0 +1,85 @@
+{
+  "page": {
+    "badge": "تحليل الذكاء الاصطناعي",
+    "title": "توقع، افحص، وقارن الحركة التالية قبل أن تلتزم."
+  },
+  "controls": {
+    "symbol": "الرمز",
+    "interval": "الفاصل الزمني",
+    "candles": "الشموع",
+    "analyzeButtonIdle": "توقع وحلل",
+    "analyzeButtonLoading": "جارٍ التحليل..."
+  },
+  "status": {
+    "idle": "اختر رمزًا وفاصلًا زمنيًا وعدد الشموع لبدء التحليل.",
+    "loading": "جارٍ تحميل الشموع الحية وبناء النتيجة...",
+    "ready": "التحليل جاهز. راجع المستويات والتعليقات البيانية أدناه.",
+    "fallback": "كانت البيانات الحية غير متاحة، لذا تم إنشاء تحليل احتياطي محليًا.",
+    "loginRequired": "يرجى تسجيل الدخول أولًا!",
+    "liveDataUnavailable": "تعذر تحميل بيانات السوق الحية."
+  },
+  "summary": {
+    "currentPrice": "السعر الحالي",
+    "predictedPrice": "السعر المتوقع",
+    "priceChange": "تغير السعر",
+    "confidence": "الثقة"
+  },
+  "charts": {
+    "candlestick": {
+      "title": "مخطط الشموع",
+      "description": "حركة السعر مع المستويات الأفقية الأربعة المطلوبة."
+    },
+    "area": {
+      "title": "مخطط المساحة",
+      "description": "عرض أكثر سلاسة لاتجاه الترند ومسافة التوقع.",
+      "predictedPricePrefix": "السعر المتوقع:"
+    }
+  },
+  "response": {
+    "title": "استجابة الذكاء الاصطناعي",
+    "statusIdle": "في الانتظار",
+    "statusValues": {
+      "idle": "في الانتظار",
+      "success": "نجاح",
+      "error": "خطأ"
+    },
+    "currentPrice": "السعر الحالي",
+    "predictedPrice": "السعر المتوقع",
+    "support": "الدعم",
+    "resistance": "المقاومة",
+    "signal": "الإشارة",
+    "riskLevel": "مستوى المخاطرة",
+    "priceChange": "تغير السعر",
+    "processingTime": "زمن المعالجة"
+  },
+  "labels": {
+    "awaitingAnalysis": "بانتظار التحليل",
+    "risk": "المخاطرة",
+    "signal": "الإشارة"
+  },
+  "levels": {
+    "currentPrice": "السعر الحالي",
+    "predictedPrice": "السعر المتوقع",
+    "resistance": "المقاومة",
+    "support": "الدعم",
+    "predictedWithRisk": "السعر المتوقع • المخاطرة {risk}"
+  },
+  "riskLevels": {
+    "LOW": "منخفض",
+    "MEDIUM": "متوسط",
+    "HIGH": "مرتفع"
+  },
+  "signals": {
+    "STRONG_BUY": "شراء قوي",
+    "BUY": "شراء",
+    "HOLD": "احتفاظ",
+    "SELL": "بيع",
+    "STRONG_SELL": "بيع قوي"
+  },
+  "model": {
+    "analysisBasis": "شموع السوق الحية مع توقع محلي مبني على المخطط"
+  },
+  "errors": {
+    "noCandleData": "لا توجد بيانات شموع متاحة."
+  }
+}

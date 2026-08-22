@@ -127,9 +127,8 @@ function CoinDetails() {
     const { meta, orderBook } = data[coinId];
 
     setCoin(meta);
+    console.log(meta);
     setOrderBook(orderBook);
-    updateChart(meta);
-
     setIsLoading(false);
   };
 
@@ -298,6 +297,10 @@ function CoinDetails() {
       socket.off("disconnect", onDisconnect);
     };
   }, []);
+
+  useEffect(() => {
+    updateChart(coin);
+  }, [coin]);
 
   // useEffect(() => {
   //   const data = getSymbolData(coinId);
