@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "start:nodemon": "nodemon server.js",
-    "dev": "NODE_ENV=production nodemon server.js",
+    "dev": "nodemon server.js",
     "debug": "ndb server.js",
     "postinstall": "npx playwright install chromium"
   },

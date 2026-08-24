@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema(
   {
@@ -19,6 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
+      required: [true, "Please provide a password"], // يفضل إضافة required
       minlength: 8,
       select: false,
     },
@@ -26,12 +26,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please confirm your password"],
       validate: {
+        // يعمل فقط عند التخزين .save() أو .create()
         validator: function (val) {
           return val === this.password;
         },
         message: "Passwords are not the same",
       },
     },
+    passwordChangedAt: Date, // ضروري إضافته ليعمل ميثود changedPasswordAfter
     resetCode: String,
     resetCodeExpires: Date,
     activate: {
@@ -42,18 +44,25 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// --- Middleware لتشفير كلمة المرور وتحديث وقت التغيير ---
+userSchema.pre("save", async function () {
+  // 1) إذا لم يتم تعديل الباسورد، اخرج من الدالة
+  if (!this.isModified("password")) return;
 
+  // 2) تشفير الباسورد
   this.password = await bcrypt.hash(this.password, 12);
+
+  // 3) حذف حقل التأكيد
   this.passwordConfirm = undefined;
-  next();
+
+  // 4) تحديث وقت تغيير الباسورد (فقط إذا لم يكن الحساب جديداً)
+  if (!this.isNew) {
+    this.passwordChangedAt = Date.now() - 1000;
+  }
 });
 
-userSchema.methods.correctpassword = async function (
-  candidatePassword,
-  userPassword
-) {
+// --- Instance Methods ---
+userSchema.methods.correctpassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
@@ -65,21 +74,12 @@ userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
   return false;
 };
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || this.isNew) return next();
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
-
 userSchema.methods.createPasswordResetCode = function () {
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-
   this.resetCode = resetCode;
   this.resetCodeExpires = Date.now() + 10 * 60 * 1000;
-
   return resetCode;
 };
 
 const userModel = mongoose.model('User', userSchema);
-
 module.exports = userModel;

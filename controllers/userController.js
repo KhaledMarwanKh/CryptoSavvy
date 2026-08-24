@@ -48,7 +48,7 @@ const generatetoken = (id) =>
     fs.unlinkSync(filePath); // حذف الملف بعد رفعه
     return result.secure_url;
   };
-  exports.logout = (req, res, next) => {
+exports.logout = (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     httpOnly: true,
     expires: new Date(Date.now() - 1000)
@@ -59,7 +59,7 @@ const generatetoken = (id) =>
     message: req.t('auth.logout_success')
   });
 };
-  exports.signup = catchasync(async (req, res, next) => {
+exports.signup = catchasync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
   // إنشاء المستخدم الجديد
