@@ -212,19 +212,7 @@ function Dashboard() {
       })
       .catch((err) => {
         console.log(err);
-        setNews([
-          {
-            title:
-              "Novo imposto sobre renda na Bolsa atrai investidor para ETFs de dividendos; veja o que gestoras e analistas projetam para 2026",
-            description:
-              "Com proventos de ações taxados, ETFs de dividendos ganham espaço no radar dos investidores. Gestores e analistas explicam se 2026 será o ano dos ETFs de renda e quais produtos podem se destacar.",
-            url: "https://einvestidor.estadao.com.br/investimentos/etfs-de-dividendos-2026-tributacao-renda-projecoes/",
-            publishedAt: "2025-12-03T08:30:41Z",
-            source: "Estadão E-Investidor",
-            image:
-              "https://einvestidor.estadao.com.br/wp-content/themes/e-investidor/assets/img/card-share-large-1200x631.jpg",
-          },
-        ]);
+        setNews([]);
       });
 
     return () => {

@@ -82,9 +82,17 @@ function Register() {
       localStorage.setItem("mode", "verify-signup");
     } catch (error) {
       if (error instanceof AxiosError) {
+        let message = error?.response?.data?.message;
+
+        if (message) {
+          message = message.includes("duplicate key error")
+            ? t("register.errorMessages.m8")
+            : message;
+        }
+
         setMessage({
           type: "error",
-          text: error?.response?.data?.message ?? t("login.error"),
+          text: message ?? t("login.error"),
         });
       }
 

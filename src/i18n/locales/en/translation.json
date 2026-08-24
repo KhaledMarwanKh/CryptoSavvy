@@ -94,7 +94,8 @@
       "m3": "Please enter your password.",
       "m4": "Please enter confirm password.",
       "m5": "Password must be at least 8 characters",
-      "m6": "Unmatching passwords."
+      "m6": "Unmatching passwords.",
+      "m8": "Email already exists. Please use a different email."
     },
     "title": "Create New Account",
     "greet": "Join CryptoSavvy today",
