@@ -47,7 +47,8 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 const STORAGE_KEY = "crypto-market-chat-history-v1";
-const DEFAULT_MODEL = "gpt-4o-mini"; // change if your Puter account uses another model
+const DEFAULT_MODEL = import.meta.env.VITE_GEMINI_MODEL || "gemini-2.5-flash";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const BINANCE_BASE = "https://data-api.binance.vision/api/v3";
 const INTERVALS = ["1m", "5m", "15m", "1h", "4h", "1d", "1w"];
 
@@ -514,10 +515,18 @@ Respond with professional, concise markdown.
   return ret;
 }
 
-function extractPuterText(result) {
+function extractGeminiText(result) {
   if (typeof result === "string") return result;
   if (typeof result?.text === "string") return result.text;
   if (result?.message?.content) return result.message.content;
+
+  const candidateText = result?.candidates?.[0]?.content?.parts
+    ?.map((part) => part?.text || "")
+    .join("")
+    .trim();
+
+  if (candidateText) return candidateText;
+
   if (Array.isArray(result?.choices)) {
     return (
       result.choices[0]?.message?.content ||
@@ -525,9 +534,11 @@ function extractPuterText(result) {
       "No response received."
     );
   }
+
   if (Array.isArray(result?.content)) {
     return result.content.map((item) => item?.text || "").join("\n");
   }
+
   return "No response received.";
 }
 
@@ -634,9 +645,9 @@ async function askCryptoAssistant({
   attachments = [],
   model = DEFAULT_MODEL,
 }) {
-  if (!window.puter?.ai?.chat) {
+  if (!GEMINI_API_KEY) {
     throw new Error(
-      "Puter.js is not loaded. Add <script src='https://js.puter.com/v2/'></script> to index.html",
+      "Missing Gemini API key. Add VITE_GEMINI_API_KEY to your environment variables.",
     );
   }
 
@@ -648,28 +659,7 @@ async function askCryptoAssistant({
     .map((a) => `Document (${a.name}):\n${clampText(a.textContent, 6000)}`)
     .join("\n\n");
 
-  // Try multimodal first for images if Puter model/build supports it.
-  if (imageAttachments.length) {
-    try {
-      const multimodalPayload = [
-        {
-          type: "text",
-          text: `${prompt}\n\n${documentContext ? `DOCUMENT CONTENT:\n${documentContext}` : ""}`,
-        },
-        ...imageAttachments.map((img) => ({
-          type: "image_url",
-          image_url: img.dataUrl,
-        })),
-      ];
-
-      const result = await window.puter.ai.chat(multimodalPayload, { model });
-      return extractPuterText(result);
-    } catch (err) {
-      console.warn("Multimodal payload failed, using text fallback.", err);
-    }
-  }
-
-  const fallbackPrompt = `
+  const combinedPrompt = `
 ${prompt}
 
 ${documentContext ? `DOCUMENT CONTENT:\n${documentContext}` : ""}
@@ -678,8 +668,51 @@ ATTACHMENT SUMMARY:
 ${summarizeAttachments(attachments)}
   `.trim();
 
-  const result = await window.puter.ai.chat(fallbackPrompt, { model });
-  return extractPuterText(result);
+  const parts = [{ text: combinedPrompt }];
+
+  imageAttachments.forEach((image) => {
+    const match = image.dataUrl.match(/^data:(image\/.+?);base64,(.*)$/i);
+    if (!match) return;
+
+    parts.push({
+      inline_data: {
+        mime_type: match[1],
+        data: match[2],
+      },
+    });
+  });
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts,
+          },
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          topP: 0.9,
+        },
+      }),
+    },
+  );
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.error?.message || `Gemini request failed (${response.status}).`,
+    );
+  }
+
+  return extractGeminiText(payload);
 }
 
 function MarkdownMessage({ content }) {
@@ -1490,7 +1523,7 @@ export default function CryptoChatPage() {
                     )}
                   >
                     <button
-                      className="flex-1 text-left"
+                      className="flex-1 text-left w-[70%] overflow-hidden"
                       onClick={() => {
                         setActiveChatId(chat.id);
                         setSidebarOpen(false);

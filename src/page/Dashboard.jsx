@@ -22,6 +22,149 @@ import { formatLargeNumbers } from "../utils/formattor";
 import newsHandler from "../libs/NewsHandler";
 import { useTranslation } from "react-i18next";
 
+const SYMBOL_MAP = {
+  bitcoin: "BTCUSDT",
+  btc: "BTCUSDT",
+
+  ethereum: "ETHUSDT",
+  eth: "ETHUSDT",
+
+  solana: "SOLUSDT",
+  sol: "SOLUSDT",
+
+  binance: "BNBUSDT",
+  bnb: "BNBUSDT",
+
+  ripple: "XRPUSDT",
+  xrp: "XRPUSDT",
+
+  cardano: "ADAUSDT",
+  ada: "ADAUSDT",
+
+  dogecoin: "DOGEUSDT",
+  doge: "DOGEUSDT",
+
+  chainlink: "LINKUSDT",
+  link: "LINKUSDT",
+
+  avalanche: "AVAXUSDT",
+  avax: "AVAXUSDT",
+
+  polkadot: "DOTUSDT",
+  dot: "DOTUSDT",
+
+  litecoin: "LTCUSDT",
+  ltc: "LTCUSDT",
+
+  tron: "TRXUSDT",
+  trx: "TRXUSDT",
+
+  polygon: "MATICUSDT",
+  matic: "MATICUSDT",
+
+  shiba: "SHIBUSDT",
+  shib: "SHIBUSDT",
+
+  aptos: "APTUSDT",
+  apt: "APTUSDT",
+
+  arbitrum: "ARBUSDT",
+  arb: "ARBUSDT",
+
+  optimism: "OPUSDT",
+  op: "OPUSDT",
+
+  near: "NEARUSDT",
+
+  cosmos: "ATOMUSDT",
+  atom: "ATOMUSDT",
+
+  stellar: "XLMUSDT",
+  xlm: "XLMUSDT",
+
+  filecoin: "FILUSDT",
+  fil: "FILUSDT",
+
+  internetcomputer: "ICPUSDT",
+  icp: "ICPUSDT",
+
+  hedera: "HBARUSDT",
+  hbar: "HBARUSDT",
+
+  vechain: "VETUSDT",
+  vet: "VETUSDT",
+
+  eos: "EOSUSDT",
+
+  tezos: "XTZUSDT",
+  xtz: "XTZUSDT",
+
+  sui: "SUIUSDT",
+  ton: "TONUSDT",
+
+  بيتكوين: "BTCUSDT",
+  بتكوين: "BTCUSDT",
+
+  ايثريوم: "ETHUSDT",
+  إيثريوم: "ETHUSDT",
+
+  سولانا: "SOLUSDT",
+
+  باينانس: "BNBUSDT",
+  بينانس: "BNBUSDT",
+
+  ريبل: "XRPUSDT",
+
+  كاردانو: "ADAUSDT",
+
+  دوجكوين: "DOGEUSDT",
+  دوج: "DOGEUSDT",
+
+  تشينلينك: "LINKUSDT",
+
+  افالانش: "AVAXUSDT",
+  أفالانش: "AVAXUSDT",
+
+  بولكادوت: "DOTUSDT",
+
+  لايتكوين: "LTCUSDT",
+
+  ترون: "TRXUSDT",
+
+  بوليغون: "MATICUSDT",
+  ماتيك: "MATICUSDT",
+
+  شيبا: "SHIBUSDT",
+
+  ابتوس: "APTUSDT",
+
+  اربتريوم: "ARBUSDT",
+  أربيتروم: "ARBUSDT",
+
+  اوبتيميزم: "OPUSDT",
+
+  نير: "NEARUSDT",
+
+  كوزموس: "ATOMUSDT",
+
+  ستيلار: "XLMUSDT",
+
+  فايلكوين: "FILUSDT",
+
+  "انترنت كمبيوتر": "ICPUSDT",
+
+  هيديرا: "HBARUSDT",
+
+  فيتشين: "VETUSDT",
+
+  ايوس: "EOSUSDT",
+
+  تيزوس: "XTZUSDT",
+
+  سوي: "SUIUSDT",
+  تون: "TONUSDT",
+};
+
 function Dashboard() {
   const { t, i18n } = useTranslation();
 
@@ -44,7 +187,14 @@ function Dashboard() {
   });
 
   const filteredData = useMemo(() => {
-    const filtered = cryptoList
+    let filtered = cryptoList;
+    filtered = filtered.map((coin) => {
+      const mappedSymbol = Object.keys(SYMBOL_MAP).at(
+        Object.values(SYMBOL_MAP).indexOf(coin.symbol),
+      );
+      return { ...coin, symbol: mappedSymbol || coin.symbol };
+    });
+    filtered = filtered
       .filter(
         (coin) =>
           coin.symbol.toLowerCase().includes(search.toLowerCase()) ||
@@ -395,7 +545,11 @@ function Dashboard() {
               <tbody>
                 {filteredData.map((coin, index) => (
                   <tr
-                    onClick={() => navigate(`/coin/info/${coin.symbol}`)}
+                    onClick={() =>
+                      navigate(
+                        `/coin/info/${Object.values(SYMBOL_MAP).at(Object.keys(SYMBOL_MAP).indexOf(coin.symbol))}`,
+                      )
+                    }
                     key={coin.id}
                     className="border-b border-slate-800 hover:bg-slate-800/40 cursor-pointer"
                   >
@@ -456,7 +610,11 @@ function Dashboard() {
           {!isLoading &&
             filteredData.map((coin) => (
               <div
-                onClick={() => navigate(`/coin/info/${coin.symbol}`)}
+                onClick={() =>
+                  navigate(
+                    `/coin/info/${Object.values(SYMBOL_MAP).at(Object.keys(SYMBOL_MAP).indexOf(coin.symbol))}`,
+                  )
+                }
                 key={coin.symbol}
                 className="bg-slate-900/70 border border-slate-700/50 rounded p-4 hover:border-blue-500 hover:scale-105 hover:bg-slate-900 duration-200 transition-all cursor-pointer"
               >
@@ -644,11 +802,11 @@ function Dashboard() {
                   name="sortOrder"
                   className="w-full px-3 py-2 rounded bg-slate-950/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="desc">
-                    {t("dashboard.filterDialog.order.desc")}
-                  </option>
                   <option value="asc">
                     {t("dashboard.filterDialog.order.asc")}
+                  </option>
+                  <option value="desc">
+                    {t("dashboard.filterDialog.order.desc")}
                   </option>
                 </select>
               </div>
