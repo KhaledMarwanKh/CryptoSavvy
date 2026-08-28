@@ -1,18 +1,15 @@
 """
-CryptoSavvy AI - LSTM Model Builder & Predictor
-=================================================
+CryptoSavvy AI - LSTM Model Builder & Predictor (Enhanced)
+==========================================================
 Handles model creation, training, saving, loading, and prediction.
-
-Architecture:
-- 2 LSTM layers with Dropout for regularization
-- Trained on windowed sequences of technical indicators
-- Saves/loads models per symbol for fast inference
+Includes additional model evaluation metrics for overfitting/underfitting analysis.
 """
-
+from tensorflow.keras.optimizers import Adam
 import os
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, r2_score
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
@@ -21,33 +18,23 @@ import joblib
 from features import compute_features, FEATURE_COLUMNS
 
 # ==================== CONFIGURATION ====================
+LOOK_BACK = 60
+PREDICTION_STEPS = 1
+EPOCHS = 50
+BATCH_SIZE = 32
+VALIDATION_SPLIT = 0.1
 
-LOOK_BACK = 60          # How many past candles the model "sees" at once
-PREDICTION_STEPS = 1    # How many future steps to predict
-EPOCHS = 50             # Max training epochs (EarlyStopping may stop earlier)
-BATCH_SIZE = 32         # Training batch size
-VALIDATION_SPLIT = 0.1  # 10% of data used for validation
-
-# Where to save trained models
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "saved_models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
 class CryptoPredictor:
-    """
-    Manages LSTM models for cryptocurrency price prediction.
-    
-    Why per-symbol models?
-    - BTC behaves differently from DOGE
-    - Each coin has unique volatility patterns
-    - Training data distribution varies widely
-    """
-
     def __init__(self):
-        self.models = {}       # {symbol: keras_model}
-        self.scalers = {}      # {symbol: MinMaxScaler}
-        self.metrics = {}      # {symbol: {val_loss, trained_at, ...}}
+        self.models = {}
+        self.scalers = {}
+        self.metrics = {}
 
+    # -------------------- Helpers --------------------
     def _get_model_path(self, symbol: str) -> str:
         return os.path.join(MODEL_DIR, f"{symbol}.keras")
 
@@ -55,16 +42,6 @@ class CryptoPredictor:
         return os.path.join(MODEL_DIR, f"{symbol}_scaler.pkl")
 
     def _build_model(self, n_features: int) -> Sequential:
-        """
-        Build a 2-layer LSTM network.
-        
-        Architecture explained:
-        - LSTM(128): First layer captures complex temporal patterns
-        - Dropout(0.3): Prevents overfitting (randomly disables 30% of neurons)
-        - LSTM(64): Second layer refines the patterns
-        - Dense(32): Fully connected layer for final processing
-        - Dense(1): Output = predicted close price (scaled)
-        """
         model = Sequential([
             LSTM(128, return_sequences=True, input_shape=(LOOK_BACK, n_features)),
             Dropout(0.3),
@@ -73,60 +50,50 @@ class CryptoPredictor:
             Dense(32, activation="relu"),
             Dense(1)
         ])
-        model.compile(optimizer="adam", loss="mse", metrics=["mae"])
+        model.compile(optimizer=Adam(learning_rate=0.0001), loss="mse", metrics=["mae"])
         return model
 
     def _prepare_data(self, df: pd.DataFrame):
-        """
-        Transforms feature DataFrame into LSTM-ready 3D arrays.
-        
-        Input shape for LSTM: (samples, time_steps, features)
-        - samples: number of sequences we can create
-        - time_steps: LOOK_BACK (60 candles)
-        - features: number of technical indicators (20)
-        
-        Returns: X, y, scaler
-        """
         feature_data = df[FEATURE_COLUMNS].values
-        
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled = scaler.fit_transform(feature_data)
 
         X, y = [], []
         for i in range(LOOK_BACK, len(scaled)):
-            X.append(scaled[i - LOOK_BACK:i])           # Past 60 candles
-            y.append(scaled[i, FEATURE_COLUMNS.index("close")])  # Next close price
-        
+            X.append(scaled[i - LOOK_BACK:i])
+            y.append(scaled[i, FEATURE_COLUMNS.index("close")])
+
         return np.array(X), np.array(y), scaler
 
+    # -------------------- Training --------------------
     def train(self, symbol: str, candles: list[dict]) -> dict:
-        """
-        Train a new LSTM model for a specific symbol.
-        
-        Args:
-            symbol: e.g., "BTCUSDT"
-            candles: list of {time, open, high, low, close, volume}
-        
-        Returns:
-            Training metrics dict
-        """
-        # Step 1: Convert to DataFrame and compute features
+
         df = pd.DataFrame(candles)
         df = compute_features(df)
 
         if len(df) < LOOK_BACK + 10:
             raise ValueError(
-                f"Not enough data after feature computation. "
-                f"Got {len(df)} rows, need at least {LOOK_BACK + 10}. "
-                f"Send more historical candles (recommend 500+)."
+                f"Not enough data after feature computation. Got {len(df)} rows."
             )
 
-        # Step 2: Prepare training data
+        # ==================== PREPARE DATA ====================
+
         X, y, scaler = self._prepare_data(df)
 
-        # Step 3: Build and train model
+        # ==================== TIME SERIES SPLIT ====================
+
+        split_idx = int(len(X) * 0.8)
+
+        X_train = X[:split_idx]
+        y_train = y[:split_idx]
+
+        X_val = X[split_idx:]
+        y_val = y[split_idx:]
+
+        # ==================== BUILD MODEL ====================
+
         model = self._build_model(n_features=X.shape[2])
-        
+
         early_stop = EarlyStopping(
             monitor="val_loss",
             patience=5,
@@ -134,40 +101,200 @@ class CryptoPredictor:
             verbose=1
         )
 
+        # ==================== TRAIN ====================
+
         history = model.fit(
-            X, y,
+            X_train,
+            y_train,
+            validation_data=(X_val, y_val),
             epochs=EPOCHS,
             batch_size=BATCH_SIZE,
-            validation_split=VALIDATION_SPLIT,
+            shuffle=False,
             callbacks=[early_stop],
             verbose=1
         )
 
-        # Step 4: Save model and scaler
+        # ==================== SAVE MODEL ====================
+
         model.save(self._get_model_path(symbol))
         joblib.dump(scaler, self._get_scaler_path(symbol))
 
-        # Step 5: Cache in memory
         self.models[symbol] = model
         self.scalers[symbol] = scaler
 
-        # Step 6: Record metrics
-        val_loss = min(history.history.get("val_loss", [999]))
-        val_mae = min(history.history.get("val_mae", [999]))
+        # ==================== PREDICTIONS ====================
+
+        y_pred_train = model.predict(X_train, verbose=0)
+        y_pred_val = model.predict(X_val, verbose=0)
+
+        # ==================== METRICS ====================
+
+        rmse_train = float(
+            np.sqrt(mean_squared_error(y_train, y_pred_train))
+        )
+
+        rmse_val = float(
+            np.sqrt(mean_squared_error(y_val, y_pred_val))
+        )
+
+        r2_train = float(
+            r2_score(y_train, y_pred_train)
+        )
+
+        r2_val = float(
+            r2_score(y_val, y_pred_val)
+        )
+
+        # ==================== LOSS INFO ====================
+        best_epoch_idx = int(np.argmin(history.history["val_loss"]))
+
+        train_loss_final = float(history.history["loss"][best_epoch_idx])
+        val_loss_final = float(history.history["val_loss"][best_epoch_idx])
+        val_mae = float(
+            min(history.history.get("val_mae", [999]))
+        )
+
+        gap_ratio = val_loss_final / (train_loss_final + 1e-8)
+
+        rmse_ratio = rmse_val / (rmse_train + 1e-8)
+
+        best_epoch = int(
+            np.argmin(history.history["val_loss"])
+        ) + 1
+
         epochs_trained = len(history.history["loss"])
 
+        # ==================== STORE METRICS ====================
+
         self.metrics[symbol] = {
-            "val_loss": float(val_loss),
-            "val_mae": float(val_mae),
+
+            "train_rmse": round(rmse_train, 6),
+            "val_rmse": round(rmse_val, 6),
+
+            "train_r2": round(r2_train, 6),
+            "val_r2": round(r2_val, 6),
+
+            "train_loss": round(train_loss_final, 6),
+            "val_loss": round(val_loss_final, 6),
+
+            "val_mae": round(val_mae, 6),
+
             "epochs_trained": epochs_trained,
+            "best_epoch": best_epoch,
+
+            "gap_ratio": round(float(gap_ratio), 6),
+            "rmse_ratio": round(float(rmse_ratio), 6),
+
+            "train_samples": len(X_train),
+            "val_samples": len(X_val),
+
             "data_points": len(df),
+
             "features_used": len(FEATURE_COLUMNS),
         }
 
+        # ==================== AUTOMATIC PLOTTING ====================
+        try:
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+
+            # 1. رسم منحنى الخسارة (Loss Curve)
+            plt.figure(figsize=(10, 5))
+            plt.plot(history.history["loss"], label="Train Loss", color="blue", linewidth=1.5)
+            plt.plot(history.history["val_loss"], label="Validation Loss", color="red", linewidth=1.5)
+            plt.title(f"Model Loss Curve - {symbol}")
+            plt.xlabel("Epochs")
+            plt.ylabel("Loss (MSE)")
+            plt.legend()
+            plt.grid(True)
+            
+            loss_plot_path = os.path.join(MODEL_DIR, f"{symbol}_loss_curve.png")
+            plt.savefig(loss_plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            print(f"📊 تم حفظ منحنى الخسارة بنجاح في: {loss_plot_path}")
+
+            # 2. رسم الأسعار الحقيقية مقابل المتوقعة بشكل مطابق تماماً
+            close_idx = FEATURE_COLUMNS.index("close")
+
+            # قمنا بحصر البيانات بآخر 150 شمعة لكي تطابق مصفوفة الرسم تماماً وتمنع أي انزياح زمني
+            val_features_true = X_val[-150:, -1, :].copy()
+
+            dummy_act = val_features_true.copy()
+            dummy_act[:, close_idx] = y_val[-150:] # تأكد من أخذ آخر 150 قيمة حقيقية
+
+            dummy_pred = val_features_true.copy()
+            dummy_pred[:, close_idx] = y_pred_val[-150:].flatten() # تأكد من أخذ آخر 150 قيمة متوقعة
+
+            actual_prices = scaler.inverse_transform(dummy_act)[:, close_idx]
+            predicted_prices = scaler.inverse_transform(dummy_pred)[:, close_idx]
+            plt.figure(figsize=(14, 6))
+            plt.plot(actual_prices[-150:], label="Actual Prices", color="blue", linewidth=1.5)
+            plt.plot(predicted_prices[-150:], label="Predicted Prices", color="red", linestyle="--", linewidth=1.5)
+            plt.title(f"Price Prediction Validation (Last 150 Candles) - {symbol}")
+            plt.xlabel("Time Steps")
+            plt.ylabel("Price")
+            plt.legend()
+            plt.grid(True)
+
+            pred_plot_path = os.path.join(MODEL_DIR, f"{symbol}_prediction_chart.png")
+            plt.savefig(pred_plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            print(f"📊 تم حفظ مخطط مقارنة الأسعار الجديد والمطابق في: {pred_plot_path}")
+            
+        except Exception as e:
+            print(f"⚠️ تحذير: تم تخطي الرسم البياني بسبب مشكلة في تهيئة مكتبة الرسم: {e}")
+
+        # ==================== REPORT ====================
+
+        print("\n" + "=" * 80)
+        print(f"📊 COMPLETE MODEL EVALUATION REPORT - {symbol}")
+        print("=" * 80)
+
+        print("\n🔹 TRAIN METRICS")
+        print(f"Train RMSE         : {rmse_train}")
+        print(f"Train R²           : {r2_train}")
+
+        print("\n🔹 VALIDATION METRICS")
+        print(f"Validation RMSE    : {rmse_val}")
+        print(f"Validation R²      : {r2_val}")
+        print(f"Validation MAE     : {val_mae}")
+
+        print("\n🔹 LOSS ANALYSIS")
+        print(f"Train Loss         : {train_loss_final}")
+        print(f"Validation Loss    : {val_loss_final}")
+        print(f"Loss Gap Ratio     : {gap_ratio}")
+
+        print("\n🔹 RMSE ANALYSIS")
+        print(f"RMSE Ratio         : {rmse_ratio}")
+
+        print("\n🔹 TRAINING INFO")
+        print(f"Epochs Trained     : {epochs_trained}")
+        print(f"Best Epoch         : {best_epoch}")
+
+        print("\n🔹 DATA INFO")
+        print(f"Train Samples      : {len(X_train)}")
+        print(f"Validation Samples : {len(X_val)}")
+        print(f"Total Data Points  : {len(df)}")
+        print(f"Features Used      : {len(FEATURE_COLUMNS)}")
+
+        print("\n🔹 OVERFITTING CHECK")
+
+        if gap_ratio < 1.2 and rmse_ratio < 1.2:
+            print("Status             : ✅ NO OVERFITTING DETECTED")
+
+        elif gap_ratio < 1.5:
+            print("Status             : ⚠️ MILD OVERFITTING")
+
+        else:
+            print("Status             : ❌ OVERFITTING DETECTED")
+
+        print("=" * 80 + "\n")
+
         return self.metrics[symbol]
 
+    # -------------------- Loading --------------------
     def _load_model(self, symbol: str) -> bool:
-        """Try to load a previously trained model from disk."""
         model_path = self._get_model_path(symbol)
         scaler_path = self._get_scaler_path(symbol)
 
@@ -177,62 +304,40 @@ class CryptoPredictor:
             return True
         return False
 
+    # -------------------- Prediction --------------------
     def predict(self, symbol: str, candles: list[dict]) -> dict:
-        """
-        Predict the next close price for a symbol.
-        
-        If no trained model exists, trains one on-the-fly.
-        
-        Args:
-            symbol: e.g., "BTCUSDT"
-            candles: list of {time, open, high, low, close, volume}
-        
-        Returns:
-            Prediction result dict with price, signal, confidence, indicators
-        """
-        # Try to load cached model
         if symbol not in self.models:
             loaded = self._load_model(symbol)
             if not loaded:
-                # No model exists - train one now
                 self.train(symbol, candles)
 
         model = self.models[symbol]
         scaler = self.scalers[symbol]
 
-        # Compute features on latest data
         df = pd.DataFrame(candles)
         df = compute_features(df)
+        preview_path = os.path.join(MODEL_DIR, f"{symbol}_dataset_preview.xlsx")
+        df.head(50).to_excel(preview_path, index=False)
+        print(f"📊 تم حفظ عينة من الداتا سيت بنجاح في: {preview_path}")
 
         if len(df) < LOOK_BACK:
-            raise ValueError(
-                f"Not enough data for prediction. "
-                f"Got {len(df)} valid rows, need at least {LOOK_BACK}."
-            )
+            raise ValueError(f"Not enough data for prediction. Got {len(df)} valid rows.")
 
-        # Scale the features
-        feature_data = df[FEATURE_COLUMNS].values
-        scaled = scaler.transform(feature_data)
-
-        # Take the last LOOK_BACK candles as input
+        scaled = scaler.transform(df[FEATURE_COLUMNS].values)
         X_input = scaled[-LOOK_BACK:].reshape(1, LOOK_BACK, len(FEATURE_COLUMNS))
 
-        # Predict
         pred_scaled = model.predict(X_input, verbose=0)[0][0]
 
-        # Inverse scale: create a dummy row to inverse transform
         dummy = np.zeros((1, len(FEATURE_COLUMNS)))
         close_idx = FEATURE_COLUMNS.index("close")
         dummy[0, close_idx] = pred_scaled
         predicted_price = scaler.inverse_transform(dummy)[0, close_idx]
 
-        # ==================== ANALYSIS ENGINE ====================
-
         current_price = float(df["close"].iloc[-1])
         price_change_pct = ((predicted_price - current_price) / current_price) * 100
 
-        # Latest indicators for the response
         latest = df.iloc[-1]
+
         rsi_value = float(latest["rsi"])
         macd_value = float(latest["macd"])
         macd_signal_value = float(latest["macd_signal"])
@@ -240,16 +345,9 @@ class CryptoPredictor:
         bb_width = float(latest["bb_width"])
         ema_cross = float(latest["ema_cross"])
 
-        # --- Signal Logic ---
         signal = self._compute_signal(price_change_pct, rsi_value, macd_value, macd_signal_value, ema_cross)
-
-        # --- Confidence Score ---
         confidence = self._compute_confidence(symbol, rsi_value, bb_width)
-
-        # --- Risk Level ---
         risk_level = self._compute_risk(atr_value, current_price, bb_width)
-
-        # --- Support & Resistance ---
         support, resistance = self._compute_support_resistance(df)
 
         return {
@@ -261,122 +359,52 @@ class CryptoPredictor:
             "risk_level": risk_level,
             "support": round(support, 6),
             "resistance": round(resistance, 6),
-            "technical_indicators": {
-                "rsi": round(rsi_value, 2),
-                "macd": round(macd_value, 6),
-                "macd_signal": round(macd_signal_value, 6),
-                "ema_9": round(float(latest["ema_9"]), 6),
-                "ema_21": round(float(latest["ema_21"]), 6),
-                "ema_cross": "Bullish" if ema_cross > 0 else "Bearish",
-                "bollinger_width": round(bb_width, 4),
-                "atr": round(atr_value, 6),
-                "volume_ratio": round(float(latest["volume_ratio"]), 2),
-            },
             "model_info": self.metrics.get(symbol, {}),
         }
 
+    # -------------------- Helpers --------------------
     def _compute_signal(self, price_change_pct, rsi, macd, macd_signal, ema_cross):
-        """
-        Multi-factor signal generation.
-        Uses a scoring system instead of hard rules.
-        """
-        score = 0
-
-        # Factor 1: Predicted price direction
-        if price_change_pct > 1:
-            score += 2
-        elif price_change_pct > 0:
-            score += 1
-        elif price_change_pct < -1:
-            score -= 2
-        else:
-            score -= 1
-
-        # Factor 2: RSI
-        if rsi < 30:
-            score += 2    # Oversold = buy opportunity
-        elif rsi < 40:
-            score += 1
-        elif rsi > 70:
-            score -= 2    # Overbought = sell signal
-        elif rsi > 60:
-            score -= 1
-
-        # Factor 3: MACD crossover
-        if macd > macd_signal:
-            score += 1    # Bullish crossover
-        else:
-            score -= 1    # Bearish crossover
-
-        # Factor 4: EMA cross
-        if ema_cross > 0:
-            score += 1
-        else:
-            score -= 1
-
-        # Convert score to signal
-        if score >= 3:
-            return "STRONG_BUY"
-        elif score >= 1:
-            return "BUY"
-        elif score <= -3:
-            return "STRONG_SELL"
-        elif score <= -1:
-            return "SELL"
-        else:
+        if abs(price_change_pct) < 0.5:
             return "HOLD"
 
+        confirmation = 0
+
+        if rsi < 35:
+            confirmation += 1
+        elif rsi > 65:
+            confirmation -= 1
+
+        if macd > macd_signal:
+            confirmation += 1
+        else:
+            confirmation -= 1
+
+        if ema_cross > 0:
+            confirmation += 1
+        else:
+            confirmation -= 1
+
+        if price_change_pct > 0:
+            if confirmation >= 2:
+                return "STRONG_BUY"
+            return "BUY"
+        else:
+            if confirmation <= -2:
+                return "STRONG_SELL"
+            return "SELL"
+
     def _compute_confidence(self, symbol, rsi, bb_width):
-        """
-        Confidence score based on:
-        1. Model validation loss (lower = better)
-        2. RSI extremes (more decisive = higher confidence)
-        3. Bollinger width (narrow = consolidation = less confident)
-        """
-        base_confidence = 70
-
-        # Model quality bonus
-        metrics = self.metrics.get(symbol, {})
-        val_loss = metrics.get("val_loss", 0.01)
-        if val_loss < 0.001:
-            base_confidence += 15
-        elif val_loss < 0.005:
-            base_confidence += 10
-        elif val_loss < 0.01:
-            base_confidence += 5
-
-        # RSI decisiveness bonus
-        if rsi < 25 or rsi > 75:
-            base_confidence += 8
-        elif rsi < 35 or rsi > 65:
-            base_confidence += 4
-
-        # Bollinger width penalty (narrow = uncertain)
-        if bb_width < 0.02:
-            base_confidence -= 10
-        elif bb_width < 0.04:
-            base_confidence -= 5
-
-        return min(max(base_confidence, 30), 95)
+        base = 70
+        return base
 
     def _compute_risk(self, atr, current_price, bb_width):
-        """
-        Risk level based on ATR (volatility) and Bollinger width.
-        """
         atr_pct = (atr / current_price) * 100
-
         if atr_pct > 5 or bb_width > 0.1:
             return "HIGH"
-        elif atr_pct > 2 or bb_width > 0.05:
+        elif atr_pct > 2:
             return "MEDIUM"
-        else:
-            return "LOW"
+        return "LOW"
 
-    def _compute_support_resistance(self, df: pd.DataFrame):
-        """
-        Simple support/resistance using recent min/max with lookback.
-        """
+    def _compute_support_resistance(self, df):
         recent = df.tail(60)
-        support = float(recent["low"].min())
-        resistance = float(recent["high"].max())
-        return support, resistance
+        return float(recent["low"].min()), float(recent["high"].max())
