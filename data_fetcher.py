@@ -18,7 +18,7 @@ BINANCE_BASE_URL = "https://api.binance.com/api/v3"
 async def fetch_candles(
     symbol: str = "BTCUSDT",
     interval: str = "1h",
-    limit: int = 500
+    limit: int = 1000
 ) -> list[dict]:
     """
     Fetch OHLCV candlestick data from Binance.
@@ -35,7 +35,7 @@ async def fetch_candles(
     params = {
         "symbol": symbol.upper(),
         "interval": interval,
-        "limit": min(limit, 1000),
+        "limit": min(limit, 5000),
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -60,7 +60,7 @@ async def fetch_candles(
 async def fetch_candles_extended(
     symbol: str = "BTCUSDT",
     interval: str = "1h",
-    total: int = 2000
+    total: int = 5000
 ) -> list[dict]:
     """
     Fetch more than 1000 candles by making multiple API calls.
