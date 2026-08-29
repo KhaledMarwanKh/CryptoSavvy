@@ -359,10 +359,15 @@ function Dashboard() {
         interval = setInterval(() => {
           setArtNum((prev) => (prev + 1) % 2);
         }, delay);
+        localStorage.setItem("news", JSON.stringify(res?.articles));
       })
       .catch((err) => {
         console.log(err);
-        setNews([]);
+        setNews(
+          localStorage.getItem("news")
+            ? JSON.parse(localStorage.getItem("news"))
+            : [],
+        );
       });
 
     return () => {

@@ -1,11 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { ArrowRightLeft, Table2, TrendingDown, TrendingUp } from "lucide-react";
 import axiosInst from "../../libs/axiosInst";
-import { formatCompactNumber } from "../../utils/formattor";
 import { useTranslation } from "react-i18next";
 
 export default function SypCurrency() {
-  const { i18n, t } = useTranslation();
+  const { t } = useTranslation();
   const [loadingTable, setLoadingTable] = useState(false);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -21,7 +20,7 @@ export default function SypCurrency() {
     if (!amount || !selected) return "";
 
     const value = parseFloat(amount);
-    const rate = parseFloat(selected.sell);
+    const rate = parseFloat(selected?.sell ?? 0.0);
 
     if (mode === "SYP_TO") {
       return (value / rate).toFixed(2);
@@ -228,10 +227,10 @@ export default function SypCurrency() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center font-semibold text-slate-100">
-                        {formatCompactNumber(r.buy)}
+                        {r.buy.replace("\n", " / ").slice(0, -4)}
                       </td>
                       <td className="px-4 py-3 text-center font-semibold text-slate-100">
-                        {formatCompactNumber(r.sell)}
+                        {r.sell.replace("\n", " / ").slice(0, -4)}
                       </td>
                       <td
                         className={`px-4 py-3 text-center text-sm flex items-center gap-2 ${r.change[0] === "▲" ? "text-emerald-400" : "text-red-400"} `}
