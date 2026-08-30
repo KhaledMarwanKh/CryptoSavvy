@@ -51,7 +51,7 @@ app.set('trust proxy', 1);
 // =====================
 // CORS Configuration
 // =====================
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:5173", "http://179.198.195.81:3000"];
 app.use(cookieParser());
 
 app.use(
